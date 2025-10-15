@@ -1,0 +1,30 @@
+################################################################################
+# Main pipeline to build hoprnet artifacts
+################################################################################
+name: Build
+on:
+  merge_group:
+    types: [checks_requested]
+  pull_request_target:
+    types:
+      - opened
+      - ready_for_review
+      - reopened
+      - review_requested
+      - synchronize
+permissions:
+  contents: write
+  actions: write
+  security-events: write
+concurrency:
+  group: ${{ github.event.pull_request.head.ref || github.ref_name }}-build
+  cancel-in-progress: true
+jobs:
+  docs:
+    name: Docs
+    uses: ./.github/workflows/build-docs.yaml
+    secrets: inherit
+    with:
+      source_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+      publish: false

@@ -189,30 +189,22 @@
             isCross = true;
           };
 
-          hopr-test = rust-builder-local.callPackage ./nix/rust-package.nix (
-            {
-              src = testSrc;
-              runTests = true;
-            }
-          );
+          hopr-test = rust-builder-local.callPackage ./nix/rust-package.nix ({
+            src = testSrc;
+            runTests = true;
+          });
 
-          hopr-test-nightly = rust-builder-local-nightly.callPackage ./nix/rust-package.nix (
-            {
-              src = testSrc;
-              runTests = true;
-              cargoExtraArgs = "-Z panic-abort-tests";
-            }
-          );
+          hopr-test-nightly = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({
+            src = testSrc;
+            runTests = true;
+            cargoExtraArgs = "-Z panic-abort-tests";
+          });
 
-          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix (
-            { runClippy = true; }
-          );
-          hopr-dev = rust-builder-local.callPackage ./nix/rust-package.nix (
-            {
-              CARGO_PROFILE = "dev";
-              cargoExtraArgs = "-F capture";
-            }
-          );
+          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix ({ runClippy = true; });
+          hopr-dev = rust-builder-local.callPackage ./nix/rust-package.nix ({
+            CARGO_PROFILE = "dev";
+            cargoExtraArgs = "-F capture";
+          });
 
           profileDeps = with pkgs; [
             gdb
@@ -318,9 +310,7 @@
               echo "Uploaded image to $IMAGE_TARGET"
             '';
 
-          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix (
-            { buildDocs = true; }
-          );
+          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({ buildDocs = true; });
 
           pre-commit-check = pre-commit.lib.${system}.run {
             src = ./.;

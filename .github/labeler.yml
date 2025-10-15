@@ -1,0 +1,32 @@
+toolchain:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "flake.lock"
+          - "flake.nix"
+          - ".github/**"
+          - ".githooks/**"
+          - ".processes/**"
+          - "rust-toolchain.toml"
+          - ".coderabbit.yaml"
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "Cargo.lock"
+          - "**/Cargo.toml"
+          - "vendor/**"
+          - "uv.lock"
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "tests/**"
+smart-contracts:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "ethereum/contracts/**"
+crate:hopr-bindings:
+  - changed-files:
+      - any-glob-to-any-file: ethereum/bindings/**

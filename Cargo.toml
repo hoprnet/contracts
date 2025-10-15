@@ -2,9 +2,7 @@
 
 resolver = "2"
 
-members = [
-  "ethereum/bindings",
-]
+members = ["ethereum/bindings"]
 
 [workspace.dependencies]
 alloy = { version = "=1.0.37", default-features = false, features = [
