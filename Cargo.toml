@@ -1,0 +1,49 @@
+[workspace]
+
+resolver = "2"
+
+members = ["ethereum/bindings"]
+
+[workspace.dependencies]
+alloy = { version = "=1.0.37", default-features = false, features = [
+  "essentials",
+  "json-rpc",
+  "node-bindings",
+  "contract",
+  "k256",
+  "std",
+] }
+anyhow = "1.0.100"
+serde = { version = "1.0.228", features = ["derive"] }
+
+hopr-bindings = { path = "ethereum/bindings", default-features = false }
+
+[profile.dev]
+panic = "abort"
+
+# this profile focuses on the speed of compilation
+[profile.candidate]
+inherits = "release"
+codegen-units = 16   # normal release default
+lto = false          # do the smallest amount of link-time optimization
+panic = "abort"
+strip = true
+opt-level = 2
+
+# perform minimal optimizations to prevent stack overflows in large tests
+[profile.test]
+opt-level = 1
+
+# this profile focuses on the best runtime performance and the smallest binary size
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+strip = true
+opt-level = 3
+
+# uses extended debug symbols for profiling but does not harm benchmarking performance
+[profile.bench]
+debug = 2
+split-debuginfo = "off"
+strip = false

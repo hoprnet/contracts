@@ -1,0 +1,92 @@
+#################################################################################
+# Pipeline triggered on every merged pull request to:
+# 1. Cleanup the pull request cache
+# 2. Update the latest docker tag and the release docker tag if it is part of a release
+# 3. Deploy the pull request in rotsee network
+# 4. Create the github release with changelog if it is labeled with 'release'. Close the associated milestone.
+# 5. Create the new release pull request
+#################################################################################
+name: Merge
+on:
+  # pull_request:
+  #   types:
+  #     - synchronize
+  pull_request_target:
+    types:
+      - closed
+concurrency:
+  group: merge-${{ github.event.pull_request.base.ref }}
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  cleanup_actions:
+    name: Cleanup Actions
+    runs-on: self-hosted-hoprnet-small
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          disable-sudo: true
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.base.ref }}
+      - name: Cleanup
+        run: |
+          gh extension install actions/gh-actions-cache
+
+          REPO=${{ github.repository }}
+          BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
+
+          echo "Fetching list of cache key"
+          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+
+          ## Setting this to not fail the workflow while deleting cache keys.
+          set +e
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeysForPR
+          do
+            gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+          done
+          echo "Done"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  cache_deps:
+    name: Cache deps
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/cache-deps.yaml
+    with:
+      source_repo: ${{ github.event.pull_request.base.repo.full_name }}
+      source_branch: ${{ github.event.pull_request.base.ref }}
+    secrets: inherit
+  docs:
+    name: Docs
+    uses: ./.github/workflows/build-docs.yaml
+    secrets: inherit
+    with:
+      source_repo: ${{ github.event.pull_request.base.repo.full_name }}
+      source_branch: ${{ github.event.pull_request.base.ref }}
+      publish: true
+  notify_failure:
+    name: Notify in Zulip on merge pipeline failure
+    needs:
+      - cleanup_actions
+      - cache_deps
+      - docs
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify failed merge pipeline
+        uses: zulip/github-actions-zulip/send-message@e4c8f27c732ba9bd98ac6be0583096dea82feea5 # v1.0.2
+        with:
+          api-key: ${{ secrets.ZULIP_API_KEY }}
+          email: ${{ secrets.ZULIP_EMAIL }}
+          organization-url: "https://hopr.zulipchat.com"
+          type: "stream"
+          to: "HOPRd"
+          topic: "Core"
+          content: |
+            The merge pipeline failed for pull request [#${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}](https://github.com/hoprnet/contracts/actions/workflows/merge.yaml?query=is%3Afailure)
