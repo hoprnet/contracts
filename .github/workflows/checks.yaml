@@ -1,5 +1,5 @@
 ################################################################################
-# Main pipeline to run checks hoprnet
+# Main pipeline to run checks for the repository
 ################################################################################
 name: Checks
 on:
@@ -43,13 +43,6 @@ jobs:
   zizmor:
     name: Zizmor
     uses: ./.github/workflows/checks-zizmor.yaml
-    with:
-      source_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-    secrets: inherit
-  performance:
-    name: Performance
-    uses: ./.github/workflows/checks-performance.yaml
     with:
       source_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}

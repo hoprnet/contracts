@@ -1,5 +1,5 @@
 #################################################################################
-# Child pipeline to cache hoprnet dependencies
+# Child pipeline to cache the dependencies
 #################################################################################
 name: Cache dependencies
 env:
@@ -26,7 +26,7 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-      - name: Checkout hoprnet repository
+      - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: ${{ inputs.source_repo }}

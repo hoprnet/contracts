@@ -1,3 +1,5 @@
+---
+  
 name: Zizmor
 env:
   needs_nix_setup: false

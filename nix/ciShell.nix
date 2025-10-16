@@ -25,10 +25,7 @@ let
 
     # docker image inspection and handling
     dive
-
-    uv
-    python313
-  ];
+];
   shellPackages = packages ++ extraPackages;
   cleanArgs = removeAttrs args [
     "extraPackages"

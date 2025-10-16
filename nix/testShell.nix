@@ -19,7 +19,6 @@ let
     fi
   ''
   + ''
-    uv sync --frozen
     unset SOURCE_DATE_EPOCH
   ''
   + pkgs.lib.optionalString pkgs.stdenv.isLinux ''
@@ -27,8 +26,6 @@ let
   ''
   + shellHook;
   packages = with pkgs; [
-    uv
-    python313
     solcDefault
     foundry-bin
   ];

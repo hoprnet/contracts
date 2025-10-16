@@ -215,12 +215,6 @@
             gnutar # Used to extract the pcap file from the docker container
           ];
 
-          # Man pages
-          man-pages = pkgs.callPackage ./nix/man-pages.nix {
-            hopr = hopr-dev;
-          };
-          hopr-man = man-pages.hopr-man;
-
           anvilSrc = fs.toSource {
             root = ./.;
             fileset = fs.unions [
@@ -588,7 +582,6 @@
             inherit hopr-test hopr-test-nightly;
             inherit docs;
             inherit pre-commit-check;
-            inherit hopr-man;
             default = hopr-test;
           };
 

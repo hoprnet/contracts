@@ -1,7 +1,7 @@
 fixupCFlagsForDarwin() {
   # Because it’s getting called from a Darwin stdenv, gcc will pick up on
   # Darwin-specific flags, and it will barf and die on -iframework in
-  # particular. Strip them out, so hoprd can compile.
+  # particular. Strip them out, so a rust application can compile.
   cflagsFilter='s|-F[^ ]*||g;s|-iframework [^ ]*||g;s|-isystem [^ ]*||g;s|  *| |g'
 
   # The `CoreFoundation` reference is added by `linkSystemCoreFoundationFramework` in the
