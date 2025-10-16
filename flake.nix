@@ -192,18 +192,28 @@
           hopr-test = rust-builder-local.callPackage ./nix/rust-package.nix ({
             src = testSrc;
             runTests = true;
+            inherit depsSrc rev;
+            cargoToml = ./ethereum/bindings/Cargo.toml;
           });
 
           hopr-test-nightly = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({
             src = testSrc;
             runTests = true;
             cargoExtraArgs = "-Z panic-abort-tests";
+            inherit depsSrc rev;
+            cargoToml = ./ethereum/bindings/Cargo.toml;
           });
 
-          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix ({ runClippy = true; });
+          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix ({ 
+            runClippy = true;
+            inherit src depsSrc rev;
+            cargoToml = ./ethereum/bindings/Cargo.toml;
+          });
           hopr-dev = rust-builder-local.callPackage ./nix/rust-package.nix ({
             CARGO_PROFILE = "dev";
             cargoExtraArgs = "-F capture";
+            inherit src depsSrc rev;
+            cargoToml = ./ethereum/bindings/Cargo.toml;
           });
 
           profileDeps = with pkgs; [
@@ -304,7 +314,11 @@
               echo "Uploaded image to $IMAGE_TARGET"
             '';
 
-          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({ buildDocs = true; });
+          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({ 
+            buildDocs = true; 
+            inherit src depsSrc rev;
+            cargoToml = ./ethereum/bindings/Cargo.toml;
+          });
 
           pre-commit-check = pre-commit.lib.${system}.run {
             src = ./.;
