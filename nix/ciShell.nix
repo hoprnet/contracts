@@ -25,7 +25,7 @@ let
 
     # docker image inspection and handling
     dive
-];
+  ];
   shellPackages = packages ++ extraPackages;
   cleanArgs = removeAttrs args [
     "extraPackages"

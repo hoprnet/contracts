@@ -204,7 +204,7 @@
             cargoToml = ./ethereum/bindings/Cargo.toml;
           });
 
-          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix ({ 
+          hopr-clippy = rust-builder-local.callPackage ./nix/rust-package.nix ({
             runClippy = true;
             inherit src depsSrc rev;
             cargoToml = ./ethereum/bindings/Cargo.toml;
@@ -314,8 +314,8 @@
               echo "Uploaded image to $IMAGE_TARGET"
             '';
 
-          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({ 
-            buildDocs = true; 
+          docs = rust-builder-local-nightly.callPackage ./nix/rust-package.nix ({
+            buildDocs = true;
             inherit src depsSrc rev;
             cargoToml = ./ethereum/bindings/Cargo.toml;
           });
