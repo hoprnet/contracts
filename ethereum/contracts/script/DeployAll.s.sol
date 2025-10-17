@@ -9,7 +9,7 @@ import { SafeSingletonFixtureTest } from "../test/utils/SafeSingleton.sol";
 import { PermittableTokenFixtureTest } from "../test/utils/PermittableToken.sol";
 import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
 import { BoostUtilsLib } from "./utils/BoostUtilsLib.sol";
-import { WinProb } from "src/WinningProbabilityOracle.sol";
+import { WinProb } from "../src/WinningProbabilityOracle.sol";
 
 /**
  * @title Deploy all the required contracts in development, staging and production environment
@@ -58,50 +58,50 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
         vm.startBroadcast(deployerPrivateKey);
 
         // 3. Deploy
-        // 3.0. Announcements
-        _deployHoprAnnouncements();
-
-        // 3.1 HoprNodeManagementModule singleton
-        _deployHoprNodeManagementModule();
-
-        // 3.2 HoprNodeStakeFactory
-        _deployHoprNodeStakeFactory(deployerAddress);
-
-        // 3.3 HoprNodeSafeRegistry
-        _deployHoprHoprNodeSafeRegistry();
-
-        // 3.4. HoprToken Contract
+        // 3.1. HoprToken Contract
         // Only deploy Token contract when no deployed one is detected.
         // E.g. always in local environment, or should a new token contract be introduced in
         // development/staging/production.
         _deployHoprTokenAndMintToAddress(deployerAddress, deployerAddress);
 
-        // 3.5. HoprChannels Contract
+        // 3.2. TicketPriceOracle
+        _deployHoprTicketPriceOracle(deployerAddress);
+
+        // 3.3. WinningProbabilityOracle, with a default value of 1.0
+        _deployHoprWinningProbabilityOracle(deployerAddress, WinProb.wrap(type(uint56).max));
+
+        // 3.4 HoprNodeManagementModule singleton
+        _deployHoprNodeManagementModule();
+
+        // 3.5 HoprNodeSafeRegistry
+        _deployHoprNodeSafeRegistry();
+
+        // 3.6. HoprChannels Contract
         // Only deploy Channels contract when no deployed one is detected.
         // E.g. always in local environment, or should a new channel contract be introduced in
         // development/staging/production per meta environment.
         _deployHoprChannels();
 
-        // 3.6. NetworkRegistryProxy Contract
+        // 3.7. Announcements
+        _deployHoprAnnouncements();
+
+        // 3.8 HoprNodeStakeFactory
+        _deployHoprNodeStakeFactory(deployerAddress);
+
+        // 3.9. NodeSafeMigration contract
+        _deployNodeSafeMigration();
+
+        // 3.10. NetworkRegistryProxy Contract
         // Only deploy NetworkRegistryProxy contract when no deployed one is detected.
         // E.g. Always in local environment, or should a new NetworkRegistryProxy contract be introduced in
         // development/staging/production
         _deployNetworkRegistryProxy(deployerAddress);
 
-        // 3.7. NetworkRegistry Contract
+        // 3.11. NetworkRegistry Contract
         // Only deploy NetworkRegistrycontract when no deployed one is detected.
         // E.g. Always in local environment, or should a new NetworkRegistryProxy contract be introduced in
         // development/staging/production
         _deployNetworkRegistry(deployerAddress);
-
-        // 3.8. TicketPriceOracle
-        _deployHoprTicketPriceOracle(deployerAddress);
-
-        // 3.9. WinningProbabilityOracle, with a default value of 1.0
-        _deployHoprWinningProbabilityOracle(deployerAddress, WinProb.wrap(type(uint56).max));
-
-        // 3.10. NodeSafeMigration contract
-        _deployNodeSafeMigration();
 
         // 4. update indexerStartBlockNumber
         // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
@@ -125,7 +125,7 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.moduleImplementationAddress)
         ) {
-            // deploy HoprNodeManagementModule contract
+            // deploy HoprNodeManagementModule contractsd
             currentNetworkDetail.addresses.moduleImplementationAddress =
                 deployCode("NodeManagementModule.sol:HoprNodeManagementModule");
         }
@@ -152,7 +152,7 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
     /**
      * @dev Deploy node safe registry
      */
-    function _deployHoprHoprNodeSafeRegistry() internal {
+    function _deployHoprNodeSafeRegistry() internal {
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.nodeSafeRegistryAddress)
@@ -297,16 +297,15 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
      * @dev deploy ticket price oracle
      */
     function _deployHoprTicketPriceOracle(address deployerAddress) internal {
-        uint256 price = 100;
+        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL? 1_000_000_000_000_000 : 100; // 0.001 HOPR in test environment
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.ticketPriceOracleContractAddress)
         ) {
-            price = 1_000_000_000_000_000; // 0.001 HOPR in test environment
+            // deploy contract
+            currentNetworkDetail.addresses.ticketPriceOracleContractAddress =
+                deployCode("TicketPriceOracle.sol:HoprTicketPriceOracle", abi.encode(deployerAddress, price));
         }
-        // deploy contract
-        currentNetworkDetail.addresses.ticketPriceOracleContractAddress =
-            deployCode("TicketPriceOracle.sol:HoprTicketPriceOracle", abi.encode(deployerAddress, price));
     }
 
     /**
