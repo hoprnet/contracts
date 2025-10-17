@@ -50,4 +50,3 @@ jobs:
       - name: Build the workspace
         run: |
           nix develop -c cargo build
-
