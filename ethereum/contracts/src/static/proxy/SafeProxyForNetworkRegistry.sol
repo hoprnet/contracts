@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.30;
 
-import { IHoprNetworkRegistryRequirement } from "../interfaces/INetworkRegistryRequirement.sol";
-import { HoprNodeSafeRegistry } from "../node-stake/NodeSafeRegistry.sol";
+import { IHoprNetworkRegistryRequirement } from "../../interfaces/INetworkRegistryRequirement.sol";
+import { HoprNodeSafeRegistry } from "../../node-stake/NodeSafeRegistry.sol";
 import { AccessControlEnumerable } from "openzeppelin-contracts-5.4.0/access/extensions/AccessControlEnumerable.sol";
 
 /**

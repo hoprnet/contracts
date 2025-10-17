@@ -2,7 +2,7 @@
 pragma solidity 0.8.30;
 
 import { Ownable } from "openzeppelin-contracts-5.4.0/access/Ownable.sol";
-import { IHoprNetworkRegistryRequirement } from "../interfaces/INetworkRegistryRequirement.sol";
+import { IHoprNetworkRegistryRequirement } from "../../interfaces/INetworkRegistryRequirement.sol";
 
 /**
  * @dev Dummy roxy which return true if an address is registered by the owner, when isAllAllowed is false.

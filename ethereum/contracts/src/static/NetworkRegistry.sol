@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { AccessControlEnumerable } from "openzeppelin-contracts-5.4.0/access/extensions/AccessControlEnumerable.sol";
-import { IHoprNetworkRegistryRequirement } from "./interfaces/INetworkRegistryRequirement.sol";
+import { IHoprNetworkRegistryRequirement } from "../interfaces/INetworkRegistryRequirement.sol";
 
 abstract contract HoprNetworkRegistryEvents {
     event NetworkRegistryStatusUpdated(bool indexed isEnabled); // Global toggle of the network registry

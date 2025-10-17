@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 import { Ownable } from "openzeppelin-contracts-5.4.0/access/Ownable.sol";
 import { Math } from "openzeppelin-contracts-5.4.0/utils/math/Math.sol";
-import { IHoprNetworkRegistryRequirement } from "../interfaces/INetworkRegistryRequirement.sol";
+import { IHoprNetworkRegistryRequirement } from "../../interfaces/INetworkRegistryRequirement.sol";
 
 /**
  * @dev Interface for staking contract
