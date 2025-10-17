@@ -234,7 +234,7 @@ contract HoprNodeSafeRegistry is HoprNodeSafeRegistryEvents {
         }
 
         // Ensure that the node address is not a contract address
-        if (nodeChainKeyAddress.code.length == 0) {
+        if (nodeChainKeyAddress.code.length > 0) {
             revert NodeIsContract();
         }
 
@@ -247,7 +247,7 @@ contract HoprNodeSafeRegistry is HoprNodeSafeRegistryEvents {
 
         // update record
         record.safeAddress = safeAddress;
-        record.nodeSigNonce = record.nodeSigNonce + 1; // as of Solidity 0.8, this reverts on overflows
+        record.nodeSigNonce++; // as of Solidity 0.8, this reverts on overflows
 
         // update and emit event
         emit RegisteredNodeSafe(safeAddress, nodeChainKeyAddress);
