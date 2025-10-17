@@ -8,20 +8,20 @@
 //! {
 //!   "networks": {
 //!     "rotsee": {
-//!       "indexer_start_block_number": 29521261,
-//!       "addresses": {
-//!         "announcements": "0xf1c143B1bA20C7606d56aA2FA94502D25744b982",
-//!         "channels": "0x77C9414043d27fdC98A6A2d73fc77b9b383092a7",
-//!         "module_implementation": "0x32863c4974fBb6253E338a0cb70C382DCeD2eFCb",
-//!         "network_registry": "0x15a315E1320cFF0de84671c0139042EE320CE38d",
-//!         "network_registry_proxy": "0x20559cbD3C2eDcD0b396431226C00D2Cd102eB3F",
-//!         "node_safe_registry": "0x4F7C7dE3BA2B29ED8B2448dF2213cA43f94E45c0",
-//!         "node_stake_v2_factory": "0x791d190b2c95397F4BcE7bD8032FD67dCEA7a5F2",
-//!         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
-//!         "ticket_price_oracle": "0x442df1d946303fB088C9377eefdaeA84146DA0A6",
-//!         "winning_probability_oracle": "0xC15675d4CCa538D91a91a8D3EcFBB8499C3B0471"
-//!       }
-//!     },
+//!      "addresses": {
+//!        "announcements": "0x0347A131861881604EA841b678210ba60b8E6D82",
+//!        "channels": "0x2CCd294e00593CE482216b88F3B481dF5EEFf357",
+//!        "module_implementation": "0x79C3bF06E96A9373765284aFb0a35e9529E2B3F2",
+//!        "node_safe_migration": "0xe9670B5D87c87111C9050D915971B73b9f5021a9",
+//!        "node_safe_registry": "0xaFa257f2799835D2E29e7eC7ee448530F9d8Cb20",
+//!        "node_stake_factory": "0xcB0841cc3DBDE97aC52B945F02Ee4F3D8707d977",
+//!        "ticket_price_oracle": "0xFA251d4C367683d6181531afd5964E660aCf43A0",
+//!        "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
+//!        "winning_probability_oracle": "0xa641822a52AcbDc0c0123337f715C1d9756c21bD"
+//!      },
+//!      "environment_type": "staging",
+//!      "indexer_start_block_number": 42671336
+//!    },
 //!     "debug-staging": {
 //!       "indexer_start_block_number": 29690235,
 //!       "addresses": {
@@ -35,21 +35,6 @@
 //!         "module_implementation": "0xe8d914Ef66b4FF086C6fbCb1E0ea97c0A9D2f3de",
 //!         "ticket_price_oracle": "0x281a91FeA199a3bAB5D7d5f05833B257E2fd7741",
 //!         "winning_probability_oracle": "0x02e1009fd222917Ee7bdfdBF8AE1e56c4ae3F6f3"
-//!       }
-//!     },
-//!     "dufour": {
-//!       "indexer_start_block_number": 29706814,
-//!       "addresses": {
-//!         "announcements": "0x619eabE23FD0E2291B50a507719aa633fE6069b8",
-//!         "channels": "0x693Bac5ce61c720dDC68533991Ceb41199D8F8ae",
-//!         "network_registry": "0x582b4b586168621dAf83bEb2AeADb5fb20F8d50d",
-//!         "network_registry_proxy": "0x2bc6b78B0aA892e97714F0e3b1c74487f92C5884",
-//!         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
-//!         "node_stake_v2_factory": "0x098B275485c406573D042848D66eb9d63fca311C",
-//!         "node_safe_registry": "0xe15C24a0910311c83aC78B5930d771089E93077b",
-//!         "module_implementation": "0xB7397C218766eBe6A1A634df523A1a7e412e67eA",
-//!         "ticket_price_oracle": "0xcA5656Fe6F2d847ACA32cf5f38E51D2054cA1273",
-//!         "winning_probability_oracle": "0x7Eb8d762fe794A108e568aD2097562cc5D3A1359"
 //!       }
 //!     }
 //!   }

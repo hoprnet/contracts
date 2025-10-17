@@ -399,22 +399,22 @@ pub mod HoprCapabilityPermissions {
     /// The creation / init bytecode of the contract.
     ///
     /// ```text
-    ///0x61013161003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610607e5760003560e01c80637a75711511605f5780637a7571151460c75780638167b67e1460d4578063a08658391460e1578063b677a40f1460ee57600080fd5b806351d2614b1460835780635daa9e241460ad578063678a5efb1460ba575b600080fd5b609063066c46b960e11b81565b6040516001600160e01b0319909116815260200160405180910390f35b609063bda65f4560e01b81565b60906354a2edf560e01b81565b6090634decdde360e11b81565b609063651514bf60e01b81565b609063095ea7b360e01b81565b6090630abec58f60e01b8156fea2646970667358221220c626986dd6f303c551e267f41ced8a3c7effd49a43206a048a132fc68865f84c64736f6c63430008130033
+    ///0x61012e610034600b8282823980515f1a607314602857634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d632d50b18b60e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea264697066735822122039bdd94071d9bcd60ef49181e23f62551755e1893cacd38fd8e25dce6aeb3c3364736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"a\x011a\0:`\x0B\x82\x82\x829\x80Q`\0\x1A`s\x14a\0-WcNH{q`\xE0\x1B`\0R`\0`\x04R`$`\0\xFD[0`\0R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`~W`\x005`\xE0\x1C\x80czuq\x15\x11`_W\x80czuq\x15\x14`\xC7W\x80c\x81g\xB6~\x14`\xD4W\x80c\xA0\x86X9\x14`\xE1W\x80c\xB6w\xA4\x0F\x14`\xEEW`\0\x80\xFD[\x80cQ\xD2aK\x14`\x83W\x80c]\xAA\x9E$\x14`\xADW\x80cg\x8A^\xFB\x14`\xBAW[`\0\x80\xFD[`\x90c\x06lF\xB9`\xE1\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x90c\xBD\xA6_E`\xE0\x1B\x81V[`\x90cT\xA2\xED\xF5`\xE0\x1B\x81V[`\x90cM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x90ce\x15\x14\xBF`\xE0\x1B\x81V[`\x90c\t^\xA7\xB3`\xE0\x1B\x81V[`\x90c\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 \xC6&\x98m\xD6\xF3\x03\xC5Q\xE2g\xF4\x1C\xED\x8A<~\xFF\xD4\x9AC j\x04\x8A\x13/\xC6\x88e\xF8LdsolcC\0\x08\x13\x003",
+        b"a\x01.a\x004`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`(WcNH{q`\xE0\x1B_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc-P\xB1\x8B`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 9\xBD\xD9@q\xD9\xBC\xD6\x0E\xF4\x91\x81\xE2?bU\x17U\xE1\x89<\xAC\xD3\x8F\xD8\xE2]\xCEj\xEB<3dsolcC\0\x08\x1E\x003",
     );
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x7300000000000000000000000000000000000000003014608060405260043610607e5760003560e01c80637a75711511605f5780637a7571151460c75780638167b67e1460d4578063a08658391460e1578063b677a40f1460ee57600080fd5b806351d2614b1460835780635daa9e241460ad578063678a5efb1460ba575b600080fd5b609063066c46b960e11b81565b6040516001600160e01b0319909116815260200160405180910390f35b609063bda65f4560e01b81565b60906354a2edf560e01b81565b6090634decdde360e11b81565b609063651514bf60e01b81565b609063095ea7b360e01b81565b6090630abec58f60e01b8156fea2646970667358221220c626986dd6f303c551e267f41ced8a3c7effd49a43206a048a132fc68865f84c64736f6c63430008130033
+    ///0x7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d632d50b18b60e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea264697066735822122039bdd94071d9bcd60ef49181e23f62551755e1893cacd38fd8e25dce6aeb3c3364736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`~W`\x005`\xE0\x1C\x80czuq\x15\x11`_W\x80czuq\x15\x14`\xC7W\x80c\x81g\xB6~\x14`\xD4W\x80c\xA0\x86X9\x14`\xE1W\x80c\xB6w\xA4\x0F\x14`\xEEW`\0\x80\xFD[\x80cQ\xD2aK\x14`\x83W\x80c]\xAA\x9E$\x14`\xADW\x80cg\x8A^\xFB\x14`\xBAW[`\0\x80\xFD[`\x90c\x06lF\xB9`\xE1\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x90c\xBD\xA6_E`\xE0\x1B\x81V[`\x90cT\xA2\xED\xF5`\xE0\x1B\x81V[`\x90cM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x90ce\x15\x14\xBF`\xE0\x1B\x81V[`\x90c\t^\xA7\xB3`\xE0\x1B\x81V[`\x90c\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 \xC6&\x98m\xD6\xF3\x03\xC5Q\xE2g\xF4\x1C\xED\x8A<~\xFF\xD4\x9AC j\x04\x8A\x13/\xC6\x88e\xF8LdsolcC\0\x08\x13\x003",
+        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc-P\xB1\x8B`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 9\xBD\xD9@q\xD9\xBC\xD6\x0E\xF4\x91\x81\xE2?bU\x17U\xE1\x89<\xAC\xD3\x8F\xD8\xE2]\xCEj\xEB<3dsolcC\0\x08\x1E\x003",
     );
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
@@ -458,7 +458,6 @@ pub mod HoprCapabilityPermissions {
                 > as alloy_sol_types::SolType>::abi_encoded_size(self)
             }
         }
-        #[automatically_derived]
         impl GranularPermission {
             /// The Solidity type name.
             pub const NAME: &'static str = stringify!(@ name);
@@ -597,7 +596,6 @@ pub mod HoprCapabilityPermissions {
                 > as alloy_sol_types::SolType>::abi_encoded_size(self)
             }
         }
-        #[automatically_derived]
         impl Target {
             /// The Solidity type name.
             pub const NAME: &'static str = stringify!(@ name);
@@ -717,6 +715,7 @@ error AddressIsZero();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -790,6 +789,7 @@ error ArrayTooLong();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -863,6 +863,7 @@ error ArraysDifferentLength();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -936,6 +937,7 @@ error CalldataOutOfBounds();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1009,6 +1011,7 @@ error DefaultPermissionRejected();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1084,6 +1087,7 @@ error DelegateCallNotAllowed();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1157,6 +1161,7 @@ error FunctionSignatureTooShort();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1232,6 +1237,7 @@ error GranularPermissionRejected();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1307,6 +1313,7 @@ error NoMembership();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1380,6 +1387,7 @@ error NodePermissionRejected();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1453,6 +1461,7 @@ error ParameterNotAllowed();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1526,6 +1535,7 @@ error PermissionNotConfigured();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1599,6 +1609,7 @@ error SendNotAllowed();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1672,6 +1683,7 @@ error TargetAddressNotAllowed();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1745,6 +1757,7 @@ error TargetIsNotScoped();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1818,6 +1831,7 @@ error TargetIsScoped();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -1891,6 +1905,7 @@ error UnacceptableMultiSendOffset();
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
+        #[allow(dead_code)]
         type UnderlyingSolTuple<'a> = ();
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = ();
@@ -2833,6 +2848,7 @@ function APPROVE_SELECTOR() external view returns (bytes4);
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -2866,6 +2882,7 @@ function APPROVE_SELECTOR() external view returns (bytes4);
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -2980,6 +2997,7 @@ function CLOSE_INCOMING_CHANNEL_SELECTOR() external view returns (bytes4);
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3013,6 +3031,7 @@ function CLOSE_INCOMING_CHANNEL_SELECTOR() external view returns (bytes4);
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3127,6 +3146,7 @@ function FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTOR() external view returns (byt
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3160,6 +3180,7 @@ function FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTOR() external view returns (byt
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3279,6 +3300,7 @@ function FUND_CHANNEL_SELECTOR() external view returns (bytes4);
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3312,6 +3334,7 @@ function FUND_CHANNEL_SELECTOR() external view returns (bytes4);
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3426,6 +3449,7 @@ function INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR() external view returns (byt
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3459,6 +3483,7 @@ function INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR() external view returns (byt
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3578,6 +3603,7 @@ function REDEEM_TICKET_SELECTOR() external view returns (bytes4);
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3611,6 +3637,7 @@ function REDEEM_TICKET_SELECTOR() external view returns (bytes4);
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3725,6 +3752,7 @@ function SEND_SELECTOR() external view returns (bytes4);
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = ();
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = ();
@@ -3756,6 +3784,7 @@ function SEND_SELECTOR() external view returns (bytes4);
         }
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
@@ -3841,6 +3870,7 @@ function SEND_SELECTOR() external view returns (bytes4);
         }
     };
     ///Container for all the [`HoprCapabilityPermissions`](self) function calls.
+    #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive()]
     pub enum HoprCapabilityPermissionsCalls {
@@ -3863,7 +3893,6 @@ function SEND_SELECTOR() external view returns (bytes4);
         #[allow(missing_docs)]
         SEND_SELECTOR(SEND_SELECTORCall),
     }
-    #[automatically_derived]
     impl HoprCapabilityPermissionsCalls {
         /// All the selectors of this enum.
         ///
@@ -3880,6 +3909,46 @@ function SEND_SELECTOR() external view returns (bytes4);
             [160u8, 134u8, 88u8, 57u8],
             [182u8, 119u8, 164u8, 15u8],
         ];
+        /// The names of the variants in the same order as `SELECTORS`.
+        pub const VARIANT_NAMES: &'static [&'static str] = &[
+            ::core::stringify!(REDEEM_TICKET_SELECTOR),
+            ::core::stringify!(INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR),
+            ::core::stringify!(CLOSE_INCOMING_CHANNEL_SELECTOR),
+            ::core::stringify!(SEND_SELECTOR),
+            ::core::stringify!(FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTOR),
+            ::core::stringify!(APPROVE_SELECTOR),
+            ::core::stringify!(FUND_CHANNEL_SELECTOR),
+        ];
+        /// The signatures in the same order as `SELECTORS`.
+        pub const SIGNATURES: &'static [&'static str] = &[
+            <REDEEM_TICKET_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <CLOSE_INCOMING_CHANNEL_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <SEND_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <APPROVE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <FUND_CHANNEL_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+        ];
+        /// Returns the signature for the given selector, if known.
+        #[inline]
+        pub fn signature_by_selector(
+            selector: [u8; 4usize],
+        ) -> ::core::option::Option<&'static str> {
+            match Self::SELECTORS.binary_search(&selector) {
+                ::core::result::Result::Ok(idx) => {
+                    ::core::option::Option::Some(Self::SIGNATURES[idx])
+                }
+                ::core::result::Result::Err(_) => ::core::option::Option::None,
+            }
+        }
+        /// Returns the enum variant name for the given selector, if known.
+        #[inline]
+        pub fn name_by_selector(
+            selector: [u8; 4usize],
+        ) -> ::core::option::Option<&'static str> {
+            let sig = Self::signature_by_selector(selector)?;
+            sig.split_once('(').map(|(name, _)| name)
+        }
     }
     #[automatically_derived]
     impl alloy_sol_types::SolInterface for HoprCapabilityPermissionsCalls {
@@ -4215,6 +4284,7 @@ function SEND_SELECTOR() external view returns (bytes4);
         }
     }
     ///Container for all the [`HoprCapabilityPermissions`](self) custom errors.
+    #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprCapabilityPermissionsErrors {
@@ -4253,7 +4323,6 @@ function SEND_SELECTOR() external view returns (bytes4);
         #[allow(missing_docs)]
         UnacceptableMultiSendOffset(UnacceptableMultiSendOffset),
     }
-    #[automatically_derived]
     impl HoprCapabilityPermissionsErrors {
         /// All the selectors of this enum.
         ///
@@ -4280,6 +4349,66 @@ function SEND_SELECTOR() external view returns (bytes4);
             [239u8, 52u8, 64u8, 172u8],
             [253u8, 142u8, 159u8, 40u8],
         ];
+        /// The names of the variants in the same order as `SELECTORS`.
+        pub const VARIANT_NAMES: &'static [&'static str] = &[
+            ::core::stringify!(SendNotAllowed),
+            ::core::stringify!(DelegateCallNotAllowed),
+            ::core::stringify!(ParameterNotAllowed),
+            ::core::stringify!(FunctionSignatureTooShort),
+            ::core::stringify!(PermissionNotConfigured),
+            ::core::stringify!(TargetIsNotScoped),
+            ::core::stringify!(DefaultPermissionRejected),
+            ::core::stringify!(NodePermissionRejected),
+            ::core::stringify!(CalldataOutOfBounds),
+            ::core::stringify!(ArraysDifferentLength),
+            ::core::stringify!(UnacceptableMultiSendOffset),
+            ::core::stringify!(GranularPermissionRejected),
+            ::core::stringify!(AddressIsZero),
+            ::core::stringify!(ArrayTooLong),
+            ::core::stringify!(TargetIsScoped),
+            ::core::stringify!(TargetAddressNotAllowed),
+            ::core::stringify!(NoMembership),
+        ];
+        /// The signatures in the same order as `SELECTORS`.
+        pub const SIGNATURES: &'static [&'static str] = &[
+            <SendNotAllowed as alloy_sol_types::SolError>::SIGNATURE,
+            <DelegateCallNotAllowed as alloy_sol_types::SolError>::SIGNATURE,
+            <ParameterNotAllowed as alloy_sol_types::SolError>::SIGNATURE,
+            <FunctionSignatureTooShort as alloy_sol_types::SolError>::SIGNATURE,
+            <PermissionNotConfigured as alloy_sol_types::SolError>::SIGNATURE,
+            <TargetIsNotScoped as alloy_sol_types::SolError>::SIGNATURE,
+            <DefaultPermissionRejected as alloy_sol_types::SolError>::SIGNATURE,
+            <NodePermissionRejected as alloy_sol_types::SolError>::SIGNATURE,
+            <CalldataOutOfBounds as alloy_sol_types::SolError>::SIGNATURE,
+            <ArraysDifferentLength as alloy_sol_types::SolError>::SIGNATURE,
+            <UnacceptableMultiSendOffset as alloy_sol_types::SolError>::SIGNATURE,
+            <GranularPermissionRejected as alloy_sol_types::SolError>::SIGNATURE,
+            <AddressIsZero as alloy_sol_types::SolError>::SIGNATURE,
+            <ArrayTooLong as alloy_sol_types::SolError>::SIGNATURE,
+            <TargetIsScoped as alloy_sol_types::SolError>::SIGNATURE,
+            <TargetAddressNotAllowed as alloy_sol_types::SolError>::SIGNATURE,
+            <NoMembership as alloy_sol_types::SolError>::SIGNATURE,
+        ];
+        /// Returns the signature for the given selector, if known.
+        #[inline]
+        pub fn signature_by_selector(
+            selector: [u8; 4usize],
+        ) -> ::core::option::Option<&'static str> {
+            match Self::SELECTORS.binary_search(&selector) {
+                ::core::result::Result::Ok(idx) => {
+                    ::core::option::Option::Some(Self::SIGNATURES[idx])
+                }
+                ::core::result::Result::Err(_) => ::core::option::Option::None,
+            }
+        }
+        /// Returns the enum variant name for the given selector, if known.
+        #[inline]
+        pub fn name_by_selector(
+            selector: [u8; 4usize],
+        ) -> ::core::option::Option<&'static str> {
+            let sig = Self::signature_by_selector(selector)?;
+            sig.split_once('(').map(|(name, _)| name)
+        }
     }
     #[automatically_derived]
     impl alloy_sol_types::SolInterface for HoprCapabilityPermissionsErrors {
@@ -4977,6 +5106,7 @@ function SEND_SELECTOR() external view returns (bytes4);
         }
     }
     ///Container for all the [`HoprCapabilityPermissions`](self) events.
+    #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprCapabilityPermissionsEvents {
@@ -4995,7 +5125,6 @@ function SEND_SELECTOR() external view returns (bytes4);
         #[allow(missing_docs)]
         ScopedTargetToken(ScopedTargetToken),
     }
-    #[automatically_derived]
     impl HoprCapabilityPermissionsEvents {
         /// All the selectors of this enum.
         ///
@@ -5040,6 +5169,46 @@ function SEND_SELECTOR() external view returns (bytes4);
                 254u8, 217u8, 175u8, 120u8, 225u8, 241u8, 145u8, 104u8, 185u8, 4u8,
             ],
         ];
+        /// The names of the variants in the same order as `SELECTORS`.
+        pub const VARIANT_NAMES: &'static [&'static str] = &[
+            ::core::stringify!(RevokedTarget),
+            ::core::stringify!(ScopedTargetSend),
+            ::core::stringify!(ScopedTargetChannels),
+            ::core::stringify!(ScopedGranularSendCapability),
+            ::core::stringify!(ScopedGranularTokenCapability),
+            ::core::stringify!(ScopedTargetToken),
+            ::core::stringify!(ScopedGranularChannelCapability),
+        ];
+        /// The signatures in the same order as `SELECTORS`.
+        pub const SIGNATURES: &'static [&'static str] = &[
+            <RevokedTarget as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedTargetSend as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedTargetChannels as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedGranularSendCapability as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedGranularTokenCapability as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedTargetToken as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedGranularChannelCapability as alloy_sol_types::SolEvent>::SIGNATURE,
+        ];
+        /// Returns the signature for the given selector, if known.
+        #[inline]
+        pub fn signature_by_selector(
+            selector: [u8; 32usize],
+        ) -> ::core::option::Option<&'static str> {
+            match Self::SELECTORS.binary_search(&selector) {
+                ::core::result::Result::Ok(idx) => {
+                    ::core::option::Option::Some(Self::SIGNATURES[idx])
+                }
+                ::core::result::Result::Err(_) => ::core::option::Option::None,
+            }
+        }
+        /// Returns the enum variant name for the given selector, if known.
+        #[inline]
+        pub fn name_by_selector(
+            selector: [u8; 32usize],
+        ) -> ::core::option::Option<&'static str> {
+            let sig = Self::signature_by_selector(selector)?;
+            sig.split_once('(').map(|(name, _)| name)
+        }
     }
     #[automatically_derived]
     impl alloy_sol_types::SolEventInterface for HoprCapabilityPermissionsEvents {
@@ -5186,9 +5355,9 @@ See the [wrapper's documentation](`HoprCapabilityPermissionsInstance`) for more 
         N: alloy_contract::private::Network,
     >(
         address: alloy_sol_types::private::Address,
-        provider: P,
+        __provider: P,
     ) -> HoprCapabilityPermissionsInstance<P, N> {
-        HoprCapabilityPermissionsInstance::<P, N>::new(address, provider)
+        HoprCapabilityPermissionsInstance::<P, N>::new(address, __provider)
     }
     /**Deploys this contract using the given `provider` and constructor arguments, if any.
 
@@ -5200,11 +5369,11 @@ For more fine-grained control over the deployment process, use [`deploy_builder`
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
     >(
-        provider: P,
+        __provider: P,
     ) -> impl ::core::future::Future<
         Output = alloy_contract::Result<HoprCapabilityPermissionsInstance<P, N>>,
     > {
-        HoprCapabilityPermissionsInstance::<P, N>::deploy(provider)
+        HoprCapabilityPermissionsInstance::<P, N>::deploy(__provider)
     }
     /**Creates a `RawCallBuilder` for deploying this contract using the given `provider`
 and constructor arguments, if any.
@@ -5215,8 +5384,8 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
     pub fn deploy_builder<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
-    >(provider: P) -> alloy_contract::RawCallBuilder<P, N> {
-        HoprCapabilityPermissionsInstance::<P, N>::deploy_builder(provider)
+    >(__provider: P) -> alloy_contract::RawCallBuilder<P, N> {
+        HoprCapabilityPermissionsInstance::<P, N>::deploy_builder(__provider)
     }
     /**A [`HoprCapabilityPermissions`](self) instance.
 
@@ -5248,7 +5417,6 @@ See the [module-level documentation](self) for all the available methods.*/
         }
     }
     /// Instantiation and getters/setters.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
@@ -5259,11 +5427,11 @@ See the [wrapper's documentation](`HoprCapabilityPermissionsInstance`) for more 
         #[inline]
         pub const fn new(
             address: alloy_sol_types::private::Address,
-            provider: P,
+            __provider: P,
         ) -> Self {
             Self {
                 address,
-                provider,
+                provider: __provider,
                 _network: ::core::marker::PhantomData,
             }
         }
@@ -5274,9 +5442,9 @@ Returns a new instance of the contract, if the deployment was successful.
 For more fine-grained control over the deployment process, use [`deploy_builder`] instead.*/
         #[inline]
         pub async fn deploy(
-            provider: P,
+            __provider: P,
         ) -> alloy_contract::Result<HoprCapabilityPermissionsInstance<P, N>> {
-            let call_builder = Self::deploy_builder(provider);
+            let call_builder = Self::deploy_builder(__provider);
             let contract_address = call_builder.deploy().await?;
             Ok(Self::new(contract_address, call_builder.provider))
         }
@@ -5286,9 +5454,9 @@ and constructor arguments, if any.
 This is a simple wrapper around creating a `RawCallBuilder` with the data set to
 the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         #[inline]
-        pub fn deploy_builder(provider: P) -> alloy_contract::RawCallBuilder<P, N> {
+        pub fn deploy_builder(__provider: P) -> alloy_contract::RawCallBuilder<P, N> {
             alloy_contract::RawCallBuilder::new_raw_deploy(
-                provider,
+                __provider,
                 ::core::clone::Clone::clone(&BYTECODE),
             )
         }
@@ -5325,7 +5493,6 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         }
     }
     /// Function calls.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
@@ -5392,7 +5559,6 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         }
     }
     /// Event filters.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,

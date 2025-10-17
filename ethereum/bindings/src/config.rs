@@ -10,36 +10,33 @@ pub const CONTRACTS_ADDRESSES_FILE_CONTENT: &str = include_str!(concat!(env!("OU
 #[serde_as]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct ContractAddresses {
-    /// Token contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub token: Address,
-    /// Channels contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub channels: Address,
     /// Announcements contract
     #[serde_as(as = "DisplayFromStr")]
     pub announcements: Address,
-    /// Network registry contract
+    /// Channels contract
     #[serde_as(as = "DisplayFromStr")]
-    pub network_registry: Address,
-    /// Network registry proxy contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub network_registry_proxy: Address,
-    /// Safe registry contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub node_safe_registry: Address,
-    /// Price oracle contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub ticket_price_oracle: Address,
-    /// Minimum ticket winning probability contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub winning_probability_oracle: Address,
-    /// Stake factory contract
-    #[serde_as(as = "DisplayFromStr")]
-    pub node_stake_v2_factory: Address,
+    pub channels: Address,
     /// Node management module contract (can be zero if safe is not used)
     #[serde_as(as = "DisplayFromStr")]
     pub module_implementation: Address,
+    /// Migration helper for node safes and modules
+    #[serde_as(as = "DisplayFromStr")]
+    pub node_safe_migration: Address,
+    /// Safe registry contract
+    #[serde_as(as = "DisplayFromStr")]
+    pub node_safe_registry: Address,
+    /// Stake factory contract
+    #[serde_as(as = "DisplayFromStr")]
+    pub node_stake_factory: Address,
+    /// Price oracle contract
+    #[serde_as(as = "DisplayFromStr")]
+    pub ticket_price_oracle: Address,
+    /// Token contract
+    #[serde_as(as = "DisplayFromStr")]
+    pub token: Address,
+    /// Minimum ticket winning probability contract
+    #[serde_as(as = "DisplayFromStr")]
+    pub winning_probability_oracle: Address,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]

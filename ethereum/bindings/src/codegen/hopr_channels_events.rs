@@ -1,589 +1,15 @@
-///Module containing a contract's types and functions.
-/**
-
-```solidity
-library HoprChannels {
-    type Balance is uint96;
-    type TicketIndex is uint48;
-    type Timestamp is uint32;
-}
-```*/
-#[allow(
-    non_camel_case_types,
-    non_snake_case,
-    clippy::pub_underscore_fields,
-    clippy::style,
-    clippy::empty_structs_with_brackets
-)]
-pub mod HoprChannels {
-    use super::*;
-    use alloy::sol_types as alloy_sol_types;
-    #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct Balance(alloy::sol_types::private::primitives::aliases::U96);
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[automatically_derived]
-        impl alloy_sol_types::private::SolTypeValue<Balance>
-        for alloy::sol_types::private::primitives::aliases::U96 {
-            #[inline]
-            fn stv_to_tokens(
-                &self,
-            ) -> <alloy::sol_types::sol_data::Uint<
-                96,
-            > as alloy_sol_types::SolType>::Token<'_> {
-                alloy_sol_types::private::SolTypeValue::<
-                    alloy::sol_types::sol_data::Uint<96>,
-                >::stv_to_tokens(self)
-            }
-            #[inline]
-            fn stv_eip712_data_word(&self) -> alloy_sol_types::Word {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::SolType>::tokenize(self)
-                    .0
-            }
-            #[inline]
-            fn stv_abi_encode_packed_to(
-                &self,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::SolType>::abi_encode_packed_to(self, out)
-            }
-            #[inline]
-            fn stv_abi_packed_encoded_size(&self) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::SolType>::abi_encoded_size(self)
-            }
-        }
-        #[automatically_derived]
-        impl Balance {
-            /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
-            /// Convert from the underlying value type.
-            #[inline]
-            pub const fn from_underlying(
-                value: alloy::sol_types::private::primitives::aliases::U96,
-            ) -> Self {
-                Self(value)
-            }
-            /// Return the underlying value.
-            #[inline]
-            pub const fn into_underlying(
-                self,
-            ) -> alloy::sol_types::private::primitives::aliases::U96 {
-                self.0
-            }
-            /// Return the single encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode(&self.0)
-            }
-            /// Return the packed encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode_packed(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode_packed(&self.0)
-            }
-        }
-        #[automatically_derived]
-        impl From<alloy::sol_types::private::primitives::aliases::U96> for Balance {
-            fn from(value: alloy::sol_types::private::primitives::aliases::U96) -> Self {
-                Self::from_underlying(value)
-            }
-        }
-        #[automatically_derived]
-        impl From<Balance> for alloy::sol_types::private::primitives::aliases::U96 {
-            fn from(value: Balance) -> Self {
-                value.into_underlying()
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolType for Balance {
-            type RustType = alloy::sol_types::private::primitives::aliases::U96;
-            type Token<'a> = <alloy::sol_types::sol_data::Uint<
-                96,
-            > as alloy_sol_types::SolType>::Token<'a>;
-            const SOL_NAME: &'static str = Self::NAME;
-            const ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                96,
-            > as alloy_sol_types::SolType>::ENCODED_SIZE;
-            const PACKED_ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                96,
-            > as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE;
-            #[inline]
-            fn valid_token(token: &Self::Token<'_>) -> bool {
-                Self::type_check(token).is_ok()
-            }
-            #[inline]
-            fn type_check(token: &Self::Token<'_>) -> alloy_sol_types::Result<()> {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::SolType>::type_check(token)
-            }
-            #[inline]
-            fn detokenize(token: Self::Token<'_>) -> Self::RustType {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::SolType>::detokenize(token)
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::EventTopic for Balance {
-            #[inline]
-            fn topic_preimage_length(rust: &Self::RustType) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::EventTopic>::topic_preimage_length(rust)
-            }
-            #[inline]
-            fn encode_topic_preimage(
-                rust: &Self::RustType,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(rust, out)
-            }
-            #[inline]
-            fn encode_topic(
-                rust: &Self::RustType,
-            ) -> alloy_sol_types::abi::token::WordToken {
-                <alloy::sol_types::sol_data::Uint<
-                    96,
-                > as alloy_sol_types::EventTopic>::encode_topic(rust)
-            }
-        }
-    };
-    #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct TicketIndex(alloy::sol_types::private::primitives::aliases::U48);
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[automatically_derived]
-        impl alloy_sol_types::private::SolTypeValue<TicketIndex>
-        for alloy::sol_types::private::primitives::aliases::U48 {
-            #[inline]
-            fn stv_to_tokens(
-                &self,
-            ) -> <alloy::sol_types::sol_data::Uint<
-                48,
-            > as alloy_sol_types::SolType>::Token<'_> {
-                alloy_sol_types::private::SolTypeValue::<
-                    alloy::sol_types::sol_data::Uint<48>,
-                >::stv_to_tokens(self)
-            }
-            #[inline]
-            fn stv_eip712_data_word(&self) -> alloy_sol_types::Word {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::SolType>::tokenize(self)
-                    .0
-            }
-            #[inline]
-            fn stv_abi_encode_packed_to(
-                &self,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::SolType>::abi_encode_packed_to(self, out)
-            }
-            #[inline]
-            fn stv_abi_packed_encoded_size(&self) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::SolType>::abi_encoded_size(self)
-            }
-        }
-        #[automatically_derived]
-        impl TicketIndex {
-            /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
-            /// Convert from the underlying value type.
-            #[inline]
-            pub const fn from_underlying(
-                value: alloy::sol_types::private::primitives::aliases::U48,
-            ) -> Self {
-                Self(value)
-            }
-            /// Return the underlying value.
-            #[inline]
-            pub const fn into_underlying(
-                self,
-            ) -> alloy::sol_types::private::primitives::aliases::U48 {
-                self.0
-            }
-            /// Return the single encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode(&self.0)
-            }
-            /// Return the packed encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode_packed(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode_packed(&self.0)
-            }
-        }
-        #[automatically_derived]
-        impl From<alloy::sol_types::private::primitives::aliases::U48> for TicketIndex {
-            fn from(value: alloy::sol_types::private::primitives::aliases::U48) -> Self {
-                Self::from_underlying(value)
-            }
-        }
-        #[automatically_derived]
-        impl From<TicketIndex> for alloy::sol_types::private::primitives::aliases::U48 {
-            fn from(value: TicketIndex) -> Self {
-                value.into_underlying()
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolType for TicketIndex {
-            type RustType = alloy::sol_types::private::primitives::aliases::U48;
-            type Token<'a> = <alloy::sol_types::sol_data::Uint<
-                48,
-            > as alloy_sol_types::SolType>::Token<'a>;
-            const SOL_NAME: &'static str = Self::NAME;
-            const ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                48,
-            > as alloy_sol_types::SolType>::ENCODED_SIZE;
-            const PACKED_ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                48,
-            > as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE;
-            #[inline]
-            fn valid_token(token: &Self::Token<'_>) -> bool {
-                Self::type_check(token).is_ok()
-            }
-            #[inline]
-            fn type_check(token: &Self::Token<'_>) -> alloy_sol_types::Result<()> {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::SolType>::type_check(token)
-            }
-            #[inline]
-            fn detokenize(token: Self::Token<'_>) -> Self::RustType {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::SolType>::detokenize(token)
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::EventTopic for TicketIndex {
-            #[inline]
-            fn topic_preimage_length(rust: &Self::RustType) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::EventTopic>::topic_preimage_length(rust)
-            }
-            #[inline]
-            fn encode_topic_preimage(
-                rust: &Self::RustType,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(rust, out)
-            }
-            #[inline]
-            fn encode_topic(
-                rust: &Self::RustType,
-            ) -> alloy_sol_types::abi::token::WordToken {
-                <alloy::sol_types::sol_data::Uint<
-                    48,
-                > as alloy_sol_types::EventTopic>::encode_topic(rust)
-            }
-        }
-    };
-    #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct Timestamp(u32);
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[automatically_derived]
-        impl alloy_sol_types::private::SolTypeValue<Timestamp> for u32 {
-            #[inline]
-            fn stv_to_tokens(
-                &self,
-            ) -> <alloy::sol_types::sol_data::Uint<
-                32,
-            > as alloy_sol_types::SolType>::Token<'_> {
-                alloy_sol_types::private::SolTypeValue::<
-                    alloy::sol_types::sol_data::Uint<32>,
-                >::stv_to_tokens(self)
-            }
-            #[inline]
-            fn stv_eip712_data_word(&self) -> alloy_sol_types::Word {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::SolType>::tokenize(self)
-                    .0
-            }
-            #[inline]
-            fn stv_abi_encode_packed_to(
-                &self,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::SolType>::abi_encode_packed_to(self, out)
-            }
-            #[inline]
-            fn stv_abi_packed_encoded_size(&self) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::SolType>::abi_encoded_size(self)
-            }
-        }
-        #[automatically_derived]
-        impl Timestamp {
-            /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
-            /// Convert from the underlying value type.
-            #[inline]
-            pub const fn from_underlying(value: u32) -> Self {
-                Self(value)
-            }
-            /// Return the underlying value.
-            #[inline]
-            pub const fn into_underlying(self) -> u32 {
-                self.0
-            }
-            /// Return the single encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode(&self.0)
-            }
-            /// Return the packed encoding of this value, delegating to the
-            /// underlying type.
-            #[inline]
-            pub fn abi_encode_packed(&self) -> alloy_sol_types::private::Vec<u8> {
-                <Self as alloy_sol_types::SolType>::abi_encode_packed(&self.0)
-            }
-        }
-        #[automatically_derived]
-        impl From<u32> for Timestamp {
-            fn from(value: u32) -> Self {
-                Self::from_underlying(value)
-            }
-        }
-        #[automatically_derived]
-        impl From<Timestamp> for u32 {
-            fn from(value: Timestamp) -> Self {
-                value.into_underlying()
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolType for Timestamp {
-            type RustType = u32;
-            type Token<'a> = <alloy::sol_types::sol_data::Uint<
-                32,
-            > as alloy_sol_types::SolType>::Token<'a>;
-            const SOL_NAME: &'static str = Self::NAME;
-            const ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                32,
-            > as alloy_sol_types::SolType>::ENCODED_SIZE;
-            const PACKED_ENCODED_SIZE: Option<usize> = <alloy::sol_types::sol_data::Uint<
-                32,
-            > as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE;
-            #[inline]
-            fn valid_token(token: &Self::Token<'_>) -> bool {
-                Self::type_check(token).is_ok()
-            }
-            #[inline]
-            fn type_check(token: &Self::Token<'_>) -> alloy_sol_types::Result<()> {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::SolType>::type_check(token)
-            }
-            #[inline]
-            fn detokenize(token: Self::Token<'_>) -> Self::RustType {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::SolType>::detokenize(token)
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::EventTopic for Timestamp {
-            #[inline]
-            fn topic_preimage_length(rust: &Self::RustType) -> usize {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::EventTopic>::topic_preimage_length(rust)
-            }
-            #[inline]
-            fn encode_topic_preimage(
-                rust: &Self::RustType,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(rust, out)
-            }
-            #[inline]
-            fn encode_topic(
-                rust: &Self::RustType,
-            ) -> alloy_sol_types::abi::token::WordToken {
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::EventTopic>::encode_topic(rust)
-            }
-        }
-    };
-    use alloy::contract as alloy_contract;
-    /**Creates a new wrapper around an on-chain [`HoprChannels`](self) contract instance.
-
-See the [wrapper's documentation](`HoprChannelsInstance`) for more details.*/
-    #[inline]
-    pub const fn new<
-        P: alloy_contract::private::Provider<N>,
-        N: alloy_contract::private::Network,
-    >(
-        address: alloy_sol_types::private::Address,
-        provider: P,
-    ) -> HoprChannelsInstance<P, N> {
-        HoprChannelsInstance::<P, N>::new(address, provider)
-    }
-    /**A [`HoprChannels`](self) instance.
-
-Contains type-safe methods for interacting with an on-chain instance of the
-[`HoprChannels`](self) contract located at a given `address`, using a given
-provider `P`.
-
-If the contract bytecode is available (see the [`sol!`](alloy_sol_types::sol!)
-documentation on how to provide it), the `deploy` and `deploy_builder` methods can
-be used to deploy a new instance of the contract.
-
-See the [module-level documentation](self) for all the available methods.*/
-    #[derive(Clone)]
-    pub struct HoprChannelsInstance<P, N = alloy_contract::private::Ethereum> {
-        address: alloy_sol_types::private::Address,
-        provider: P,
-        _network: ::core::marker::PhantomData<N>,
-    }
-    #[automatically_derived]
-    impl<P, N> ::core::fmt::Debug for HoprChannelsInstance<P, N> {
-        #[inline]
-        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple("HoprChannelsInstance").field(&self.address).finish()
-        }
-    }
-    /// Instantiation and getters/setters.
-    #[automatically_derived]
-    impl<
-        P: alloy_contract::private::Provider<N>,
-        N: alloy_contract::private::Network,
-    > HoprChannelsInstance<P, N> {
-        /**Creates a new wrapper around an on-chain [`HoprChannels`](self) contract instance.
-
-See the [wrapper's documentation](`HoprChannelsInstance`) for more details.*/
-        #[inline]
-        pub const fn new(
-            address: alloy_sol_types::private::Address,
-            provider: P,
-        ) -> Self {
-            Self {
-                address,
-                provider,
-                _network: ::core::marker::PhantomData,
-            }
-        }
-        /// Returns a reference to the address.
-        #[inline]
-        pub const fn address(&self) -> &alloy_sol_types::private::Address {
-            &self.address
-        }
-        /// Sets the address.
-        #[inline]
-        pub fn set_address(&mut self, address: alloy_sol_types::private::Address) {
-            self.address = address;
-        }
-        /// Sets the address and returns `self`.
-        pub fn at(mut self, address: alloy_sol_types::private::Address) -> Self {
-            self.set_address(address);
-            self
-        }
-        /// Returns a reference to the provider.
-        #[inline]
-        pub const fn provider(&self) -> &P {
-            &self.provider
-        }
-    }
-    impl<P: ::core::clone::Clone, N> HoprChannelsInstance<&P, N> {
-        /// Clones the provider and returns a new instance with the cloned provider.
-        #[inline]
-        pub fn with_cloned_provider(self) -> HoprChannelsInstance<P, N> {
-            HoprChannelsInstance {
-                address: self.address,
-                provider: ::core::clone::Clone::clone(&self.provider),
-                _network: ::core::marker::PhantomData,
-            }
-        }
-    }
-    /// Function calls.
-    #[automatically_derived]
-    impl<
-        P: alloy_contract::private::Provider<N>,
-        N: alloy_contract::private::Network,
-    > HoprChannelsInstance<P, N> {
-        /// Creates a new call builder using this contract instance's provider and address.
-        ///
-        /// Note that the call can be any function call, not just those defined in this
-        /// contract. Prefer using the other methods for building type-safe contract calls.
-        pub fn call_builder<C: alloy_sol_types::SolCall>(
-            &self,
-            call: &C,
-        ) -> alloy_contract::SolCallBuilder<&P, C, N> {
-            alloy_contract::SolCallBuilder::new_sol(&self.provider, &self.address, call)
-        }
-    }
-    /// Event filters.
-    #[automatically_derived]
-    impl<
-        P: alloy_contract::private::Provider<N>,
-        N: alloy_contract::private::Network,
-    > HoprChannelsInstance<P, N> {
-        /// Creates a new event filter using this contract instance's provider and address.
-        ///
-        /// Note that the type can be any event, not just those defined in this contract.
-        /// Prefer using the other methods for building type-safe event filters.
-        pub fn event_filter<E: alloy_sol_types::SolEvent>(
-            &self,
-        ) -> alloy_contract::Event<&P, E, N> {
-            alloy_contract::Event::new_sol(&self.provider, &self.address)
-        }
-    }
-}
 /**
 
 Generated by the following Solidity interface...
 ```solidity
-library HoprChannels {
-    type Balance is uint96;
-    type TicketIndex is uint48;
-    type Timestamp is uint32;
-}
-
 interface HoprChannelsEvents {
-    event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance newBalance);
-    event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance newBalance);
-    event ChannelClosed(bytes32 indexed channelId);
-    event ChannelOpened(address indexed source, address indexed destination);
+    event ChannelBalanceDecreased(bytes32 indexed channelId, bytes32 channel);
+    event ChannelBalanceIncreased(bytes32 indexed channelId, bytes32 channel);
+    event ChannelClosed(bytes32 indexed channelId, bytes32 channel);
+    event ChannelOpened(bytes32 indexed channelId, address indexed source, address indexed destination, bytes32 channel);
     event DomainSeparatorUpdated(bytes32 indexed domainSeparator);
-    event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Timestamp closureTime);
-    event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTicketIndex);
+    event OutgoingChannelClosureInitiated(bytes32 indexed channelId, bytes32 channel);
+    event TicketRedeemed(bytes32 indexed channelId, bytes32 channel);
 }
 ```
 
@@ -601,10 +27,10 @@ interface HoprChannelsEvents {
         "internalType": "bytes32"
       },
       {
-        "name": "newBalance",
-        "type": "uint96",
+        "name": "channel",
+        "type": "bytes32",
         "indexed": false,
-        "internalType": "HoprChannels.Balance"
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -620,10 +46,10 @@ interface HoprChannelsEvents {
         "internalType": "bytes32"
       },
       {
-        "name": "newBalance",
-        "type": "uint96",
+        "name": "channel",
+        "type": "bytes32",
         "indexed": false,
-        "internalType": "HoprChannels.Balance"
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -637,6 +63,12 @@ interface HoprChannelsEvents {
         "type": "bytes32",
         "indexed": true,
         "internalType": "bytes32"
+      },
+      {
+        "name": "channel",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -645,6 +77,12 @@ interface HoprChannelsEvents {
     "type": "event",
     "name": "ChannelOpened",
     "inputs": [
+      {
+        "name": "channelId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
       {
         "name": "source",
         "type": "address",
@@ -656,6 +94,12 @@ interface HoprChannelsEvents {
         "type": "address",
         "indexed": true,
         "internalType": "address"
+      },
+      {
+        "name": "channel",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -684,10 +128,10 @@ interface HoprChannelsEvents {
         "internalType": "bytes32"
       },
       {
-        "name": "closureTime",
-        "type": "uint32",
+        "name": "channel",
+        "type": "bytes32",
         "indexed": false,
-        "internalType": "HoprChannels.Timestamp"
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -703,10 +147,10 @@ interface HoprChannelsEvents {
         "internalType": "bytes32"
       },
       {
-        "name": "newTicketIndex",
-        "type": "uint48",
+        "name": "channel",
+        "type": "bytes32",
         "indexed": false,
-        "internalType": "HoprChannels.TicketIndex"
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false
@@ -745,9 +189,9 @@ pub mod HoprChannelsEvents {
     );
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `ChannelBalanceDecreased(bytes32,uint96)` and selector `0x22e2a422a8860656a3a33cfa1daf771e76798ce5649747957235025de12e0b24`.
+    /**Event with signature `ChannelBalanceDecreased(bytes32,bytes32)` and selector `0x0c4672f14b63bb6354fac475ee498055a2784455673af224717b9770fd68d8d1`.
 ```solidity
-event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance newBalance);
+event ChannelBalanceDecreased(bytes32 indexed channelId, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -760,7 +204,7 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
         #[allow(missing_docs)]
         pub channelId: alloy::sol_types::private::FixedBytes<32>,
         #[allow(missing_docs)]
-        pub newBalance: <HoprChannels::Balance as alloy::sol_types::SolType>::RustType,
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -772,7 +216,7 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for ChannelBalanceDecreased {
-            type DataTuple<'a> = (HoprChannels::Balance,);
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
@@ -780,11 +224,11 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
                 alloy_sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::FixedBytes<32>,
             );
-            const SIGNATURE: &'static str = "ChannelBalanceDecreased(bytes32,uint96)";
+            const SIGNATURE: &'static str = "ChannelBalanceDecreased(bytes32,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                34u8, 226u8, 164u8, 34u8, 168u8, 134u8, 6u8, 86u8, 163u8, 163u8, 60u8,
-                250u8, 29u8, 175u8, 119u8, 30u8, 118u8, 121u8, 140u8, 229u8, 100u8,
-                151u8, 71u8, 149u8, 114u8, 53u8, 2u8, 93u8, 225u8, 46u8, 11u8, 36u8,
+                12u8, 70u8, 114u8, 241u8, 75u8, 99u8, 187u8, 99u8, 84u8, 250u8, 196u8,
+                117u8, 238u8, 73u8, 128u8, 85u8, 162u8, 120u8, 68u8, 85u8, 103u8, 58u8,
+                242u8, 36u8, 113u8, 123u8, 151u8, 112u8, 253u8, 104u8, 216u8, 209u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -795,7 +239,7 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
             ) -> Self {
                 Self {
                     channelId: topics.1,
-                    newBalance: data.0,
+                    channel: data.0,
                 }
             }
             #[inline]
@@ -816,9 +260,9 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
                 (
-                    <HoprChannels::Balance as alloy_sol_types::SolType>::tokenize(
-                        &self.newBalance,
-                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
                 )
             }
             #[inline]
@@ -863,9 +307,9 @@ event ChannelBalanceDecreased(bytes32 indexed channelId, HoprChannels.Balance ne
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `ChannelBalanceIncreased(bytes32,uint96)` and selector `0x5fa17246d3a5d68d42baa94cde33042180b783a399c02bf63ac2076e0f708738`.
+    /**Event with signature `ChannelBalanceIncreased(bytes32,bytes32)` and selector `0xec21547ca1e22edc3f9b4f4e0da94638b5b94dcb18d52dcc072abe5801a8013c`.
 ```solidity
-event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance newBalance);
+event ChannelBalanceIncreased(bytes32 indexed channelId, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -878,7 +322,7 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
         #[allow(missing_docs)]
         pub channelId: alloy::sol_types::private::FixedBytes<32>,
         #[allow(missing_docs)]
-        pub newBalance: <HoprChannels::Balance as alloy::sol_types::SolType>::RustType,
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -890,7 +334,7 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for ChannelBalanceIncreased {
-            type DataTuple<'a> = (HoprChannels::Balance,);
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
@@ -898,11 +342,11 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
                 alloy_sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::FixedBytes<32>,
             );
-            const SIGNATURE: &'static str = "ChannelBalanceIncreased(bytes32,uint96)";
+            const SIGNATURE: &'static str = "ChannelBalanceIncreased(bytes32,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                95u8, 161u8, 114u8, 70u8, 211u8, 165u8, 214u8, 141u8, 66u8, 186u8, 169u8,
-                76u8, 222u8, 51u8, 4u8, 33u8, 128u8, 183u8, 131u8, 163u8, 153u8, 192u8,
-                43u8, 246u8, 58u8, 194u8, 7u8, 110u8, 15u8, 112u8, 135u8, 56u8,
+                236u8, 33u8, 84u8, 124u8, 161u8, 226u8, 46u8, 220u8, 63u8, 155u8, 79u8,
+                78u8, 13u8, 169u8, 70u8, 56u8, 181u8, 185u8, 77u8, 203u8, 24u8, 213u8,
+                45u8, 204u8, 7u8, 42u8, 190u8, 88u8, 1u8, 168u8, 1u8, 60u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -913,7 +357,7 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
             ) -> Self {
                 Self {
                     channelId: topics.1,
-                    newBalance: data.0,
+                    channel: data.0,
                 }
             }
             #[inline]
@@ -934,9 +378,9 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
                 (
-                    <HoprChannels::Balance as alloy_sol_types::SolType>::tokenize(
-                        &self.newBalance,
-                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
                 )
             }
             #[inline]
@@ -981,9 +425,9 @@ event ChannelBalanceIncreased(bytes32 indexed channelId, HoprChannels.Balance ne
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `ChannelClosed(bytes32)` and selector `0xceeab2eef998c17fe96f30f83fbf3c55fc5047f6e40c55a0cf72d236e9d2ba72`.
+    /**Event with signature `ChannelClosed(bytes32,bytes32)` and selector `0x197bba684a6afb7ba24f1d265605414b1d0051a6e295d6ff7b6e78e870d7a7f0`.
 ```solidity
-event ChannelClosed(bytes32 indexed channelId);
+event ChannelClosed(bytes32 indexed channelId, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -995,6 +439,8 @@ event ChannelClosed(bytes32 indexed channelId);
     pub struct ChannelClosed {
         #[allow(missing_docs)]
         pub channelId: alloy::sol_types::private::FixedBytes<32>,
+        #[allow(missing_docs)]
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -1006,7 +452,7 @@ event ChannelClosed(bytes32 indexed channelId);
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for ChannelClosed {
-            type DataTuple<'a> = ();
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
@@ -1014,11 +460,11 @@ event ChannelClosed(bytes32 indexed channelId);
                 alloy_sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::FixedBytes<32>,
             );
-            const SIGNATURE: &'static str = "ChannelClosed(bytes32)";
+            const SIGNATURE: &'static str = "ChannelClosed(bytes32,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                206u8, 234u8, 178u8, 238u8, 249u8, 152u8, 193u8, 127u8, 233u8, 111u8,
-                48u8, 248u8, 63u8, 191u8, 60u8, 85u8, 252u8, 80u8, 71u8, 246u8, 228u8,
-                12u8, 85u8, 160u8, 207u8, 114u8, 210u8, 54u8, 233u8, 210u8, 186u8, 114u8,
+                25u8, 123u8, 186u8, 104u8, 74u8, 106u8, 251u8, 123u8, 162u8, 79u8, 29u8,
+                38u8, 86u8, 5u8, 65u8, 75u8, 29u8, 0u8, 81u8, 166u8, 226u8, 149u8, 214u8,
+                255u8, 123u8, 110u8, 120u8, 232u8, 112u8, 215u8, 167u8, 240u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -1027,7 +473,10 @@ event ChannelClosed(bytes32 indexed channelId);
                 topics: <Self::TopicList as alloy_sol_types::SolType>::RustType,
                 data: <Self::DataTuple<'_> as alloy_sol_types::SolType>::RustType,
             ) -> Self {
-                Self { channelId: topics.1 }
+                Self {
+                    channelId: topics.1,
+                    channel: data.0,
+                }
             }
             #[inline]
             fn check_signature(
@@ -1046,7 +495,11 @@ event ChannelClosed(bytes32 indexed channelId);
             }
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
-                ()
+                (
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
+                )
             }
             #[inline]
             fn topics(&self) -> <Self::TopicList as alloy_sol_types::SolType>::RustType {
@@ -1088,9 +541,9 @@ event ChannelClosed(bytes32 indexed channelId);
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `ChannelOpened(address,address)` and selector `0xdd90f938230335e59dc925c57ecb0e27a28c2d87356e31f00cd5554abd6c1b2d`.
+    /**Event with signature `ChannelOpened(bytes32,address,address,bytes32)` and selector `0x004c0177ad15bb302b4419e9ac96065d6f436e0f61972f97bbe272834c40f934`.
 ```solidity
-event ChannelOpened(address indexed source, address indexed destination);
+event ChannelOpened(bytes32 indexed channelId, address indexed source, address indexed destination, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -1101,9 +554,13 @@ event ChannelOpened(address indexed source, address indexed destination);
     #[derive(Clone)]
     pub struct ChannelOpened {
         #[allow(missing_docs)]
+        pub channelId: alloy::sol_types::private::FixedBytes<32>,
+        #[allow(missing_docs)]
         pub source: alloy::sol_types::private::Address,
         #[allow(missing_docs)]
         pub destination: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -1115,20 +572,21 @@ event ChannelOpened(address indexed source, address indexed destination);
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for ChannelOpened {
-            type DataTuple<'a> = ();
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
             type TopicList = (
                 alloy_sol_types::sol_data::FixedBytes<32>,
+                alloy::sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
             );
-            const SIGNATURE: &'static str = "ChannelOpened(address,address)";
+            const SIGNATURE: &'static str = "ChannelOpened(bytes32,address,address,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                221u8, 144u8, 249u8, 56u8, 35u8, 3u8, 53u8, 229u8, 157u8, 201u8, 37u8,
-                197u8, 126u8, 203u8, 14u8, 39u8, 162u8, 140u8, 45u8, 135u8, 53u8, 110u8,
-                49u8, 240u8, 12u8, 213u8, 85u8, 74u8, 189u8, 108u8, 27u8, 45u8,
+                0u8, 76u8, 1u8, 119u8, 173u8, 21u8, 187u8, 48u8, 43u8, 68u8, 25u8, 233u8,
+                172u8, 150u8, 6u8, 93u8, 111u8, 67u8, 110u8, 15u8, 97u8, 151u8, 47u8,
+                151u8, 187u8, 226u8, 114u8, 131u8, 76u8, 64u8, 249u8, 52u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -1138,8 +596,10 @@ event ChannelOpened(address indexed source, address indexed destination);
                 data: <Self::DataTuple<'_> as alloy_sol_types::SolType>::RustType,
             ) -> Self {
                 Self {
-                    source: topics.1,
-                    destination: topics.2,
+                    channelId: topics.1,
+                    source: topics.2,
+                    destination: topics.3,
+                    channel: data.0,
                 }
             }
             #[inline]
@@ -1159,12 +619,17 @@ event ChannelOpened(address indexed source, address indexed destination);
             }
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
-                ()
+                (
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
+                )
             }
             #[inline]
             fn topics(&self) -> <Self::TopicList as alloy_sol_types::SolType>::RustType {
                 (
                     Self::SIGNATURE_HASH.into(),
+                    self.channelId.clone(),
                     self.source.clone(),
                     self.destination.clone(),
                 )
@@ -1180,10 +645,13 @@ event ChannelOpened(address indexed source, address indexed destination);
                 out[0usize] = alloy_sol_types::abi::token::WordToken(
                     Self::SIGNATURE_HASH,
                 );
-                out[1usize] = <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic(
+                out[1usize] = <alloy::sol_types::sol_data::FixedBytes<
+                    32,
+                > as alloy_sol_types::EventTopic>::encode_topic(&self.channelId);
+                out[2usize] = <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic(
                     &self.source,
                 );
-                out[2usize] = <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic(
+                out[3usize] = <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic(
                     &self.destination,
                 );
                 Ok(())
@@ -1315,9 +783,9 @@ event DomainSeparatorUpdated(bytes32 indexed domainSeparator);
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `OutgoingChannelClosureInitiated(bytes32,uint32)` and selector `0x07b5c950597fc3bed92e2ad37fa84f701655acb372982e486f5fad3607f04a5c`.
+    /**Event with signature `OutgoingChannelClosureInitiated(bytes32,bytes32)` and selector `0x0061e8037197b4d91cf8add2a0736613459081f236d1c8ab58549ebbc330b4e3`.
 ```solidity
-event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Timestamp closureTime);
+event OutgoingChannelClosureInitiated(bytes32 indexed channelId, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -1330,7 +798,7 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
         #[allow(missing_docs)]
         pub channelId: alloy::sol_types::private::FixedBytes<32>,
         #[allow(missing_docs)]
-        pub closureTime: <HoprChannels::Timestamp as alloy::sol_types::SolType>::RustType,
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -1342,7 +810,7 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for OutgoingChannelClosureInitiated {
-            type DataTuple<'a> = (HoprChannels::Timestamp,);
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
@@ -1350,11 +818,11 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
                 alloy_sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::FixedBytes<32>,
             );
-            const SIGNATURE: &'static str = "OutgoingChannelClosureInitiated(bytes32,uint32)";
+            const SIGNATURE: &'static str = "OutgoingChannelClosureInitiated(bytes32,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                7u8, 181u8, 201u8, 80u8, 89u8, 127u8, 195u8, 190u8, 217u8, 46u8, 42u8,
-                211u8, 127u8, 168u8, 79u8, 112u8, 22u8, 85u8, 172u8, 179u8, 114u8, 152u8,
-                46u8, 72u8, 111u8, 95u8, 173u8, 54u8, 7u8, 240u8, 74u8, 92u8,
+                0u8, 97u8, 232u8, 3u8, 113u8, 151u8, 180u8, 217u8, 28u8, 248u8, 173u8,
+                210u8, 160u8, 115u8, 102u8, 19u8, 69u8, 144u8, 129u8, 242u8, 54u8, 209u8,
+                200u8, 171u8, 88u8, 84u8, 158u8, 187u8, 195u8, 48u8, 180u8, 227u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -1365,7 +833,7 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
             ) -> Self {
                 Self {
                     channelId: topics.1,
-                    closureTime: data.0,
+                    channel: data.0,
                 }
             }
             #[inline]
@@ -1386,9 +854,9 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
                 (
-                    <HoprChannels::Timestamp as alloy_sol_types::SolType>::tokenize(
-                        &self.closureTime,
-                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
                 )
             }
             #[inline]
@@ -1434,9 +902,9 @@ event OutgoingChannelClosureInitiated(bytes32 indexed channelId, HoprChannels.Ti
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `TicketRedeemed(bytes32,uint48)` and selector `0x7165e2ebc7ce35cc98cb7666f9945b3617f3f36326b76d18937ba5fecf18739a`.
+    /**Event with signature `TicketRedeemed(bytes32,bytes32)` and selector `0xed22f34d154d253a7f6fd477439be59080a1554aa0d0642686d64223ab544c8a`.
 ```solidity
-event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTicketIndex);
+event TicketRedeemed(bytes32 indexed channelId, bytes32 channel);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -1449,7 +917,7 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
         #[allow(missing_docs)]
         pub channelId: alloy::sol_types::private::FixedBytes<32>,
         #[allow(missing_docs)]
-        pub newTicketIndex: <HoprChannels::TicketIndex as alloy::sol_types::SolType>::RustType,
+        pub channel: alloy::sol_types::private::FixedBytes<32>,
     }
     #[allow(
         non_camel_case_types,
@@ -1461,7 +929,7 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
         use alloy::sol_types as alloy_sol_types;
         #[automatically_derived]
         impl alloy_sol_types::SolEvent for TicketRedeemed {
-            type DataTuple<'a> = (HoprChannels::TicketIndex,);
+            type DataTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<32>,);
             type DataToken<'a> = <Self::DataTuple<
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
@@ -1469,11 +937,11 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
                 alloy_sol_types::sol_data::FixedBytes<32>,
                 alloy::sol_types::sol_data::FixedBytes<32>,
             );
-            const SIGNATURE: &'static str = "TicketRedeemed(bytes32,uint48)";
+            const SIGNATURE: &'static str = "TicketRedeemed(bytes32,bytes32)";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                113u8, 101u8, 226u8, 235u8, 199u8, 206u8, 53u8, 204u8, 152u8, 203u8,
-                118u8, 102u8, 249u8, 148u8, 91u8, 54u8, 23u8, 243u8, 243u8, 99u8, 38u8,
-                183u8, 109u8, 24u8, 147u8, 123u8, 165u8, 254u8, 207u8, 24u8, 115u8, 154u8,
+                237u8, 34u8, 243u8, 77u8, 21u8, 77u8, 37u8, 58u8, 127u8, 111u8, 212u8,
+                119u8, 67u8, 155u8, 229u8, 144u8, 128u8, 161u8, 85u8, 74u8, 160u8, 208u8,
+                100u8, 38u8, 134u8, 214u8, 66u8, 35u8, 171u8, 84u8, 76u8, 138u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -1484,7 +952,7 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
             ) -> Self {
                 Self {
                     channelId: topics.1,
-                    newTicketIndex: data.0,
+                    channel: data.0,
                 }
             }
             #[inline]
@@ -1505,9 +973,9 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
             #[inline]
             fn tokenize_body(&self) -> Self::DataToken<'_> {
                 (
-                    <HoprChannels::TicketIndex as alloy_sol_types::SolType>::tokenize(
-                        &self.newTicketIndex,
-                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.channel),
                 )
             }
             #[inline]
@@ -1549,6 +1017,7 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
         }
     };
     ///Container for all the [`HoprChannelsEvents`](self) events.
+    #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprChannelsEventsEvents {
@@ -1567,7 +1036,6 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
         #[allow(missing_docs)]
         TicketRedeemed(TicketRedeemed),
     }
-    #[automatically_derived]
     impl HoprChannelsEventsEvents {
         /// All the selectors of this enum.
         ///
@@ -1577,24 +1045,24 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
         /// Prefer using `SolInterface` methods instead.
         pub const SELECTORS: &'static [[u8; 32usize]] = &[
             [
-                7u8, 181u8, 201u8, 80u8, 89u8, 127u8, 195u8, 190u8, 217u8, 46u8, 42u8,
-                211u8, 127u8, 168u8, 79u8, 112u8, 22u8, 85u8, 172u8, 179u8, 114u8, 152u8,
-                46u8, 72u8, 111u8, 95u8, 173u8, 54u8, 7u8, 240u8, 74u8, 92u8,
+                0u8, 76u8, 1u8, 119u8, 173u8, 21u8, 187u8, 48u8, 43u8, 68u8, 25u8, 233u8,
+                172u8, 150u8, 6u8, 93u8, 111u8, 67u8, 110u8, 15u8, 97u8, 151u8, 47u8,
+                151u8, 187u8, 226u8, 114u8, 131u8, 76u8, 64u8, 249u8, 52u8,
             ],
             [
-                34u8, 226u8, 164u8, 34u8, 168u8, 134u8, 6u8, 86u8, 163u8, 163u8, 60u8,
-                250u8, 29u8, 175u8, 119u8, 30u8, 118u8, 121u8, 140u8, 229u8, 100u8,
-                151u8, 71u8, 149u8, 114u8, 53u8, 2u8, 93u8, 225u8, 46u8, 11u8, 36u8,
+                0u8, 97u8, 232u8, 3u8, 113u8, 151u8, 180u8, 217u8, 28u8, 248u8, 173u8,
+                210u8, 160u8, 115u8, 102u8, 19u8, 69u8, 144u8, 129u8, 242u8, 54u8, 209u8,
+                200u8, 171u8, 88u8, 84u8, 158u8, 187u8, 195u8, 48u8, 180u8, 227u8,
             ],
             [
-                95u8, 161u8, 114u8, 70u8, 211u8, 165u8, 214u8, 141u8, 66u8, 186u8, 169u8,
-                76u8, 222u8, 51u8, 4u8, 33u8, 128u8, 183u8, 131u8, 163u8, 153u8, 192u8,
-                43u8, 246u8, 58u8, 194u8, 7u8, 110u8, 15u8, 112u8, 135u8, 56u8,
+                12u8, 70u8, 114u8, 241u8, 75u8, 99u8, 187u8, 99u8, 84u8, 250u8, 196u8,
+                117u8, 238u8, 73u8, 128u8, 85u8, 162u8, 120u8, 68u8, 85u8, 103u8, 58u8,
+                242u8, 36u8, 113u8, 123u8, 151u8, 112u8, 253u8, 104u8, 216u8, 209u8,
             ],
             [
-                113u8, 101u8, 226u8, 235u8, 199u8, 206u8, 53u8, 204u8, 152u8, 203u8,
-                118u8, 102u8, 249u8, 148u8, 91u8, 54u8, 23u8, 243u8, 243u8, 99u8, 38u8,
-                183u8, 109u8, 24u8, 147u8, 123u8, 165u8, 254u8, 207u8, 24u8, 115u8, 154u8,
+                25u8, 123u8, 186u8, 104u8, 74u8, 106u8, 251u8, 123u8, 162u8, 79u8, 29u8,
+                38u8, 86u8, 5u8, 65u8, 75u8, 29u8, 0u8, 81u8, 166u8, 226u8, 149u8, 214u8,
+                255u8, 123u8, 110u8, 120u8, 232u8, 112u8, 215u8, 167u8, 240u8,
             ],
             [
                 119u8, 31u8, 82u8, 64u8, 174u8, 95u8, 216u8, 167u8, 100u8, 13u8, 63u8,
@@ -1602,16 +1070,56 @@ event TicketRedeemed(bytes32 indexed channelId, HoprChannels.TicketIndex newTick
                 244u8, 100u8, 248u8, 80u8, 153u8, 70u8, 113u8, 118u8, 100u8, 197u8,
             ],
             [
-                206u8, 234u8, 178u8, 238u8, 249u8, 152u8, 193u8, 127u8, 233u8, 111u8,
-                48u8, 248u8, 63u8, 191u8, 60u8, 85u8, 252u8, 80u8, 71u8, 246u8, 228u8,
-                12u8, 85u8, 160u8, 207u8, 114u8, 210u8, 54u8, 233u8, 210u8, 186u8, 114u8,
+                236u8, 33u8, 84u8, 124u8, 161u8, 226u8, 46u8, 220u8, 63u8, 155u8, 79u8,
+                78u8, 13u8, 169u8, 70u8, 56u8, 181u8, 185u8, 77u8, 203u8, 24u8, 213u8,
+                45u8, 204u8, 7u8, 42u8, 190u8, 88u8, 1u8, 168u8, 1u8, 60u8,
             ],
             [
-                221u8, 144u8, 249u8, 56u8, 35u8, 3u8, 53u8, 229u8, 157u8, 201u8, 37u8,
-                197u8, 126u8, 203u8, 14u8, 39u8, 162u8, 140u8, 45u8, 135u8, 53u8, 110u8,
-                49u8, 240u8, 12u8, 213u8, 85u8, 74u8, 189u8, 108u8, 27u8, 45u8,
+                237u8, 34u8, 243u8, 77u8, 21u8, 77u8, 37u8, 58u8, 127u8, 111u8, 212u8,
+                119u8, 67u8, 155u8, 229u8, 144u8, 128u8, 161u8, 85u8, 74u8, 160u8, 208u8,
+                100u8, 38u8, 134u8, 214u8, 66u8, 35u8, 171u8, 84u8, 76u8, 138u8,
             ],
         ];
+        /// The names of the variants in the same order as `SELECTORS`.
+        pub const VARIANT_NAMES: &'static [&'static str] = &[
+            ::core::stringify!(ChannelOpened),
+            ::core::stringify!(OutgoingChannelClosureInitiated),
+            ::core::stringify!(ChannelBalanceDecreased),
+            ::core::stringify!(ChannelClosed),
+            ::core::stringify!(DomainSeparatorUpdated),
+            ::core::stringify!(ChannelBalanceIncreased),
+            ::core::stringify!(TicketRedeemed),
+        ];
+        /// The signatures in the same order as `SELECTORS`.
+        pub const SIGNATURES: &'static [&'static str] = &[
+            <ChannelOpened as alloy_sol_types::SolEvent>::SIGNATURE,
+            <OutgoingChannelClosureInitiated as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ChannelBalanceDecreased as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ChannelClosed as alloy_sol_types::SolEvent>::SIGNATURE,
+            <DomainSeparatorUpdated as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ChannelBalanceIncreased as alloy_sol_types::SolEvent>::SIGNATURE,
+            <TicketRedeemed as alloy_sol_types::SolEvent>::SIGNATURE,
+        ];
+        /// Returns the signature for the given selector, if known.
+        #[inline]
+        pub fn signature_by_selector(
+            selector: [u8; 32usize],
+        ) -> ::core::option::Option<&'static str> {
+            match Self::SELECTORS.binary_search(&selector) {
+                ::core::result::Result::Ok(idx) => {
+                    ::core::option::Option::Some(Self::SIGNATURES[idx])
+                }
+                ::core::result::Result::Err(_) => ::core::option::Option::None,
+            }
+        }
+        /// Returns the enum variant name for the given selector, if known.
+        #[inline]
+        pub fn name_by_selector(
+            selector: [u8; 32usize],
+        ) -> ::core::option::Option<&'static str> {
+            let sig = Self::signature_by_selector(selector)?;
+            sig.split_once('(').map(|(name, _)| name)
+        }
     }
     #[automatically_derived]
     impl alloy_sol_types::SolEventInterface for HoprChannelsEventsEvents {
@@ -1756,9 +1264,9 @@ See the [wrapper's documentation](`HoprChannelsEventsInstance`) for more details
         N: alloy_contract::private::Network,
     >(
         address: alloy_sol_types::private::Address,
-        provider: P,
+        __provider: P,
     ) -> HoprChannelsEventsInstance<P, N> {
-        HoprChannelsEventsInstance::<P, N>::new(address, provider)
+        HoprChannelsEventsInstance::<P, N>::new(address, __provider)
     }
     /**Deploys this contract using the given `provider` and constructor arguments, if any.
 
@@ -1770,11 +1278,11 @@ For more fine-grained control over the deployment process, use [`deploy_builder`
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
     >(
-        provider: P,
+        __provider: P,
     ) -> impl ::core::future::Future<
         Output = alloy_contract::Result<HoprChannelsEventsInstance<P, N>>,
     > {
-        HoprChannelsEventsInstance::<P, N>::deploy(provider)
+        HoprChannelsEventsInstance::<P, N>::deploy(__provider)
     }
     /**Creates a `RawCallBuilder` for deploying this contract using the given `provider`
 and constructor arguments, if any.
@@ -1785,8 +1293,8 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
     pub fn deploy_builder<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
-    >(provider: P) -> alloy_contract::RawCallBuilder<P, N> {
-        HoprChannelsEventsInstance::<P, N>::deploy_builder(provider)
+    >(__provider: P) -> alloy_contract::RawCallBuilder<P, N> {
+        HoprChannelsEventsInstance::<P, N>::deploy_builder(__provider)
     }
     /**A [`HoprChannelsEvents`](self) instance.
 
@@ -1813,7 +1321,6 @@ See the [module-level documentation](self) for all the available methods.*/
         }
     }
     /// Instantiation and getters/setters.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
@@ -1824,11 +1331,11 @@ See the [wrapper's documentation](`HoprChannelsEventsInstance`) for more details
         #[inline]
         pub const fn new(
             address: alloy_sol_types::private::Address,
-            provider: P,
+            __provider: P,
         ) -> Self {
             Self {
                 address,
-                provider,
+                provider: __provider,
                 _network: ::core::marker::PhantomData,
             }
         }
@@ -1839,9 +1346,9 @@ Returns a new instance of the contract, if the deployment was successful.
 For more fine-grained control over the deployment process, use [`deploy_builder`] instead.*/
         #[inline]
         pub async fn deploy(
-            provider: P,
+            __provider: P,
         ) -> alloy_contract::Result<HoprChannelsEventsInstance<P, N>> {
-            let call_builder = Self::deploy_builder(provider);
+            let call_builder = Self::deploy_builder(__provider);
             let contract_address = call_builder.deploy().await?;
             Ok(Self::new(contract_address, call_builder.provider))
         }
@@ -1851,9 +1358,9 @@ and constructor arguments, if any.
 This is a simple wrapper around creating a `RawCallBuilder` with the data set to
 the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         #[inline]
-        pub fn deploy_builder(provider: P) -> alloy_contract::RawCallBuilder<P, N> {
+        pub fn deploy_builder(__provider: P) -> alloy_contract::RawCallBuilder<P, N> {
             alloy_contract::RawCallBuilder::new_raw_deploy(
-                provider,
+                __provider,
                 ::core::clone::Clone::clone(&BYTECODE),
             )
         }
@@ -1890,7 +1397,6 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         }
     }
     /// Function calls.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
@@ -1907,7 +1413,6 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         }
     }
     /// Event filters.
-    #[automatically_derived]
     impl<
         P: alloy_contract::private::Provider<N>,
         N: alloy_contract::private::Network,
