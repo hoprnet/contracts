@@ -48,14 +48,14 @@ pub struct SingleNetworkContractAddresses {
     pub addresses: ContractAddresses,
 }
 
-#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NetworksWithContractAddresses {
     pub networks: BTreeMap<String, SingleNetworkContractAddresses>,
 }
 
 impl Default for NetworksWithContractAddresses {
     fn default() -> Self {
-        Self::from_str(include_str!(concat!(env!("OUT_DIR"), "/contracts-addresses.json")))
+        Self::from_str(CONTRACTS_ADDRESSES_FILE_CONTENT)
             .expect("bundled public contracts addresses should be always convertible")
     }
 }
@@ -65,12 +65,6 @@ impl FromStr for NetworksWithContractAddresses {
 
     fn from_str(data: &str) -> std::result::Result<Self, Self::Err> {
         serde_json::from_str::<NetworksWithContractAddresses>(data)
-    }
-}
-
-impl std::cmp::PartialEq for NetworksWithContractAddresses {
-    fn eq(&self, other: &Self) -> bool {
-        Vec::from_iter(self.networks.clone()) == Vec::from_iter(other.networks.clone())
     }
 }
 
