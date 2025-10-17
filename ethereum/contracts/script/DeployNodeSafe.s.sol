@@ -66,7 +66,7 @@ contract DeployNodeSafeScript is Script, Test, NetworkConfig {
         emit log_named_bytes32("defaultChannelsTarget", bytes32(Target.unwrap(defaultChannelsTarget)));
 
         (bool success, bytes memory returnedData) =
-            currentNetworkDetail.addresses.nodeStakeV2FactoryAddress.call(cloneCallData);
+            currentNetworkDetail.addresses.nodeStakeFactoryAddress.call(cloneCallData);
         require(success, "call node stake factory must succeed");
 
         (address module, address safe) = abi.decode(returnedData, (address, address));

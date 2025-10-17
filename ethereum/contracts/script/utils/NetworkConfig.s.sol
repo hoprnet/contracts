@@ -25,7 +25,7 @@ contract NetworkConfig is Script {
         address networkRegistryProxyContractAddress;
         address nodeSafeMigrationAddress;
         address nodeSafeRegistryAddress;
-        address nodeStakeV2FactoryAddress;
+        address nodeStakeFactoryAddress;
         address ticketPriceOracleContractAddress;
         address tokenContractAddress;
         address winningProbabilityContractAddress;
@@ -109,7 +109,7 @@ contract NetworkConfig is Script {
         addresses.serialize("network_registry_proxy", networkDetail.addresses.networkRegistryProxyContractAddress);
         addresses.serialize("node_safe_migration", networkDetail.addresses.nodeSafeMigrationAddress);
         addresses.serialize("node_safe_registry", networkDetail.addresses.nodeSafeRegistryAddress);
-        addresses.serialize("node_stake_v2_factory", networkDetail.addresses.nodeStakeV2FactoryAddress);
+        addresses.serialize("node_stake_factory", networkDetail.addresses.nodeStakeFactoryAddress);
         addresses.serialize("ticket_price_oracle", networkDetail.addresses.ticketPriceOracleContractAddress);
         addresses.serialize("token", networkDetail.addresses.tokenContractAddress);
         addresses =
@@ -169,8 +169,8 @@ contract NetworkConfig is Script {
             filePath,
             string(
                 abi.encodePacked(
-                    '"node_stake_v2_factory_address": "',
-                    vm.toString(networkDetail.addresses.nodeStakeV2FactoryAddress),
+                    '"node_stake_factory_address": "',
+                    vm.toString(networkDetail.addresses.nodeStakeFactoryAddress),
                     '"'
                 )
             )

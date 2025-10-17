@@ -137,10 +137,10 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
     function _deployHoprNodeStakeFactory(address deployerAddress) internal {
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
-                || !isValidAddress(currentNetworkDetail.addresses.nodeStakeV2FactoryAddress)
+                || !isValidAddress(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
         ) {
             // deploy HoprNodeStakeFactory contract
-            currentNetworkDetail.addresses.nodeStakeV2FactoryAddress =
+            currentNetworkDetail.addresses.nodeStakeFactoryAddress =
                 deployCode("NodeStakeFactory.sol:HoprNodeStakeFactory", abi.encode(
                     currentNetworkDetail.addresses.moduleImplementationAddress, 
                     currentNetworkDetail.addresses.announcements,
@@ -353,7 +353,7 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
                 "NodeSafeMigration.sol:HoprNodeSafeMigration",
                 abi.encode(
                     currentNetworkDetail.addresses.moduleImplementationAddress,
-                    currentNetworkDetail.addresses.nodeStakeV2FactoryAddress
+                    currentNetworkDetail.addresses.nodeStakeFactoryAddress
                 )
             );
         }
