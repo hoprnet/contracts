@@ -21,8 +21,6 @@ contract NetworkConfig is Script {
         address announcements;
         address channelsContractAddress;
         address moduleImplementationAddress;
-        address networkRegistryContractAddress;
-        address networkRegistryProxyContractAddress;
         address nodeSafeMigrationAddress;
         address nodeSafeRegistryAddress;
         address nodeStakeFactoryAddress;
@@ -105,8 +103,6 @@ contract NetworkConfig is Script {
         addresses.serialize("announcements", networkDetail.addresses.announcements);
         addresses.serialize("channels", networkDetail.addresses.channelsContractAddress);
         addresses.serialize("module_implementation", networkDetail.addresses.moduleImplementationAddress);
-        addresses.serialize("network_registry", networkDetail.addresses.networkRegistryContractAddress);
-        addresses.serialize("network_registry_proxy", networkDetail.addresses.networkRegistryProxyContractAddress);
         addresses.serialize("node_safe_migration", networkDetail.addresses.nodeSafeMigrationAddress);
         addresses.serialize("node_safe_registry", networkDetail.addresses.nodeSafeRegistryAddress);
         addresses.serialize("node_stake_factory", networkDetail.addresses.nodeStakeFactoryAddress);
@@ -198,26 +194,6 @@ contract NetworkConfig is Script {
             string(
                 abi.encodePacked(
                     '"node_safe_registry_address": "', vm.toString(networkDetail.addresses.nodeSafeRegistryAddress), '"'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"network_registry_proxy_contract_address": "',
-                    vm.toString(networkDetail.addresses.networkRegistryProxyContractAddress),
-                    '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"network_registry_contract_address": "',
-                    vm.toString(networkDetail.addresses.networkRegistryContractAddress),
-                    '"'
                 )
             )
         );
