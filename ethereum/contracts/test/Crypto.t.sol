@@ -8,7 +8,7 @@ import { SECP2561k } from "solcrypto/SECP2561k.sol";
 import { HoprCrypto } from "../src/Crypto.sol";
 
 // Use proxy contract to have proper gas measurements for internal functions
-/// forge-lint:disable-next-item(mixed-case-variable)
+// / forge-lint:disable-next-item(mixed-case-variable)
 contract CryptoProxy is HoprCrypto {
     function pointToAddressProxy(uint256 p_x, uint256 p_y) public pure returns (address) {
         return pointToAddress(p_x, p_y);
@@ -26,13 +26,7 @@ contract CryptoProxy is HoprCrypto {
         return scalarTimesBasepoint(scalar);
     }
 
-    function ecAddProxy(
-        uint256 p_x,
-        uint256 p_y,
-        uint256 q_x,
-        uint256 q_y,
-        uint256 a
-    )
+    function ecAddProxy(uint256 p_x, uint256 p_y, uint256 q_x, uint256 q_y, uint256 a)
         public
         view
         returns (uint256 r_x, uint256 r_y)
@@ -164,7 +158,7 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
     function test_EcAddPointDoubleWhenAIsNotZero() public {
         // for a general elliptic curver where a != 0 over prime field
         // where F_p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
-        // y^2 = x^3 + 2x + 1 (mod F_p) where a simple point P (0, 1)  is on the curve
+        // y^2 = x^3 + 2x + 1 (mod F_p) where a simple point P (0, 1) is on the curve
         // its double point should be calculated with
         // lambda: (3 * p.x ^ 2 + a) * (2 * p.y) ^ - 1 = 1
         // r.x = lambda ^2 - 2 * p.x = 1
@@ -317,10 +311,11 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
             )
         ];
 
-
-        (bytes32 maybe_out_first_b1, bytes32 maybe_out_first_b2, bytes32 maybe_out_first_b3) = expand_message_xmd_keccak256(testStrings[firstIndex], dst);
-         expand_message_xmd_keccak256(testStrings[secondIndex], dst);
-        (bytes32 maybe_out_second_b1, bytes32 maybe_out_second_b2, bytes32 maybe_out_second_b3) = expand_message_xmd_keccak256(testStrings[firstIndex], dst);
+        (bytes32 maybe_out_first_b1, bytes32 maybe_out_first_b2, bytes32 maybe_out_first_b3) =
+            expand_message_xmd_keccak256(testStrings[firstIndex], dst);
+        expand_message_xmd_keccak256(testStrings[secondIndex], dst);
+        (bytes32 maybe_out_second_b1, bytes32 maybe_out_second_b2, bytes32 maybe_out_second_b3) =
+            expand_message_xmd_keccak256(testStrings[firstIndex], dst);
 
         assertEq(maybe_out_first_b1, maybe_out_second_b1, "b1 mismatch between run #1 and run #2");
         assertEq(maybe_out_first_b2, maybe_out_second_b2, "b2 mismatch between run #1 and run #2");
@@ -350,10 +345,11 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
             )
         ];
 
-
-        (bytes32 maybe_out_first_b1, bytes32 maybe_out_first_b2) = expand_message_xmd_keccak256_single(testStrings[firstIndex], dst);
+        (bytes32 maybe_out_first_b1, bytes32 maybe_out_first_b2) =
+            expand_message_xmd_keccak256_single(testStrings[firstIndex], dst);
         expand_message_xmd_keccak256_single(testStrings[secondIndex], dst);
-        (bytes32 maybe_out_second_b1, bytes32 maybe_out_second_b2) = expand_message_xmd_keccak256_single(testStrings[firstIndex], dst);
+        (bytes32 maybe_out_second_b1, bytes32 maybe_out_second_b2) =
+            expand_message_xmd_keccak256_single(testStrings[firstIndex], dst);
 
         assertEq(maybe_out_first_b1, maybe_out_second_b1, "b1 mismatch between run #1 and run #2");
         assertEq(maybe_out_first_b2, maybe_out_second_b2, "b2 mismatch between run #1 and run #2");
@@ -432,29 +428,29 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
         // let b = Secp256k1::hash_from_bytes::<ExpandMsgXmd<sha3::Keccak256>>(&[&chain_addr.to_bytes(), msg], &[dst])?;
         // let a: Scalar = ScalarPrimitive::<Secp256k1>::from_slice(&secret)?.into();
         // if a.is_zero().into() {
-        //     return Err(crate::errors::CryptoError::InvalidSecretScalar);
-        // }
+        // return Err(crate::errors::CryptoError::InvalidSecretScalar);
+        //}
         //
         // let v = b * a;
         // let r = Secp256k1::hash_to_scalar::<ExpandMsgXmd<sha3::Keccak256>>(
-        //     &[
-        //         &a.to_bytes(),
-        //         &v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        //         &random_bytes::<64>(),
-        //     ],
-        //     &[dst],
+        //&[
+        // &a.to_bytes(),
+        // &v.to_affine().to_encoded_point(false).as_bytes()[1..],
+        // &random_bytes::<64>(),
+        //],
+        // &[dst],
         // )?;
         //
         // let r_v = b * r;
         //
         // let h = Secp256k1::hash_to_scalar::<ExpandMsgXmd<sha3::Keccak256>>(
-        //     &[
-        //         &chain_addr.to_bytes(),
-        //         &v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        //         &r_v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        //         msg,
-        //     ],
-        //     &[dst],
+        //&[
+        // &chain_addr.to_bytes(),
+        // &v.to_affine().to_encoded_point(false).as_bytes()[1..],
+        // &r_v.to_affine().to_encoded_point(false).as_bytes()[1..],
+        // msg,
+        //],
+        // &[dst],
         // )?;
         // let s = r + h * a;
         // ```

@@ -27,8 +27,7 @@ contract HoprLedgerTest is Test, HoprLedger(INDEX_SNAPSHOT_INTERVAL), HoprChanne
         // call updateDomainSeparator when chainid is different
         vm.chainId(newChainId);
         vm.expectEmit(true, true, false, false, address(this));
-        emit LedgerDomainSeparatorUpdated(
-            keccak256(
+        emit LedgerDomainSeparatorUpdated(keccak256(
                 abi.encode(
                     keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                     keccak256(bytes("HoprLedger")),
@@ -36,8 +35,7 @@ contract HoprLedgerTest is Test, HoprLedger(INDEX_SNAPSHOT_INTERVAL), HoprChanne
                     newChainId,
                     address(this)
                 )
-            )
-        );
+            ));
         updateLedgerDomainSeparator();
         assertTrue(ledgerDomainSeparator != domainSeparatorOnDeployment);
         vm.chainId(oldChainId);

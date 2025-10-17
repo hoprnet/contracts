@@ -31,12 +31,7 @@ abstract contract SimplifiedModule is UUPSUpgradeable, OwnableUpgradeable, Simpl
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
      */
-    function exec(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function exec(address to, uint256 value, bytes memory data, Enum.Operation operation)
         internal
         returns (bool success)
     {
@@ -56,12 +51,7 @@ abstract contract SimplifiedModule is UUPSUpgradeable, OwnableUpgradeable, Simpl
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
      */
-    function execAndReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function execAndReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
         internal
         returns (bool success, bytes memory returnedData)
     {

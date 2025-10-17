@@ -2,7 +2,13 @@
 pragma solidity >=0.6.0 <0.9.0;
 
 import { Test } from "forge-std/Test.sol";
-import { HoprAnnouncements, ZeroAddress, EmptyMultiaddr, KeyBindingWithSignature, KeyId } from "../src/Announcements.sol";
+import {
+    HoprAnnouncements,
+    ZeroAddress,
+    EmptyMultiaddr,
+    KeyBindingWithSignature,
+    KeyId
+} from "../src/Announcements.sol";
 import { HoprNodeSafeRegistry } from "../src/node-stake/NodeSafeRegistry.sol";
 
 // Dummy since there is no verification happening on-chain
@@ -130,7 +136,14 @@ contract AnnouncementsTest is Test {
         vm.clearMockedCalls();
     }
 
-    function testFuzz_BindKeysSafe(address nodeAddress, bytes32 ed25519_sig_0, bytes32 ed25519_sig_1, bytes32 ed25519_pub_key) public {
+    function testFuzz_BindKeysSafe(
+        address nodeAddress,
+        bytes32 ed25519_sig_0,
+        bytes32 ed25519_sig_1,
+        bytes32 ed25519_pub_key
+    )
+        public
+    {
         address safeAddress = vm.addr(888);
         vm.assume(nodeAddress != address(0));
         vm.mockCall(
@@ -146,9 +159,16 @@ contract AnnouncementsTest is Test {
         vm.clearMockedCalls();
     }
 
-    function testFuzz_BindKeysAnnounceSafe(address nodeAddress, bytes32 ed25519_sig_0, bytes32 ed25519_sig_1, bytes32 ed25519_pub_key) public {
+    function testFuzz_BindKeysAnnounceSafe(
+        address nodeAddress,
+        bytes32 ed25519_sig_0,
+        bytes32 ed25519_sig_1,
+        bytes32 ed25519_pub_key
+    )
+        public
+    {
         address safeAddress = vm.addr(888);
-    
+
         vm.assume(nodeAddress != address(0));
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", nodeAddress), abi.encode(safeAddress)
@@ -212,7 +232,8 @@ contract AnnouncementsTest is Test {
             KeyBindingWithSignature memory result_i = announcements.getKeyBindingWithKeyId(KeyId.wrap(uint32(i)));
             assertTrue(announcements.isOffchainKeyBound(result_i.ed25519_pub_key));
 
-            (bool success, KeyId index, KeyBindingWithSignature memory tryBinding_i) = announcements.tryGetKeyBinding(result_i.ed25519_pub_key);
+            (bool success, KeyId index, KeyBindingWithSignature memory tryBinding_i) =
+                announcements.tryGetKeyBinding(result_i.ed25519_pub_key);
             assertTrue(success);
             assertEq(KeyId.unwrap(index), uint32(i));
             assertTrue(_compareKeyBinding(tryBinding_i, result_i));
@@ -222,7 +243,7 @@ contract AnnouncementsTest is Test {
             assertEq(uint32(KeyId.unwrap(keyId)), i);
 
             KeyBindingWithSignature memory at_i = announcements.getKeyBindingWithKeyId(KeyId.wrap(uint32(i)));
-            assertTrue(_compareKeyBinding(at_i, result_i)); 
+            assertTrue(_compareKeyBinding(at_i, result_i));
 
             bytes32 pubkey_i = announcements.getOffchainKeyWithKeyId(KeyId.wrap(uint32(i)));
             assertEq(pubkey_i, result_i.ed25519_pub_key);
@@ -238,7 +259,7 @@ contract AnnouncementsTest is Test {
     }
 
     /**
-    * @dev helper function to create a set for fuzz testing
+     * @dev helper function to create a set for fuzz testing
      */
     function _helperCreateKeyBindingSet(bytes32[] memory bytes32Vals) private returns (uint256) {
         uint256 counter = 0;
@@ -250,21 +271,19 @@ contract AnnouncementsTest is Test {
             vm.prank(caller);
             // only add unique non-existing ed25519_pub_key
             if (!announcements.isOffchainKeyBound(bytes32Vals[i])) {
-                announcements.bindKeys(
-                    bytes32Vals[i],
-                    bytes32Vals[i],
-                    bytes32Vals[i]
-                );
+                announcements.bindKeys(bytes32Vals[i], bytes32Vals[i], bytes32Vals[i]);
                 counter++;
             }
         }
         return counter;
     }
 
-    function _compareKeyBinding(KeyBindingWithSignature memory a, KeyBindingWithSignature memory b) private pure returns (bool) {
-        return (a.ed25519_sig_0 == b.ed25519_sig_0 &&
-                a.ed25519_sig_1 == b.ed25519_sig_1 &&
-                a.ed25519_pub_key == b.ed25519_pub_key &&
-                a.chain_key == b.chain_key);
+    function _compareKeyBinding(KeyBindingWithSignature memory a, KeyBindingWithSignature memory b)
+        private
+        pure
+        returns (bool)
+    {
+        return (a.ed25519_sig_0 == b.ed25519_sig_0 && a.ed25519_sig_1 == b.ed25519_sig_1
+                && a.ed25519_pub_key == b.ed25519_pub_key && a.chain_key == b.chain_key);
     }
 }

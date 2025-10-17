@@ -12,10 +12,7 @@ library BoostUtilsLib {
      * hasIndex bool check if index is occupied
      * boostType string name of boost
      */
-    function getBoostTypeAtIndex(
-        address hoprBoostAddr,
-        uint256 index
-    )
+    function getBoostTypeAtIndex(address hoprBoostAddr, uint256 index)
         public
         view
         returns (bool hasIndex, string memory boostType)
@@ -41,10 +38,10 @@ library BoostUtilsLib {
         // (bool successReadTypeAtIndex, bytes memory returndataReadTypeAtIndex) =
         // currentNetworkDetail.hoprBoostContractAddress.staticcall(abi.encodeWithSignature("typeAt()", index));
         // if (!successReadTypeAtIndex) {
-        //     emit log_string("Cannot read Boost type at index");
+        // emit log_string("Cannot read Boost type at index");
         // } else {
-        //     string memory boostType = abi.decode(returndataReadTypeAtIndex, (string));
-        //     emit log_named_string("boostType", boostType);
-        // }
+        // string memory boostType = abi.decode(returndataReadTypeAtIndex, (string));
+        // emit log_named_string("boostType", boostType);
+        //}
     }
 }

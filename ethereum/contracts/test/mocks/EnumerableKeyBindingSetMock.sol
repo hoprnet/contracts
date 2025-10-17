@@ -2,7 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import { EnumerableKeyBindingSet, KeyBindingSet, KeyBindingWithSignature } from "../../src/utils/EnumerableKeyBindingSet.sol";
+import {
+    EnumerableKeyBindingSet,
+    KeyBindingSet,
+    KeyBindingWithSignature
+} from "../../src/utils/EnumerableKeyBindingSet.sol";
 
 /**
  * @dev Mock contract to test internal library of EnumerableKeyBindingSet

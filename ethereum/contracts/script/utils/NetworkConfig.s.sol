@@ -50,13 +50,13 @@ contract NetworkConfig is Script {
     address public constant DEV_BANK_ADDRESS = 0x2402da10A6172ED018AEEa22CA60EDe1F766655C;
     address public constant COMM_MULTISIG_ADDRESS = 0xD9a00176Cf49dFB9cA3Ef61805a2850F45Cb1D05;
     address public constant PRODUCT_MULTISIG_ADDRESS = 0xD720099cBC14e669695EaE0708E6Ca614B387921; // only used in
-    // "stake_hub_test" network
-    // CORE's deployer is the caller, therefore not in this array
-    /// forge-lint:disable-next-item(mixed-case-variable)
+        // "stake_hub_test" network
+        // CORE's deployer is the caller, therefore not in this array
+        // / forge-lint:disable-next-item(mixed-case-variable)
     address[3] public PRODUCT_TEAM_MANAGER_ADDRESSES = [
         0x01BFbCB6A2924b083969ce6237AdBbF3BFa7De13, // RPCh staging
         0xDCcC4a8ee2BF3CaF5a4AB1cDBa1ee7cc04E324Dd, // RPCh production
-        0x529F995739C9C425CECeE9deF78e95CB07887565 // CT
+        0x529F995739C9C425CECeE9deF78e95CB07887565 //CT
     ];
 
     string public currentNetworkId;
@@ -108,8 +108,9 @@ contract NetworkConfig is Script {
         addresses.serialize("node_stake_factory", networkDetail.addresses.nodeStakeFactoryAddress);
         addresses.serialize("ticket_price_oracle", networkDetail.addresses.ticketPriceOracleContractAddress);
         addresses.serialize("token", networkDetail.addresses.tokenContractAddress);
-        addresses =
-            addresses.serialize("winning_probability_oracle", networkDetail.addresses.winningProbabilityContractAddress);
+        addresses = addresses.serialize(
+            "winning_probability_oracle", networkDetail.addresses.winningProbabilityContractAddress
+        );
 
         obj.serialize("addresses", addresses);
         obj.serialize("environment_type", parseEnvironmentTypeToString(networkDetail.environmentType));
@@ -160,9 +161,7 @@ contract NetworkConfig is Script {
             filePath,
             string(
                 abi.encodePacked(
-                    '"node_stake_factory_address": "',
-                    vm.toString(networkDetail.addresses.nodeStakeFactoryAddress),
-                    '"'
+                    '"node_stake_factory_address": "', vm.toString(networkDetail.addresses.nodeStakeFactoryAddress), '"'
                 )
             )
         );
@@ -180,7 +179,9 @@ contract NetworkConfig is Script {
             filePath,
             string(
                 abi.encodePacked(
-                    '"node_safe_migration_address": "', vm.toString(networkDetail.addresses.nodeSafeMigrationAddress), '"'
+                    '"node_safe_migration_address": "',
+                    vm.toString(networkDetail.addresses.nodeSafeMigrationAddress),
+                    '"'
                 )
             )
         );

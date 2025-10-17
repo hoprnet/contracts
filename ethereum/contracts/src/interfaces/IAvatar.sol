@@ -23,7 +23,7 @@ interface IAvatar {
     /// @notice Must emit DisabledModule(address module) if successful.
     /// @param prevModule Address that pointed to the module to be removed in the linked list
     /// @param module Module to be removed.
-    function disableModule(address prevModule, address module) external; 
+    function disableModule(address prevModule, address module) external;
 
     /// @dev Allows a Module to execute a transaction.
     /// @notice Can only be called by an enabled module.
@@ -33,12 +33,7 @@ interface IAvatar {
     /// @param value Ether value of module transaction.
     /// @param data Data payload of module transaction.
     /// @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
-    function execTransactionFromModule(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function execTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
         external
         returns (bool success);
 
@@ -50,12 +45,7 @@ interface IAvatar {
     /// @param value Ether value of module transaction.
     /// @param data Data payload of module transaction.
     /// @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
-    function execTransactionFromModuleReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function execTransactionFromModuleReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
         external
         returns (bool success, bytes memory returnData);
 
@@ -68,10 +58,7 @@ interface IAvatar {
     /// @param pageSize Maximum number of modules that should be returned.
     /// @return array Array of modules.
     /// @return next Start of the next page.
-    function getModulesPaginated(
-        address start,
-        uint256 pageSize
-    )
+    function getModulesPaginated(address start, uint256 pageSize)
         external
         view
         returns (address[] memory array, address next);
@@ -104,7 +91,10 @@ interface IAvatar {
         address gasToken,
         address payable refundReceiver,
         bytes memory signatures
-    ) external payable returns (bool);
+    )
+        external
+        payable
+        returns (bool);
 
     function nonce() external returns (uint256);
 }

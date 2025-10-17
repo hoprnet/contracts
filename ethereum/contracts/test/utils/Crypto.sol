@@ -49,7 +49,8 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
         // Deviates from EIP712 due to computed property and non-standard struct property encoding
         bytes32 hashStruct = keccak256(
             abi.encode(
-                HoprChannels.redeemTicket.selector, keccak256(abi.encodePacked(channelId, uint224(secondPart), challenge))
+                HoprChannels.redeemTicket.selector,
+                keccak256(abi.encodePacked(channelId, uint224(secondPart), challenge))
             )
         );
 
@@ -68,11 +69,7 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
         vrf = getVRFParameters(args.privKeyB, abi.encodePacked(args.dst), ticketHash);
     }
 
-    function toCompactSignature(
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    )
+    function toCompactSignature(uint8 v, bytes32 r, bytes32 s)
         internal
         pure
         returns (HoprCrypto.CompactSignature memory sig)
@@ -84,10 +81,7 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
         sig.vs = bytes32(uint256(v - 27) << 255) | s;
     }
 
-    function decompressSignature(
-        bytes32 r,
-        bytes32 vs
-    )
+    function decompressSignature(bytes32 r, bytes32 vs)
         internal
         pure
         returns (uint8 v_out, bytes32 r_out, bytes32 s_out)
@@ -98,11 +92,7 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
     }
 
     /// forge-lint: disable-next-line(mixed-case-function)
-    function getVRFParameters(
-        uint256 privKey,
-        bytes memory dst,
-        bytes32 vrfMessage
-    )
+    function getVRFParameters(uint256 privKey, bytes memory dst, bytes32 vrfMessage)
         internal
         view
         returns (HoprCrypto.VRFParameters memory params)
@@ -137,8 +127,9 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
             );
 
             // s = r + h * a (mod p)
-            params.s =
-                addmod(r, mulmod(params.h, privKey, HoprCrypto.SECP256K1_FIELD_ORDER), HoprCrypto.SECP256K1_FIELD_ORDER);
+            params.s = addmod(
+                r, mulmod(params.h, privKey, HoprCrypto.SECP256K1_FIELD_ORDER), HoprCrypto.SECP256K1_FIELD_ORDER
+            );
 
             {
                 (uint256 sBx, uint256 sBy) = SECP2561k.ecmul(bx, by, params.s);

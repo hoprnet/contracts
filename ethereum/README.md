@@ -243,23 +243,23 @@ forge install safe-global/safe-contracts@eb93dbb0f62e2dc1b308ac4c110038062df0a8c
 
    When running `make run-anvil`, it also deploys the SafeSingleton which is used as a deployer factory in deterministic deployment.
 
-4. In the "Dufour" network, node-staking safes use the implementation of `Safe.sol` v1.3 and node-staking modules use an undeclared version of the `NodeManagementModule.sol`.
-As the module proxies were created with a minimal proxy, where the implementation address was supplied at the deployment, and due to the fact that the module contract does not allow delegatecalls, it is not possible to migrate existing NodeManagementModules to a different implementation.
-The desired workflow should be that the owner of a module (i.e. the Safe contract to which the module is attached) MAY call a `migrate` function at its own will to change the implementation contract address to a different one.
-As a result, the `NodeSafeMigration` contract is created as a supporting contract to faciliate process of:
+5. In the "Dufour" network, node-staking safes use the implementation of `Safe.sol` v1.3 and node-staking modules use an undeclared version of the `NodeManagementModule.sol`.
+   As the module proxies were created with a minimal proxy, where the implementation address was supplied at the deployment, and due to the fact that the module contract does not allow delegatecalls, it is not possible to migrate existing NodeManagementModules to a different implementation.
+   The desired workflow should be that the owner of a module (i.e. the Safe contract to which the module is attached) MAY call a `migrate` function at its own will to change the implementation contract address to a different one.
+   As a result, the `NodeSafeMigration` contract is created as a supporting contract to faciliate process of:
    - creating a new NodeManagementModule proxy instance that uses `NodeManagementModule.sol` v2.0.0
    - initiate the basic targets on the module instance (e.g. for Channels, Token, Announcement, Send). Channels, Tokens, and Announcement contracts should be already deployed and supplied in the `NodeSafeMigration` contract.
    - include nodes into the new module.
    - set the owner back to the creator (caller) address.
-Optionally, the `NodeSafeMigration` contract also contains a function to migrate Safe implementation to a different one.
-Node runners should ensure that all the tickets are redeemed and all the channels are closed before the migration. Then turn off the node.
-Execute the migration process using multicall:
+     Optionally, the `NodeSafeMigration` contract also contains a function to migrate Safe implementation to a different one.
+     Node runners should ensure that all the tickets are redeemed and all the channels are closed before the migration. Then turn off the node.
+     Execute the migration process using multicall:
    - migrate module
    - optionally remove the previous module from the Safe
    - optionally upgrade the Safe implementation
 
-
 ## Change log
+
 ### HoprNodeManagementModule
 
 1. `isHoprNodeManagementModule` variable is removed.

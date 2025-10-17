@@ -2,7 +2,11 @@
 pragma solidity ^0.8.0;
 
 import { Test, stdStorage, StdStorage } from "forge-std/Test.sol";
-import { KeyBindingWithSignature, EnumerableKeyBindingSet, EnumerableKeyBindingSetMock } from "../mocks/EnumerableKeyBindingSetMock.sol";
+import {
+    KeyBindingWithSignature,
+    EnumerableKeyBindingSet,
+    EnumerableKeyBindingSetMock
+} from "../mocks/EnumerableKeyBindingSetMock.sol";
 import { MAX_KEY_ID } from "../../src/utils/EnumerableKeyBindingSet.sol";
 
 contract EnumerableKeyBindingSetTest is Test {
@@ -51,14 +55,18 @@ contract EnumerableKeyBindingSetTest is Test {
     /**
      * @dev fuzz test oln add, length and contains
      */
-    function testFuzz_AddLengthContains(
-        bytes32 pubkey1,
-        bytes32 pubkey2
-    ) public beforeEach respectCurveRangeSingle(pubkey1) respectCurveRangeSingle(pubkey2) {
+    function testFuzz_AddLengthContains(bytes32 pubkey1, bytes32 pubkey2)
+        public
+        beforeEach
+        respectCurveRangeSingle(pubkey1)
+        respectCurveRangeSingle(pubkey2)
+    {
         vm.assume(pubkey1 != pubkey2);
         // vm.assume(pubkey1 != pubkey2 && vm.addr(uint256(pubkey1)) != vm.addr(uint256(pubkey2)) );
-        KeyBindingWithSignature memory keyBinding = KeyBindingWithSignature(pubkey1, pubkey1, pubkey1, vm.addr(uint256(pubkey1)));
-        KeyBindingWithSignature memory keyBinding2 = KeyBindingWithSignature(pubkey2, pubkey2, pubkey2, vm.addr(uint256(pubkey2)));
+        KeyBindingWithSignature memory keyBinding =
+            KeyBindingWithSignature(pubkey1, pubkey1, pubkey1, vm.addr(uint256(pubkey1)));
+        KeyBindingWithSignature memory keyBinding2 =
+            KeyBindingWithSignature(pubkey2, pubkey2, pubkey2, vm.addr(uint256(pubkey2)));
 
         // Include the first item
         assertEq(enumerableKeyBindingSetMock.add(keyBinding), 0);
@@ -80,7 +88,8 @@ contract EnumerableKeyBindingSetTest is Test {
     }
 
     function testRevert_AddExistingKeyBinding(bytes32 pubkey) public beforeEach respectCurveRangeSingle(pubkey) {
-        KeyBindingWithSignature memory keyBinding = KeyBindingWithSignature(pubkey, pubkey, pubkey, vm.addr(uint256(pubkey)));
+        KeyBindingWithSignature memory keyBinding =
+            KeyBindingWithSignature(pubkey, pubkey, pubkey, vm.addr(uint256(pubkey)));
         assertEq(enumerableKeyBindingSetMock.add(keyBinding), 0);
         // check adding the same keyBinding again reverts
         vm.expectRevert(EnumerableKeyBindingSet.ExistingKeyBinding.selector);
@@ -114,7 +123,11 @@ contract EnumerableKeyBindingSetTest is Test {
     /**
      * @dev fuzz test get and tryGet methods
      */
-    function testFuzz_GetAndTryGetWithInArray(bytes32[] memory bytes32Vals) public beforeEach respectCurveRange(bytes32Vals) {
+    function testFuzz_GetAndTryGetWithInArray(bytes32[] memory bytes32Vals)
+        public
+        beforeEach
+        respectCurveRange(bytes32Vals)
+    {
         // at least one item can be found from the array
         vm.assume(bytes32Vals.length > 0);
 
@@ -122,7 +135,8 @@ contract EnumerableKeyBindingSetTest is Test {
         _helperCreateKeyBindingSet(bytes32Vals);
 
         for (uint256 i = 0; i < bytes32Vals.length; i++) {
-            (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) = enumerableKeyBindingSetMock.tryGet(bytes32Vals[i]);
+            (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) =
+                enumerableKeyBindingSetMock.tryGet(bytes32Vals[i]);
             assertEq(index, i);
             assertTrue(_compareKeyBinding(tryBinding, enumerableKeyBindingSetMock.at(i)));
             assertTrue(tryResult);
@@ -139,13 +153,16 @@ contract EnumerableKeyBindingSetTest is Test {
         // bytes32(0) is not going to be added to the set
         bytes32 nonExistentKey = bytes32(0);
 
-        (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) = enumerableKeyBindingSetMock.tryGet(nonExistentKey);
+        (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) =
+            enumerableKeyBindingSetMock.tryGet(nonExistentKey);
         vm.expectRevert(EnumerableKeyBindingSet.NonExistentKey.selector);
         enumerableKeyBindingSetMock.get(nonExistentKey);
-    
+
         assertFalse(tryResult);
         assertEq(index, 0);
-        assertTrue(_compareKeyBinding(tryBinding, KeyBindingWithSignature(bytes32(0), bytes32(0), bytes32(0), address(0))));
+        assertTrue(
+            _compareKeyBinding(tryBinding, KeyBindingWithSignature(bytes32(0), bytes32(0), bytes32(0), address(0)))
+        );
     }
 
     /**
@@ -158,7 +175,8 @@ contract EnumerableKeyBindingSetTest is Test {
         if (bytes32Vals.length == 0) {
             return;
         } else {
-            (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) = enumerableKeyBindingSetMock.tryGet(bytes32Vals[0]);
+            (bool tryResult, uint256 index, KeyBindingWithSignature memory tryBinding) =
+                enumerableKeyBindingSetMock.tryGet(bytes32Vals[0]);
             assertTrue(tryResult);
             assertEq(index, 0);
             assertTrue(_compareKeyBinding(tryBinding, enumerableKeyBindingSetMock.at(0)));
@@ -170,11 +188,8 @@ contract EnumerableKeyBindingSetTest is Test {
      */
     function testRevert_IndexOutOfRange(bytes32 pubkey) public beforeEach respectCurveRangeSingle(pubkey) {
         // assume there are already 0xFFFFFFFF items in the set
-        stdstore
-            .target(address(enumerableKeyBindingSetMock))
-            .sig("length()")
-            .checked_write(uint256(MAX_KEY_ID));
-    
+        stdstore.target(address(enumerableKeyBindingSetMock)).sig("length()").checked_write(uint256(MAX_KEY_ID));
+
         // check revert when index is out of range
         vm.expectRevert(EnumerableKeyBindingSet.KeyIdOutOfRange.selector);
         enumerableKeyBindingSetMock.add(KeyBindingWithSignature(pubkey, pubkey, pubkey, vm.addr(uint256(pubkey))));
@@ -182,7 +197,7 @@ contract EnumerableKeyBindingSetTest is Test {
 
     /**
      * @dev helper function to create a set for fuzz testing
-            chain_key (address) is derived from the uint256 value, non-zero address only
+     *      chain_key (address) is derived from the uint256 value, non-zero address only
      * @param bytes32Vals array of ed25519_pub_key values to be added to the set
      */
     function _helperCreateKeyBindingSet(bytes32[] memory bytes32Vals) private returns (uint256) {
@@ -190,22 +205,23 @@ contract EnumerableKeyBindingSetTest is Test {
         for (uint256 i = 0; i < bytes32Vals.length; i++) {
             // only add unique non-existing ed25519_pub_key
             if (!enumerableKeyBindingSetMock.contains(bytes32Vals[i])) {
-                enumerableKeyBindingSetMock.add(KeyBindingWithSignature(
-                    bytes32Vals[i],
-                    bytes32Vals[i],
-                    bytes32Vals[i],
-                    vm.addr(uint256(bytes32Vals[i]))
-                ));
+                enumerableKeyBindingSetMock.add(
+                    KeyBindingWithSignature(
+                        bytes32Vals[i], bytes32Vals[i], bytes32Vals[i], vm.addr(uint256(bytes32Vals[i]))
+                    )
+                );
                 counter++;
             }
         }
         return counter;
     }
 
-    function _compareKeyBinding(KeyBindingWithSignature memory a, KeyBindingWithSignature memory b) private pure returns (bool) {
-        return (a.ed25519_sig_0 == b.ed25519_sig_0 &&
-                a.ed25519_sig_1 == b.ed25519_sig_1 &&
-                a.ed25519_pub_key == b.ed25519_pub_key &&
-                a.chain_key == b.chain_key);
+    function _compareKeyBinding(KeyBindingWithSignature memory a, KeyBindingWithSignature memory b)
+        private
+        pure
+        returns (bool)
+    {
+        return (a.ed25519_sig_0 == b.ed25519_sig_0 && a.ed25519_sig_1 == b.ed25519_sig_1
+                && a.ed25519_pub_key == b.ed25519_pub_key && a.chain_key == b.chain_key);
     }
 }

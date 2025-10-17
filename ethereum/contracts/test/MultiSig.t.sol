@@ -36,9 +36,8 @@ contract MulitSigTest is Test, AccountsFixtureTest {
     }
 
     function test_emptySafeAddress() public {
-        (bool success, bytes memory result) = address(msContract).staticcall(
-            abi.encodeWithSelector(MultiSigContract.mySetNodeSafeRegistry.selector, address(0))
-        );
+        (bool success, bytes memory result) = address(msContract)
+            .staticcall(abi.encodeWithSelector(MultiSigContract.mySetNodeSafeRegistry.selector, address(0)));
 
         assertFalse(success);
         assertEq(bytes32(result), HoprMultiSig.InvalidSafeAddress.selector);

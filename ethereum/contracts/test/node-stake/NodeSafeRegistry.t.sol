@@ -5,19 +5,17 @@ import { HoprNodeSafeRegistry, HoprNodeSafeRegistryEvents } from "../../src/node
 import { ECDSA } from "openzeppelin-contracts-5.4.0/utils/cryptography/ECDSA.sol";
 import { Test, stdStorage, StdStorage } from "forge-std/Test.sol";
 
-
 // // proxy contract to manipulate storage
 // contract MyNodeSafeRegistry is HoprNodeSafeRegistry {
-//     constructor() {}
+// constructor() {}
 
-//     // Only for testing
-//     function _storeSafeAddress(address nodeAddress, address safeAddress) public {
-//         HoprNodeSafeRegistry.NodeSafeRecord storage record = _nodeToSafe[nodeAddress];
-//         record.safeAddress = safeAddress;
-    
-//         stdstore.target(address(erc677Mock)).sig(erc677Mock.balanceOf.selector).with_key(sender).checked_write(amount);
-//     }
-// }
+// // Only for testing
+// function _storeSafeAddress(address nodeAddress, address safeAddress) public {
+// HoprNodeSafeRegistry.NodeSafeRecord storage record = _nodeToSafe[nodeAddress];
+// record.safeAddress = safeAddress;
+
+// stdstore.target(address(erc677Mock)).sig(erc677Mock.balanceOf.selector).with_key(sender).checked_write(amount); }
+//}
 
 contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     using stdStorage for StdStorage;
@@ -34,9 +32,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
 
     modifier assumeDifferentAddress(address addr) {
         assumeUnusedAddress(addr);
-        vm.assume(
-            addr != address(this) && addr != address(nodeSafeRegistry) && addr != vm.addr(303)
-        );
+        vm.assume(addr != address(this) && addr != address(nodeSafeRegistry) && addr != vm.addr(303));
         _;
     }
 
@@ -94,12 +90,12 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
         assertFalse(nodeSafeRegistry.isNodeSafeRegistered(safe, nodeChainKeyAddress));
 
         uint256 nodeSigNonce = nodeSafeRegistry.nodeSigNonce(nodeChainKeyAddress);
-        (, bytes memory sig) =
-            _helperBuildSig(nodePrivateKey, safe, nodeChainKeyAddress, nodeSigNonce);
+        (, bytes memory sig) = _helperBuildSig(nodePrivateKey, safe, nodeChainKeyAddress, nodeSigNonce);
 
         assumeUnusedAddress(nodeChainKeyAddress);
         vm.assume(
-            nodeChainKeyAddress != address(this) && nodeChainKeyAddress != address(nodeSafeRegistry) && nodeChainKeyAddress != vm.addr(303)
+            nodeChainKeyAddress != address(this) && nodeChainKeyAddress != address(nodeSafeRegistry)
+                && nodeChainKeyAddress != vm.addr(303)
         );
 
         // register for the first time
@@ -114,10 +110,14 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev node fail to register a node due to it's registered
      */
-    function testRevert_FailToRegisterSafeByNodeDueToRegistered(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testRevert_FailToRegisterSafeByNodeDueToRegistered(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         vm.assume(safe != nodeAddress);
 
-        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress).checked_write(safe);
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
+            .checked_write(safe);
 
         vm.prank(nodeAddress);
         vm.expectRevert(HoprNodeSafeRegistry.NodeHasSafe.selector);
@@ -128,10 +128,14 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev node fail to register a node due to the provided safe address is zero
      */
-    function testRevert_FailToRegisterSafeByNodeDueToSafeAddressZero(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testRevert_FailToRegisterSafeByNodeDueToSafeAddressZero(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         address safeAddress = address(0);
 
-        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress).checked_write(address(1));
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
+            .checked_write(address(1));
 
         vm.prank(nodeAddress);
         vm.expectRevert(HoprNodeSafeRegistry.SafeAddressZero.selector);
@@ -142,10 +146,14 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev node fail to register a node due to the provided node address is zero
      */
-    function testRevert_FailToRegisterSafeByNodeDueToNodeAddressZero(address safeAddress) public assumeDifferentAddress(safeAddress) {
+    function testRevert_FailToRegisterSafeByNodeDueToNodeAddressZero(address safeAddress)
+        public
+        assumeDifferentAddress(safeAddress)
+    {
         address nodeAddress = address(0);
 
-        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress).checked_write(address(1));
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
+            .checked_write(address(1));
 
         vm.prank(nodeAddress);
         vm.expectRevert(HoprNodeSafeRegistry.NodeAddressZero.selector);
@@ -156,7 +164,10 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev node fail to register a node due to the provided node address is a contract
      */
-    function testRevert_FailToRegisterSafeByNodeDueToNodeIsContract(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testRevert_FailToRegisterSafeByNodeDueToNodeIsContract(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         // mock code at nodeAddress
         vm.etch(nodeAddress, hex"00010203040506070809");
 
@@ -173,10 +184,14 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
      * The said function is removed as it does not allow certian eligible setup, as reported in
      * https://github.com/hoprnet/hoprnet/issues/6466
      */
-    function testFuzz_RegisterSafeByNodeAlthoughNodeIsNotModuleMember(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testFuzz_RegisterSafeByNodeAlthoughNodeIsNotModuleMember(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         vm.assume(safe != nodeAddress);
 
-        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress).checked_write(address(0));
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
+            .checked_write(address(0));
 
         vm.prank(nodeAddress);
         vm.expectEmit(true, true, false, false, address(nodeSafeRegistry));
@@ -188,7 +203,10 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev safe can deregister a node by the safe
      */
-    function testFuzz_DeregisterNodeBySafeOnARegisteredNodeSafePair(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testFuzz_DeregisterNodeBySafeOnARegisteredNodeSafePair(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         vm.assume(safe != nodeAddress);
 
         vm.prank(nodeAddress);
@@ -205,7 +223,10 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     /**
      * @dev cannot deregister a random address
      */
-    function testRevert_DeregisterNodeByADifferentSafeDueToNotValidSafe(address nodeAddress) public assumeDifferentAddress(nodeAddress) {
+    function testRevert_DeregisterNodeByADifferentSafeDueToNotValidSafe(address nodeAddress)
+        public
+        assumeDifferentAddress(nodeAddress)
+    {
         vm.assume(safe != nodeAddress);
 
         vm.prank(nodeAddress);
@@ -232,8 +253,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
         // call updateDomainSeparator when chainid is different
         vm.chainId(newChainId);
         vm.expectEmit(true, true, false, false, address(nodeSafeRegistry));
-        emit DomainSeparatorUpdated(
-            keccak256(
+        emit DomainSeparatorUpdated(keccak256(
                 abi.encode(
                     keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                     keccak256(bytes("NodeSafeRegistry")),
@@ -241,8 +261,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
                     newChainId,
                     address(nodeSafeRegistry)
                 )
-            )
-        );
+            ));
         nodeSafeRegistry.updateDomainSeparator();
         assertTrue(nodeSafeRegistry.domainSeparator() != domainSeparatorOnDeployment);
         vm.chainId(oldChainId);
@@ -263,9 +282,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
         returns (address, bytes memory)
     {
         HoprNodeSafeRegistry.NodeSafeNonce memory nodeSafeNonce = HoprNodeSafeRegistry.NodeSafeNonce({
-            safeAddress: safeAddress,
-            nodeChainKeyAddress: nodeChainKeyAddress,
-            nodeSigNonce: nonce
+            safeAddress: safeAddress, nodeChainKeyAddress: nodeChainKeyAddress, nodeSigNonce: nonce
         });
         bytes32 hashStruct = keccak256(abi.encode(nodeSafeRegistry.NODE_SAFE_TYPEHASH(), nodeSafeNonce));
         // build typed digest
@@ -276,7 +293,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(mockNodePrivateKey, registerHash);
         bytes memory sig = abi.encodePacked(r, s, v);
 
-        (address recovered, ECDSA.RecoverError recoverError, ) = ECDSA.tryRecover(registerHash, sig);
+        (address recovered, ECDSA.RecoverError recoverError,) = ECDSA.tryRecover(registerHash, sig);
         assertTrue(recoverError == ECDSA.RecoverError.NoError);
         assertEq(recovered, nodeAddress);
         assertEq(recovered, nodeChainKeyAddress);

@@ -4,17 +4,19 @@ pragma solidity >=0.8.0 <0.9.0;
 import { Test, stdStorage, stdJson, StdStorage } from "forge-std/Test.sol";
 import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
 import { BoostUtilsLib } from "./utils/BoostUtilsLib.sol";
-import { Clearance, CapabilityPermission, Target, TargetType, TargetUtils, TargetPermission } from "../src/utils/TargetUtils.sol";
+import {
+    Clearance,
+    CapabilityPermission,
+    Target,
+    TargetType,
+    TargetUtils,
+    TargetPermission
+} from "../src/utils/TargetUtils.sol";
 import { HoprNodeSafeRegistry } from "../src/node-stake/NodeSafeRegistry.sol";
 import { Enum, IAvatar } from "../src/interfaces/IAvatar.sol";
 
 abstract contract IFactory {
-    function clone(
-        address moduleSingletonAddress,
-        address[] memory admins,
-        uint256 nonce,
-        bytes32 defaultTarget
-    )
+    function clone(address moduleSingletonAddress, address[] memory admins, uint256 nonce, bytes32 defaultTarget)
         public
         virtual
         returns (address, address payable);
@@ -83,11 +85,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
      * @param safeAddress new safe addresses that nodes attach to
      * @param moduleAddress new module addresses that nodes attach to
      */
-    function moveNodesToSafeModule(
-        address[] memory nodeAddresses,
-        address safeAddress,
-        address moduleAddress
-    )
+    function moveNodesToSafeModule(address[] memory nodeAddresses, address safeAddress, address moduleAddress)
         external
     {
         // 1. get environment and msg.sender
@@ -155,7 +153,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultFundChannelMultiFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultSetCommitmentSafeFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultApproveFunctionPermisson
-         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW  // defaultSendFunctionPermisson
+         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW // defaultSendFunctionPermisson
          *     ]
          */
         CapabilityPermission[] memory defaultChannelsCapabilityPermissions = new CapabilityPermission[](9);
@@ -173,16 +171,17 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
         bytes32 saltNonce = keccak256(abi.encodePacked(msgSender, vm.getNonce(msgSender)));
 
         // 3. deploy two proxy instances
-        (module, safe) = IFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress).clone(
-            currentNetworkDetail.addresses.moduleImplementationAddress,
-            admins,
-            uint256(saltNonce),
-            bytes32(Target.unwrap(defaultModulePermission))
-        );
+        (module, safe) = IFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
+            .clone(
+                currentNetworkDetail.addresses.moduleImplementationAddress,
+                admins,
+                uint256(saltNonce),
+                bytes32(Target.unwrap(defaultModulePermission))
+            );
 
-        emit log_string(
-            string(abi.encodePacked("--safeAddress ", vm.toString(safe), " --moduleAddress ", vm.toString(module)))
-        );
+        emit log_string(string(
+                abi.encodePacked("--safeAddress ", vm.toString(safe), " --moduleAddress ", vm.toString(module))
+            ));
 
         // 4. include nodes to the module, as an owner of safe
         includeNodesToModuleBySafe(nodeAddresses, safe, module);
@@ -242,7 +241,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultFundChannelMultiFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultSetCommitmentSafeFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultApproveFunctionPermisson
-         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW  // defaultSendFunctionPermisson
+         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW // defaultSendFunctionPermisson
          *     ]
          */
         CapabilityPermission[] memory defaultChannelsCapabilityPermissions = new CapabilityPermission[](9);
@@ -387,9 +386,8 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
 
         // 2. prepare data payload for the deregistration
         for (uint256 i = 0; i < nodeAddresses.length; i++) {
-            address safe = HoprNodeSafeRegistry(currentNetworkDetail.addresses.nodeSafeRegistryAddress).nodeToSafe(
-                nodeAddresses[i]
-            );
+            address safe = HoprNodeSafeRegistry(currentNetworkDetail.addresses.nodeSafeRegistryAddress)
+                .nodeToSafe(nodeAddresses[i]);
 
             bytes memory safeTxData =
                 abi.encodeWithSelector(HoprNodeSafeRegistry.deregisterNodeBySafe.selector, nodeAddresses[i]);
@@ -451,9 +449,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
             _helperSignSafeTxAsOwner(IAvatar(payable(safe)), module, safeNonce, scopeTargetData);
         } catch {
             // either it's an old module where tryGetTarget was not implemented, or the module is not valid
-            emit log_string(
-                "Cannot read tryGetTarget from module contract. Either it's an old module where tryGetTarget was not implemented, or the module is not valid"
-            );
+            emit log_string("Cannot read tryGetTarget from module contract. Either it's an old module where tryGetTarget was not implemented, or the module is not valid");
         }
     }
 
@@ -481,7 +477,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultFundChannelMultiFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultSetCommitmentSafeFunctionPermisson
          *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW, // defaultApproveFunctionPermisson
-         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW  // defaultSendFunctionPermisson
+         *       CapabilityPermission.SPECIFIC_FALLBACK_ALLOW // defaultSendFunctionPermisson
          *     ]
          */
         CapabilityPermission[] memory channelsCapabilityPermissions = new CapabilityPermission[](9);
@@ -511,9 +507,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
             _helperSignSafeTxAsOwner(IAvatar(payable(safe)), module, safeNonce, scopeTargetData);
         } catch {
             // either it's an old module where tryGetTarget was not implemented, or the module is not valid
-            emit log_string(
-                "Cannot read tryGetTarget from module contract. Either it's an old module where tryGetTarget was not implemented, or the module is not valid"
-            );
+            emit log_string("Cannot read tryGetTarget from module contract. Either it's an old module where tryGetTarget was not implemented, or the module is not valid");
         }
     }
 
@@ -625,13 +619,11 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
                 if (!successTransferTokens) {
                     emit log_string("Cannot transfer HOPR tokens to the recipient");
                 } else {
-                    emit log_string(
-                        string(
+                    emit log_string(string(
                             abi.encodePacked(
                                 "Transferred ", vm.toString(hoprTokenToTransfer), " weiHOPR to ", vm.toString(recipient)
                             )
-                        )
-                    );
+                        ));
                 }
             } else {
                 // if transfer cannot be called, try minting token as a minter
@@ -649,21 +641,18 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
                         "mint(address,uint256,bytes,bytes)", recipient, hoprTokenToTransfer, hex"00", hex"00"
                     )
                 );
-                emit log_string(
-                    string(
+                emit log_string(string(
                         abi.encodePacked(
                             "Minted ", vm.toString(hoprTokenToTransfer), " weiHOPR to ", vm.toString(recipient)
                         )
-                    )
-                );
+                    ));
 
                 if (!successMintTokens) {
                     emit log_string("Cannot mint HOPR tokens to the recipient");
                 }
             }
         } else {
-            emit log_string(
-                string(
+            emit log_string(string(
                     abi.encodePacked(
                         "Skipping HOPR funding, balance ",
                         vm.toString(recipientTokenBalance),
@@ -671,8 +660,7 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
                         vm.toString(hoprTokenAmountInWei),
                         " weiHOPR"
                     )
-                )
-            );
+                ));
         }
     }
 

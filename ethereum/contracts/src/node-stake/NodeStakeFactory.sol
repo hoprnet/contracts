@@ -32,20 +32,22 @@ abstract contract HoprNodeStakeFactoryEvents {
 }
 
 interface IHoprNodeStakeFactory {
-    function deployModule(address safeProxyAddr, bytes32 defaultTarget, uint256 nonce) external returns (address moduleProxy);
+    function deployModule(address safeProxyAddr, bytes32 defaultTarget, uint256 nonce)
+        external
+        returns (address moduleProxy);
 }
 
 /**
  *    &&&&
  *    &&&&
  *    &&&&
- *    &&&&  &&&&&&&&&       &&&&&&&&&&&&          &&&&&&&&&&/   &&&&.&&&&&&&&&
- *    &&&&&&&&&   &&&&&   &&&&&&     &&&&&,     &&&&&    &&&&&  &&&&&&&&   &&&&
- *     &&&&&&      &&&&  &&&&#         &&&&   &&&&&       &&&&& &&&&&&     &&&&&
- *     &&&&&       &&&&/ &&&&           &&&& #&&&&        &&&&  &&&&&
- *     &&&&         &&&& &&&&&         &&&&  &&&&        &&&&&  &&&&&
- *     %%%%        /%%%%   %%%%%%   %%%%%%   %%%%  %%%%%%%%%    %%%%%
- *    %%%%%        %%%%      %%%%%%%%%%%    %%%%   %%%%%%       %%%%
+ *    &&&& &&&&&&&&& &&&&&&&&&&&& &&&&&&&&&&/ &&&&.&&&&&&&&&
+ *    &&&&&&&&& &&&&& &&&&&& &&&&&, &&&&& &&&&& &&&&&&&& &&&&
+ *     &&&&&& &&&& &&&&# &&&& &&&&& &&&&& &&&&&& &&&&&
+ *     &&&&& &&&&/ &&&& &&&& #&&&& &&&& &&&&&
+ *     &&&& &&&& &&&&& &&&& &&&& &&&&& &&&&&
+ *     %%%% /%%%% %%%%%% %%%%%% %%%% %%%%%%%%% %%%%%
+ *    %%%%% %%%% %%%%%%%%%%% %%%% %%%%%% %%%%
  *                                          %%%%
  *                                          %%%%
  *                                          %%%%
@@ -92,9 +94,12 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     // required by ERC777 spec
     bytes32 public constant TOKENS_RECIPIENT_INTERFACE_HASH = keccak256("ERC777TokensRecipient");
     // function identifier from keccak256("_deploySafeAndModule(uint256,bytes32,address,address,uint256,address[])"))
-    bytes32 public constant DEPLOYSAFEMODULE_FUNCTION_IDENTIFIER = 0xdd24c144db91d1bc600aac99393baf8f8c664ba461188f057e37f2c37b962b45;
-    // function identifier from (keccak256("_deploySafeAndModuleAndIncludeNodes(uint256,bytes32,address,address,uint256,address[])"))
-    bytes32 public constant DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER = 0x0105b97dcdf19d454ebe36f91ed516c2b90ee79f4a46af96a0138c1f5403c1cc;
+    bytes32 public constant DEPLOYSAFEMODULE_FUNCTION_IDENTIFIER =
+        0xdd24c144db91d1bc600aac99393baf8f8c664ba461188f057e37f2c37b962b45;
+    // function identifier from
+    // (keccak256("_deploySafeAndModuleAndIncludeNodes(uint256,bytes32,address,address,uint256,address[])"))
+    bytes32 public constant DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER =
+        0x0105b97dcdf19d454ebe36f91ed516c2b90ee79f4a46af96a0138c1f5403c1cc;
 
     // Encoded address of the contract's approver, used for EIP-1271 signature verification
     bytes32 internal immutable r;
@@ -112,7 +117,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     });
 
     HoprNetwork public defaultHoprNetwork = HoprNetwork({
-        tokenAddress: 0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1,   // wxHOPR token address on Gnosis chain
+        tokenAddress: 0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1, // wxHOPR token address on Gnosis chain
         defaultTokenAllowance: 1000 ether,
         defaultAnnouncementTarget: bytes32(0)
     });
@@ -133,7 +138,9 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @dev Constructor function to initialize contract state.
      * Initializes the encoded address of the contract's approver and the approved hash signature.
      */
-    constructor(address _moduleSingletonAddress, address _announcementAddress, address initialOwner) Ownable(initialOwner) {
+    constructor(address _moduleSingletonAddress, address _announcementAddress, address initialOwner)
+        Ownable(initialOwner)
+    {
         // Encode the contract's address to be used in EIP-1271 signature verification
         r = bytes32(uint256(uint160(address(this))));
         // Encode the EIP-1271 contract signature for approval hash verification
@@ -143,7 +150,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         // Register as an ERC777 token recipient
         _ERC1820_REGISTRY.setInterfaceImplementer(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
         // Set the initial announcement target
-        defaultHoprNetwork.defaultAnnouncementTarget = bytes32(uint256(uint160(_announcementAddress))) << 96 | bytes32(uint256(0x010003000000000000000000));
+        defaultHoprNetwork.defaultAnnouncementTarget =
+            bytes32(uint256(uint160(_announcementAddress))) << 96 | bytes32(uint256(0x010003000000000000000000));
 
         // Set the initial Safe library addresses
         emit HoprNodeStakeSafeLibUpdated(safeLibAddresses);
@@ -166,7 +174,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @param from The address which sent the tokens.
      * @param to The address which received the tokens (should be this contract).
      * @param amount The amount of tokens received.
-     * @param userData Additional data sent with the transfer, expected to contain caller, nonce, defaultTarget, and admins.
+     * @param userData Additional data sent with the transfer, expected to contain caller, nonce, defaultTarget, and
+     * admins.
      */
     function tokensReceived(
         address, // operator not needed
@@ -185,19 +194,33 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         require(msg.sender == defaultHoprNetwork.tokenAddress, UnauthorizedToken());
 
         // Decode userData to extract caller, nonce, defaultTarget, and admins
-        (bytes32 functionIdentifier, uint256 nonce, bytes32 defaultTarget, address[] memory admins) = abi.decode(userData, (bytes32, uint256, bytes32, address[]));
+        (bytes32 functionIdentifier, uint256 nonce, bytes32 defaultTarget, address[] memory admins) =
+            abi.decode(userData, (bytes32, uint256, bytes32, address[]));
 
         address payable safeProxy;
         // Ensure the function selector matches the expected value for this operation
         if (functionIdentifier == DEPLOYSAFEMODULE_FUNCTION_IDENTIFIER) {
             // Deploy Safe and module proxies
-            (, safeProxy) = _deploySafeAndModule(nonce, defaultTarget, from, defaultHoprNetwork.tokenAddress, defaultHoprNetwork.defaultTokenAllowance, admins);
+            (, safeProxy) = _deploySafeAndModule(
+                nonce,
+                defaultTarget,
+                from,
+                defaultHoprNetwork.tokenAddress,
+                defaultHoprNetwork.defaultTokenAllowance,
+                admins
+            );
         } else if (functionIdentifier == DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER) {
             // Deploy Safe and module proxies using the clone function
-            (, safeProxy) = _deploySafeAndModuleAndIncludeNodes(nonce, defaultTarget, from, defaultHoprNetwork.tokenAddress, defaultHoprNetwork.defaultTokenAllowance, admins);
+            (, safeProxy) = _deploySafeAndModuleAndIncludeNodes(
+                nonce,
+                defaultTarget,
+                from,
+                defaultHoprNetwork.tokenAddress,
+                defaultHoprNetwork.defaultTokenAllowance,
+                admins
+            );
         } else {
             revert InvalidFunctionSelector();
-
         }
 
         // Transfer the received tokens to the Safe proxy
@@ -257,15 +280,18 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * contract.
      * @return addresses of the deployed module proxy and safe proxy.
      */
-    function clone(
-        uint256 nonce,
-        bytes32 defaultTarget,
-        address[] memory admins
-    )
+    function clone(uint256 nonce, bytes32 defaultTarget, address[] memory admins)
         public
         returns (address, address payable)
     {
-        return _deploySafeAndModule(nonce, defaultTarget, msg.sender, defaultHoprNetwork.tokenAddress, defaultHoprNetwork.defaultTokenAllowance, admins);
+        return _deploySafeAndModule(
+            nonce,
+            defaultTarget,
+            msg.sender,
+            defaultHoprNetwork.tokenAddress,
+            defaultHoprNetwork.defaultTokenAllowance,
+            admins
+        );
     }
 
     /**
@@ -280,7 +306,10 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @param nonce A nonce used to create a salt. Both the safe and module proxies share the same nonce.
      * @return moduleProxy The address of the deployed module proxy.
      */
-    function deployModule(address safeProxyAddr, bytes32 defaultTarget, uint256 nonce) public returns (address moduleProxy) {
+    function deployModule(address safeProxyAddr, bytes32 defaultTarget, uint256 nonce)
+        public
+        returns (address moduleProxy)
+    {
         moduleProxy = _deployModule(safeProxyAddr, defaultTarget, safeProxyAddr, nonce);
         emit NewHoprNodeStakeModuleForSafe(moduleProxy, safeProxyAddr);
     }
@@ -319,7 +348,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         address payable safeProxyAddr = _deploySafe(admins, nonce);
 
         // 2. Prepare module initializer data
-       address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
+        address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
 
         // 3. Send safe transactions
         {
@@ -337,19 +366,20 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
             // - Nonce 2: Approve the channels contract to spend HOPR tokens on behalf of the safe
             bytes memory approveData = abi.encodeWithSignature(
                 "approve(address,uint256)",
-                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default target
+                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default
+                    // target
                 approveAmount
             );
             _prepareSafeTx(safeProxyAddr, tokenAddress, approveData);
             // - Nonce 3: Renounce ownership from the safe
-            bytes memory swapOwnerData =
-                abi.encodeWithSignature("removeOwner(address,address,uint256)", admins[admins.length - 2], address(this), 1);
+            bytes memory swapOwnerData = abi.encodeWithSignature(
+                "removeOwner(address,address,uint256)", admins[admins.length - 2], address(this), 1
+            );
             _prepareSafeTx(safeProxyAddr, swapOwnerData);
         }
 
         return (moduleProxy, safeProxyAddr);
     }
-
 
     function _deploySafeAndModuleAndIncludeNodes(
         uint256 nonce,
@@ -374,7 +404,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         address payable safeProxyAddr = _deploySafe(admins, nonce);
 
         // 2. Prepare module initializer data
-       address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
+        address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
 
         // 3. Send safe transactions
         {
@@ -392,7 +422,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
             // - Nonce 2: Approve the channels contract to spend HOPR tokens on behalf of the safe
             bytes memory approveData = abi.encodeWithSignature(
                 "approve(address,uint256)",
-                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default target
+                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default
+                    // target
                 approveAmount
             );
             _prepareSafeTx(safeProxyAddr, tokenAddress, approveData);
@@ -405,8 +436,9 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
             bytes memory addNodeData = abi.encodeWithSignature("includeNodes(address[])", admins);
             _prepareSafeTx(safeProxyAddr, moduleProxy, addNodeData);
             // - Nonce 4: Renounce ownership from the safe
-            bytes memory swapOwnerData =
-                abi.encodeWithSignature("removeOwner(address,address,uint256)", admins[admins.length - 1], address(this), 1);
+            bytes memory swapOwnerData = abi.encodeWithSignature(
+                "removeOwner(address,address,uint256)", admins[admins.length - 1], address(this), 1
+            );
             _prepareSafeTx(safeProxyAddr, swapOwnerData);
         }
 
@@ -446,18 +478,19 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @param data The data payload for the transaction.
      */
     function _prepareSafeTx(address safeAddress, bytes memory data) private {
-        Safe(payable(safeAddress)).execTransaction(
-            safeAddress,                  // to address
-            0,                              // value
-            data,                           // data
-            Enum.Operation.Call,            // operation
-            0,                              // safeTxGas
-            0,                              // baseGas
-            0,                              // gasPrice
-            address(0),                     // gasToken
-            payable(address(msg.sender)),   // refundReceiver
-            approvalHashSig                 // signature
-        );
+        Safe(payable(safeAddress))
+            .execTransaction(
+                safeAddress, // to address
+                0, // value
+                data, // data
+                Enum.Operation.Call, // operation
+                0, // safeTxGas
+                0, // baseGas
+                0, // gasPrice
+                address(0), // gasToken
+                payable(address(msg.sender)), // refundReceiver
+                approvalHashSig // signature
+            );
     }
 
     /**
@@ -467,18 +500,19 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @param data The data payload for the transaction.
      */
     function _prepareSafeTx(address safeAddress, address to, bytes memory data) private {
-        Safe(payable(safeAddress)).execTransaction(
-            to,                             // to address
-            0,                              // value
-            data,                           // data
-            Enum.Operation.Call,            // operation
-            0,                              // safeTxGas
-            0,                              // baseGas
-            0,                              // gasPrice
-            address(0),                     // gasToken
-            payable(address(msg.sender)),   // refundReceiver
-            approvalHashSig                 // signature
-        );
+        Safe(payable(safeAddress))
+            .execTransaction(
+                to, // to address
+                0, // value
+                data, // data
+                Enum.Operation.Call, // operation
+                0, // safeTxGas
+                0, // baseGas
+                0, // gasPrice
+                address(0), // gasToken
+                payable(address(msg.sender)), // refundReceiver
+                approvalHashSig // signature
+            );
     }
 
     /**
@@ -501,9 +535,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         );
 
         // Deploy Safe proxy
-        SafeProxy safeProxy = SafeProxyFactory(safeLibAddresses.safeProxyFactoryAddress).createProxyWithNonce(
-            safeLibAddresses.safeAddress, safeInitializer, nonce
-        );
+        SafeProxy safeProxy = SafeProxyFactory(safeLibAddresses.safeProxyFactoryAddress)
+            .createProxyWithNonce(safeLibAddresses.safeAddress, safeInitializer, nonce);
         safeProxyAddr = payable(address(safeProxy));
         emit NewHoprNodeStakeSafe(safeProxyAddr);
     }
@@ -519,25 +552,31 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * @param nonce A nonce used to create a salt. Both the safe and module proxies share the same nonce.
      * @return moduleProxy The address of the deployed module proxy.
      */
-    function _deployModule(address safeProxyAddr, bytes32 defaultTarget, address caller, uint256 nonce) private returns (address moduleProxy) {
-         // Add Safe and multisend to the module, then transfer ownership to the module
+    function _deployModule(address safeProxyAddr, bytes32 defaultTarget, address caller, uint256 nonce)
+        private
+        returns (address moduleProxy)
+    {
+        // Add Safe and multisend to the module, then transfer ownership to the module
         bytes memory moduleInitializer = abi.encodeWithSignature(
             "initialize(bytes)",
-            abi.encode(safeProxyAddr, safeLibAddresses.multiSendAddress, defaultHoprNetwork.defaultAnnouncementTarget, defaultTarget)
+            abi.encode(
+                safeProxyAddr,
+                safeLibAddresses.multiSendAddress,
+                defaultHoprNetwork.defaultAnnouncementTarget,
+                defaultTarget
+            )
         );
 
         // Generate a unique salt using the sender's address and the provided nonce
-        /// forge-lint: disable-next-line(asm-keccak256)
+        // / forge-lint: disable-next-line(asm-keccak256)
         bytes32 salt = keccak256(abi.encodePacked(caller, nonce));
 
         // Deploy module proxy (ERC1967Proxy) with CREATE2
-        moduleProxy = Create2.deploy(0, salt, abi.encodePacked(
-            type(ERC1967Proxy).creationCode, 
-            abi.encode(
-                moduleSingletonAddress,
-                moduleInitializer
-            )
-        ));
+        moduleProxy = Create2.deploy(
+            0,
+            salt,
+            abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(moduleSingletonAddress, moduleInitializer))
+        );
         emit NewHoprNodeStakeModule(moduleProxy);
     }
 
@@ -554,19 +593,27 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         returns (address predicted)
     {
         // forge-lint: disable-start(asm-keccak256)
-        bytes32 bytecodeHash = keccak256(abi.encodePacked(
-            type(ERC1967Proxy).creationCode, 
-            abi.encode(
-                moduleSingletonAddress,
-                abi.encodeWithSignature(
-                    "initialize(bytes)",
-                    abi.encode(safe, safeLibAddresses.multiSendAddress, defaultHoprNetwork.defaultAnnouncementTarget, defaultTarget)
+        bytes32 bytecodeHash = keccak256(
+            abi.encodePacked(
+                type(ERC1967Proxy).creationCode,
+                abi.encode(
+                    moduleSingletonAddress,
+                    abi.encodeWithSignature(
+                        "initialize(bytes)",
+                        abi.encode(
+                            safe,
+                            safeLibAddresses.multiSendAddress,
+                            defaultHoprNetwork.defaultAnnouncementTarget,
+                            defaultTarget
+                        )
+                    )
                 )
             )
-        ));
+        );
 
         return Create2.computeAddress(salt, bytecodeHash);
     }
+
     /**
      * @dev Predicts the deterministic address of a module proxy deployed by this factory for a given deployer and nonce
      *      using the CREATE2 opcode.

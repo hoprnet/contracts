@@ -17,7 +17,13 @@ import { WinProb } from "../src/WinningProbabilityOracle.sol";
  * before running this script.
  * @dev It reads the environment, netork and deployer internal key from env variables
  */
-contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtureTest, SafeSingletonFixtureTest, PermittableTokenFixtureTest {
+contract DeployAllContractsScript is
+    Script,
+    NetworkConfig,
+    ERC1820RegistryFixtureTest,
+    SafeSingletonFixtureTest,
+    PermittableTokenFixtureTest
+{
     using BoostUtilsLib for address;
 
     bool internal isHoprChannelsDeployed;
@@ -128,12 +134,14 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
                 || !isValidAddress(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
         ) {
             // deploy HoprNodeStakeFactory contract
-            currentNetworkDetail.addresses.nodeStakeFactoryAddress =
-                deployCode("NodeStakeFactory.sol:HoprNodeStakeFactory", abi.encode(
-                    currentNetworkDetail.addresses.moduleImplementationAddress, 
+            currentNetworkDetail.addresses.nodeStakeFactoryAddress = deployCode(
+                "NodeStakeFactory.sol:HoprNodeStakeFactory",
+                abi.encode(
+                    currentNetworkDetail.addresses.moduleImplementationAddress,
                     currentNetworkDetail.addresses.announcements,
                     deployerAddress
-                ));
+                )
+            );
         }
     }
 
@@ -162,18 +170,18 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
             // deploy token contract
             currentNetworkDetail.addresses.tokenContractAddress = deployCode("HoprToken.sol");
             // grant deployer minter role
-            (bool successGrantMinterRole,) = currentNetworkDetail.addresses.tokenContractAddress.call(
-                abi.encodeWithSignature("grantRole(bytes32,address)", MINTER_ROLE, deployerAddress)
-            );
+            (bool successGrantMinterRole,) = currentNetworkDetail.addresses.tokenContractAddress
+                .call(abi.encodeWithSignature("grantRole(bytes32,address)", MINTER_ROLE, deployerAddress));
             if (!successGrantMinterRole) {
                 emit log_string("Cannot grantMinterRole");
             }
             // mint some tokens to the deployer
-            (bool successMintTokens,) = currentNetworkDetail.addresses.tokenContractAddress.call(
-                abi.encodeWithSignature(
-                    "mint(address,uint256,bytes,bytes)", recipient, 130_000_000 ether, hex"00", hex"00"
-                )
-            );
+            (bool successMintTokens,) = currentNetworkDetail.addresses.tokenContractAddress
+                .call(
+                    abi.encodeWithSignature(
+                        "mint(address,uint256,bytes,bytes)", recipient, 130_000_000 ether, hex"00", hex"00"
+                    )
+                );
             if (!successMintTokens) {
                 emit log_string("Cannot mint tokens");
             }
@@ -207,7 +215,8 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
      * @dev deploy ticket price oracle
      */
     function _deployHoprTicketPriceOracle(address deployerAddress) internal {
-        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL? 1_000_000_000_000_000 : 100; // 0.001 HOPR in test environment
+        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL ? 1_000_000_000_000_000 : 100; // 0.001 HOPR in
+            // test environment
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.ticketPriceOracleContractAddress)

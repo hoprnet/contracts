@@ -18,7 +18,7 @@ interface IUpgradeable {
 }
 
 abstract contract HoprNodeSafeMigrationEvents {
-    /** 
+    /**
      * @notice Emitted when the migration of the Safe is completed
      * @param safeProxy Address of the migrated Safe proxy
      * @param oldModuleProxy Address of the old module proxy
@@ -27,17 +27,18 @@ abstract contract HoprNodeSafeMigrationEvents {
     event SafeAndModuleMigrationCompleted(address safeProxy, address oldModuleProxy, address newModuleProxy);
     event ChangedModuleImplementation(address moduleProxy);
 }
+
 /**
  *    &&&&
  *    &&&&
  *    &&&&
- *    &&&&  &&&&&&&&&       &&&&&&&&&&&&          &&&&&&&&&&/   &&&&.&&&&&&&&&
- *    &&&&&&&&&   &&&&&   &&&&&&     &&&&&,     &&&&&    &&&&&  &&&&&&&&   &&&&
- *     &&&&&&      &&&&  &&&&#         &&&&   &&&&&       &&&&& &&&&&&     &&&&&
- *     &&&&&       &&&&/ &&&&           &&&& #&&&&        &&&&  &&&&&
- *     &&&&         &&&& &&&&&         &&&&  &&&&        &&&&&  &&&&&
- *     %%%%        /%%%%   %%%%%%   %%%%%%   %%%%  %%%%%%%%%    %%%%%
- *    %%%%%        %%%%      %%%%%%%%%%%    %%%%   %%%%%%       %%%%
+ *    &&&& &&&&&&&&& &&&&&&&&&&&& &&&&&&&&&&/ &&&&.&&&&&&&&&
+ *    &&&&&&&&& &&&&& &&&&&& &&&&&, &&&&& &&&&& &&&&&&&& &&&&
+ *     &&&&&& &&&& &&&&# &&&& &&&&& &&&&& &&&&&& &&&&&
+ *     &&&&& &&&&/ &&&& &&&& #&&&& &&&& &&&&&
+ *     &&&& &&&& &&&&& &&&& &&&& &&&&& &&&&&
+ *     %%%% /%%%% %%%%%% %%%%%% %%%% %%%%%%%%% %%%%%
+ *    %%%%% %%%% %%%%%%%%%%% %%%% %%%%%% %%%%
  *                                          %%%%
  *                                          %%%%
  *                                          %%%%
@@ -45,7 +46,7 @@ abstract contract HoprNodeSafeMigrationEvents {
  * @title Migration Contract for Hopr Node Safe and Module Upgrade
  * @notice This is a contract that facilitates HOPR Node Safe and Hopr module upgrades.
  * HOPR Node Safe version 1.0.0 is the first version of the Hopr Node Safe, which uses Safe.sol
- * as its implementation. This contract allows for the migration of Safe implementations of 
+ * as its implementation. This contract allows for the migration of Safe implementations of
  * different versions, as long as the new version shares the same storage layout, as defined in
  * the SafeStorage.sol library. E.g. from Safe.sol version 1.4.1 to SafeL2.sol version 1.5.0
  *
@@ -58,7 +59,8 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
      * @notice Address of this contract
      */
     address public immutable MODULE_SINGLETON;
-    /** @notice Address of the Factory contract
+    /**
+     * @notice Address of the Factory contract
      */
     address public immutable FACTORY_ADDRESS;
 
@@ -82,14 +84,13 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
      * @param moduleSingleton Address of the Module Singleton
      * @param nodeStakeFactory Address of the HoprNodeStakeFactory contract
      */
-    constructor(
-        address moduleSingleton,
-        address nodeStakeFactory
-    ) SafeMigration(
-        SafeSuiteLibV150.SAFE_SafeL2_ADDRESS,
-        SafeSuiteLibV141.SAFE_SafeL2_ADDRESS,
-        SafeSuiteLibV150.SAFE_CompatibilityFallbackHandler_ADDRESS
-    ) {
+    constructor(address moduleSingleton, address nodeStakeFactory)
+        SafeMigration(
+            SafeSuiteLibV150.SAFE_SafeL2_ADDRESS,
+            SafeSuiteLibV141.SAFE_SafeL2_ADDRESS,
+            SafeSuiteLibV150.SAFE_CompatibilityFallbackHandler_ADDRESS
+        )
+    {
         require(hasCode(moduleSingleton), "Module Singleton is not deployed");
         MODULE_SINGLETON = moduleSingleton;
         require(hasCode(nodeStakeFactory), "Node Stake Factory is not deployed");
@@ -98,13 +99,14 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
 
     /**
      * @notice Internal function to migrate the Module to a new singleton.
-     * @dev This function is 
+     * @dev This function is
      * @param moduleProxy Address of the module proxy
      */
-    function migrateModuleSingleton(
-        address moduleProxy,
-        bytes memory data
-    ) public onlyDelegateCall onlyEnabledModule(moduleProxy) {
+    function migrateModuleSingleton(address moduleProxy, bytes memory data)
+        public
+        onlyDelegateCall
+        onlyEnabledModule(moduleProxy)
+    {
         // as a Safe, which is the owner of the module contract, upgradeToAndCall the
         // module contract to the new singleton
         IUpgradeable(moduleProxy).upgradeToAndCall(MODULE_SINGLETON, data);
@@ -116,7 +118,11 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
         bytes32 defaultTarget,
         uint256 nonce,
         address[] memory nodes
-    ) public onlyDelegateCall onlyEnabledModule(oldModuleProxy) {
+    )
+        public
+        onlyDelegateCall
+        onlyEnabledModule(oldModuleProxy)
+    {
         // migrate the safe from v1.4.1 to v1.4.1 SafeL2, and set the fallback handler
         migrateL2Singleton();
         ISafe(payable(address(this))).setFallbackHandler(SAFE_FALLBACK_HANDLER);
@@ -128,16 +134,11 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
             keccak256("ERC777TokensRecipient"),
             address(this)
         );
-        execute(
-            ERC1820_ADDRESS,
-            0,
-            setInterfaceData,
-            Enum.Operation.Call,
-            gasleft() - 2500
-        );
+        execute(ERC1820_ADDRESS, 0, setInterfaceData, Enum.Operation.Call, gasleft() - 2500);
 
         // deploy a new module contract
-        address newModuleProxy = IHoprNodeStakeFactory(FACTORY_ADDRESS).deployModule(address(this), defaultTarget, nonce);
+        address newModuleProxy =
+            IHoprNodeStakeFactory(FACTORY_ADDRESS).deployModule(address(this), defaultTarget, nonce);
         // add all the nodes to the new module
         IHoprNodeManagementModule(newModuleProxy).includeNodes(nodes);
         // enable the newly deployed module

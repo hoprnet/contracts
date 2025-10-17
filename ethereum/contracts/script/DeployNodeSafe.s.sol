@@ -4,7 +4,14 @@ pragma solidity >=0.8.0 <0.9.0;
 import { Script } from "forge-std/Script.sol";
 import { Test } from "forge-std/Test.sol";
 import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
-import { Clearance, CapabilityPermission, Target, TargetType, TargetUtils, TargetPermission } from "../src/utils/TargetUtils.sol";
+import {
+    Clearance,
+    CapabilityPermission,
+    Target,
+    TargetType,
+    TargetUtils,
+    TargetPermission
+} from "../src/utils/TargetUtils.sol";
 
 contract DeployNodeSafeScript is Script, Test, NetworkConfig {
     using TargetUtils for address;

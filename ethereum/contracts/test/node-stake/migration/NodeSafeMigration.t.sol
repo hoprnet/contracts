@@ -4,7 +4,11 @@ pragma solidity >=0.8.0 <0.9.0;
 import { Test } from "forge-std/Test.sol";
 import { HoprNodeManagementModule } from "../../../src/node-stake/permissioned-module/NodeManagementModule.sol";
 import { HoprNodeStakeFactory, HoprNodeStakeFactoryEvents } from "../../../src/node-stake/NodeStakeFactory.sol";
-import { HoprNodeSafeMigration, HoprNodeSafeMigrationEvents, IOwner } from "../../../src/node-stake/migration/NodeSafeMigration.sol";
+import {
+    HoprNodeSafeMigration,
+    HoprNodeSafeMigrationEvents,
+    IOwner
+} from "../../../src/node-stake/migration/NodeSafeMigration.sol";
 import { Enum, IAvatar } from "../../../src/interfaces/IAvatar.sol";
 import { IAvatar } from "../../../src/interfaces/IAvatar.sol";
 import { ERC1820RegistryFixtureTest } from "../../utils/ERC1820Registry.sol";
@@ -13,7 +17,13 @@ import { SafeSuiteLibV150 } from "../../../src/utils/SafeSuiteLibV150.sol";
 import { SafeSingletonFixtureTest } from "../../utils/SafeSingleton.sol";
 import { HoprToken } from "../../../src/static/HoprToken.sol";
 
-contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingletonFixtureTest, HoprNodeStakeFactoryEvents, HoprNodeSafeMigrationEvents {
+contract NodeSafeMigrationTest is
+    Test,
+    ERC1820RegistryFixtureTest,
+    SafeSingletonFixtureTest,
+    HoprNodeStakeFactoryEvents,
+    HoprNodeSafeMigrationEvents
+{
     HoprNodeManagementModule public oldModuleSingleton;
     HoprNodeManagementModule public newModuleSingleton;
     HoprNodeSafeMigration public migrationContract;
@@ -36,7 +46,6 @@ contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingleto
         bytes32(hex"0202020202020202020202020202020202020202010101010101010101010101");
     bytes32 public constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
-
     function setUp() public override(ERC1820RegistryFixtureTest, SafeSingletonFixtureTest) {
         ERC1820RegistryFixtureTest.setUp();
         SafeSingletonFixtureTest.setUp();
@@ -55,20 +64,24 @@ contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingleto
         vm.mockCall(OLD_CHANNELS, abi.encodeWithSignature("TOKEN()"), abi.encode(address(hoprToken)));
         vm.mockCall(NEW_CHANNELS, abi.encodeWithSignature("TOKEN()"), abi.encode(address(hoprToken)));
         vm.mockCall(address(hoprToken), abi.encodeWithSignature("approve(address,address)"), abi.encode(bool(true)));
-    
+
         (, uint256 oldDefaultAllowance, bytes32 oldDefaultAnnouncement) = oldFactory.defaultHoprNetwork();
         vm.startPrank(ADMIN);
-        oldFactory.updateHoprNetwork(HoprNodeStakeFactory.HoprNetwork({
-            tokenAddress: address(hoprToken),
-            defaultAnnouncementTarget: oldDefaultAnnouncement,
-            defaultTokenAllowance: oldDefaultAllowance
-        }));
+        oldFactory.updateHoprNetwork(
+            HoprNodeStakeFactory.HoprNetwork({
+                tokenAddress: address(hoprToken),
+                defaultAnnouncementTarget: oldDefaultAnnouncement,
+                defaultTokenAllowance: oldDefaultAllowance
+            })
+        );
         (, uint256 newDefaultAllowance, bytes32 newDefaultAnnouncement) = newFactory.defaultHoprNetwork();
-        newFactory.updateHoprNetwork(HoprNodeStakeFactory.HoprNetwork({
-            tokenAddress: address(hoprToken),
-            defaultAnnouncementTarget: newDefaultAnnouncement,
-            defaultTokenAllowance: newDefaultAllowance
-        }));
+        newFactory.updateHoprNetwork(
+            HoprNodeStakeFactory.HoprNetwork({
+                tokenAddress: address(hoprToken),
+                defaultAnnouncementTarget: newDefaultAnnouncement,
+                defaultTokenAllowance: newDefaultAllowance
+            })
+        );
         vm.stopPrank();
         _;
     }
@@ -109,29 +122,28 @@ contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingleto
         admins[0] = caller;
         // use the old factory to deploy a module with an outdated implementation
         vm.prank(caller);
-        (address oldModuleProxy, address payable safeAddress) = oldFactory.clone(
-            nonce,
-            OLD_DEFAULT_TARGET,
-            admins
+        (address oldModuleProxy, address payable safeAddress) = oldFactory.clone(nonce, OLD_DEFAULT_TARGET, admins);
+        assertEq(
+            vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(oldModuleSingleton))))
         );
-        assertEq(vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT), bytes32(uint256(uint160(address(oldModuleSingleton)))));
 
         // migrate the module implementation to a new one, using delegate call from the safe
-        bytes memory data = abi.encodeWithSelector(
-            migrationContract.migrateModuleSingleton.selector,
-            oldModuleProxy,
-            hex""
-        );
+        bytes memory data =
+            abi.encodeWithSelector(migrationContract.migrateModuleSingleton.selector, oldModuleProxy, hex"");
 
         vm.prank(caller);
         // vm.expectEmit(false, false, false, true, safeAddress);
         // emit ChangedModuleImplementation(
-        //     oldModuleProxy
-        // );
+        // oldModuleProxy
+        //);
         _helperSafeTxnDelegateCall(address(migrationContract), IAvatar(safeAddress), callerPrivateKey, data);
 
         // verify the current implementation address is indeed the latest one
-        assertEq(vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT), bytes32(uint256(uint160(address(newModuleSingleton)))));
+        assertEq(
+            vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(newModuleSingleton))))
+        );
         vm.clearMockedCalls();
     }
 
@@ -149,22 +161,21 @@ contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingleto
 
         // create a safe via the old factory
         vm.prank(caller);
-        (address oldModuleProxy, address payable safeAddress) = oldFactory.clone(
-            nonce,
-            OLD_DEFAULT_TARGET,
-            admins
-        );
+        (address oldModuleProxy, address payable safeAddress) = oldFactory.clone(nonce, OLD_DEFAULT_TARGET, admins);
         // check the safe is created with the old module
         assertTrue(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy)));
         // module proxy uses old implementation, at the implementation slot
-        assertEq(vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT), bytes32(uint256(uint160(address(oldModuleSingleton)))));
+        assertEq(
+            vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(oldModuleSingleton))))
+        );
         // check the safe is owned by the old factory
         assertEq(IAvatar(safeAddress).getOwners().length, 1);
         assertEq(IAvatar(safeAddress).getOwners()[0], address(caller));
         // check the module is owned by the safe
         assertEq(IOwner(address(oldModuleProxy)).owner(), safeAddress);
 
-        // prepare safe transaction data for migration. Caller should call 
+        // prepare safe transaction data for migration. Caller should call
         // migrateSafeV141ToL2AndMigrateToUpgradeableModule(address,bytes32,uint256,address,address[] memory)
         // on the migration contract via delegatecall from the safe
         bytes memory data = abi.encodeWithSelector(
@@ -175,45 +186,54 @@ contract NodeSafeMigrationTest is Test, ERC1820RegistryFixtureTest, SafeSingleto
             nodes
         );
         // predict the new module deployment address
-        address newModuleProxyPrediction = newFactory.predictModuleAddress(safeAddress, newNonce, safeAddress, NEW_DEFAULT_TARGET);
+        address newModuleProxyPrediction =
+            newFactory.predictModuleAddress(safeAddress, newNonce, safeAddress, NEW_DEFAULT_TARGET);
 
         // migrate the module singleton to the new version via delegatecall from the safe, using delegatecall
         vm.prank(caller);
         // vm.expectEmit(false, false, false, true, safeAddress);
         // emit SafeAndModuleMigrationCompleted(
-        //     safeAddress,
-        //     oldModuleProxy,
-        //     newModuleProxyPrediction
-        // );
+        // safeAddress,
+        // oldModuleProxy,
+        // newModuleProxyPrediction
+        //);
         _helperSafeTxnDelegateCall(address(migrationContract), IAvatar(safeAddress), callerPrivateKey, data);
 
         // check the module is now upgraded to the new singleton
         assertEq(IOwner(address(newModuleProxyPrediction)).owner(), safeAddress); // new module is now owned by the safe
-        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction))); // new module is enabled in the safe
-        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy))); // old module is no longer enabled in the safe
-        assertEq(vm.load(address(newModuleProxyPrediction), _IMPLEMENTATION_SLOT), bytes32(uint256(uint160(address(newModuleSingleton)))));
+        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction))); // new module is enabled in
+            // the safe
+        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy))); // old module is no longer enabled
+            // in the safe
+        assertEq(
+            vm.load(address(newModuleProxyPrediction), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(newModuleSingleton))))
+        );
 
         vm.clearMockedCalls();
     }
 
-    function _helperSafeTxnDelegateCall(address to, IAvatar safeInstance, uint256 senderPrivateKey, bytes memory data) private {
+    function _helperSafeTxnDelegateCall(address to, IAvatar safeInstance, uint256 senderPrivateKey, bytes memory data)
+        private
+    {
         address sender = vm.addr(senderPrivateKey);
         uint256 safeNonce = safeInstance.nonce();
-        bytes32 dataHash =
-            safeInstance.getTransactionHash(to, 0, data, Enum.Operation.DelegateCall, 0, 0, 0, address(0), sender, safeNonce);
+        bytes32 dataHash = safeInstance.getTransactionHash(
+            to, 0, data, Enum.Operation.DelegateCall, 0, 0, 0, address(0), sender, safeNonce
+        );
 
         // sign dataHash
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(senderPrivateKey, dataHash);
         safeInstance.execTransaction(
-            to,                     // to
-            0,                      // value
-            data,                   // data 
+            to, //to
+            0, // value
+            data, // data
             Enum.Operation.DelegateCall, // operation
-            0,                      // safeTxGas
-            0,                      // baseGas
-            0,                      // gasPrice
-            address(0),             // gasToken
-            payable(sender),        // refundReceiver
+            0, // safeTxGas
+            0, // baseGas
+            0, // gasPrice
+            address(0), // gasToken
+            payable(sender), // refundReceiver
             abi.encodePacked(r, s, v) // signatures
         );
     }

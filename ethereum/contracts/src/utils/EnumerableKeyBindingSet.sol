@@ -19,7 +19,7 @@ struct KeyBindingSet {
     // items are stored from index 0 to MAX_KEY_ID
     // There can be at most (MAX_KEY_ID + 1) items in the set
     KeyBindingWithSignature[] _values;
-    // Position of the value in the `values` array plus 1 
+    // Position of the value in the `values` array plus 1
     // because index 0 means a value is not in the set.
     // The key is the ed25519_pub_key of the KeyBindingWithSignature.
     // Each ed25519_pub_key can only be associated with maximum one chain_key.
@@ -118,15 +118,14 @@ library EnumerableKeyBindingSet {
      *          Returns (false, 0, empty KeyBindingWithSignature) if the ed25519_pub_key is not in the set.
      */
     /// forge-lint:disable-next-line(mixed-case-variable)
-    function tryGet(KeyBindingSet storage set, bytes32 ed25519_pub_key) internal view returns (bool, uint256, KeyBindingWithSignature memory) {
+    function tryGet(KeyBindingSet storage set, bytes32 ed25519_pub_key)
+        internal
+        view
+        returns (bool, uint256, KeyBindingWithSignature memory)
+    {
         uint256 index = set._indexes[ed25519_pub_key];
         if (index == 0) {
-            return (false, 0, KeyBindingWithSignature(
-                bytes32(0),
-                bytes32(0),
-                bytes32(0),
-                address(0)
-            ));
+            return (false, 0, KeyBindingWithSignature(bytes32(0), bytes32(0), bytes32(0), address(0)));
         } else {
             return (true, index - 1, set._values[index - 1]);
         }
@@ -140,7 +139,11 @@ library EnumerableKeyBindingSet {
      * - `ed25519_pub_key` key must be in the map.
      */
     /// forge-lint:disable-next-line(mixed-case-variable)
-    function get(KeyBindingSet storage set, bytes32 ed25519_pub_key) internal view returns (KeyBindingWithSignature memory) {
+    function get(KeyBindingSet storage set, bytes32 ed25519_pub_key)
+        internal
+        view
+        returns (KeyBindingWithSignature memory)
+    {
         uint256 index = set._indexes[ed25519_pub_key];
         if (index == 0) {
             revert NonExistentKey();

@@ -5,7 +5,16 @@ import { Test, stdStorage, StdStorage } from "forge-std/Test.sol";
 
 import { HoprChannels, HoprChannelsType, IERC20 } from "../../../src/Channels.sol";
 import { HoprNodeManagementModule, Enum } from "../../../src/node-stake/permissioned-module/NodeManagementModule.sol";
-import { GranularPermission, CapabilityPermission, TargetPermission, TargetUtils, Target, HoprCapabilityPermissions, Clearance, TargetType } from "../../../src/node-stake/permissioned-module/CapabilityPermissions.sol";
+import {
+    GranularPermission,
+    CapabilityPermission,
+    TargetPermission,
+    TargetUtils,
+    Target,
+    HoprCapabilityPermissions,
+    Clearance,
+    TargetType
+} from "../../../src/node-stake/permissioned-module/CapabilityPermissions.sol";
 import { CapabilityPermissionsLibFixtureTest } from "../../utils/CapabilityLibrary.sol";
 import { SafeSingletonFixtureTest } from "../../utils/SafeSingleton.sol";
 import { IAvatar } from "../../../src/interfaces/IAvatar.sol";
@@ -57,13 +66,11 @@ contract HoprNodeManagementModuleTest is
         token = makeAddr("HoprToken");
 
         moduleSingleton = new HoprNodeManagementModule();
-        address moduleProxyAddress = Create2.deploy(0, bytes32(hex"abcd"), abi.encodePacked(
-            type(ERC1967Proxy).creationCode, 
-            abi.encode(
-                address(moduleSingleton),
-                hex""
-            )
-        ));
+        address moduleProxyAddress = Create2.deploy(
+            0,
+            bytes32(hex"abcd"),
+            abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(address(moduleSingleton), hex""))
+        );
         moduleProxy = HoprNodeManagementModule(moduleProxyAddress);
         defaultFunctionPermission = new CapabilityPermission[](TargetUtils.NUM_CAPABILITY_PERMISSIONS);
         defaultFunctionPermission = [
@@ -82,13 +89,10 @@ contract HoprNodeManagementModuleTest is
     modifier initializeModuleProxy(address owner) {
         vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
         emit SetMultisendAddress(multiaddr);
-        moduleProxy.initialize(
-            abi.encode(
-                owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET
-            )
-        );
+        moduleProxy.initialize(abi.encode(owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET));
         _;
     }
+
     /**
      * @dev Failes to add token target(s) when the account is not address zero
      */
@@ -109,8 +113,8 @@ contract HoprNodeManagementModuleTest is
     }
 
     /**
-    * @dev Test upgrade the module proxy to a new implementation
-    */
+     * @dev Test upgrade the module proxy to a new implementation
+     */
     function test_CanUpgradeImplementation() public initializeModuleProxy(address(1)) {
         HoprNodeManagementModule newImplementation = new HoprNodeManagementModule();
 
@@ -155,7 +159,7 @@ contract HoprNodeManagementModuleTest is
         vm.startPrank(owner);
         vm.expectEmit(true, false, false, false, address(moduleProxy));
         emit NodeAdded(account);
-        moduleProxy.addNode{value: 1 ether}(account);
+        moduleProxy.addNode{ value: 1 ether }(account);
 
         assertTrue(moduleProxy.isNode(account));
         assertEq(account.balance - initialBalance, 1 ether);
@@ -183,7 +187,7 @@ contract HoprNodeManagementModuleTest is
             vm.expectEmit(true, false, false, false, address(moduleProxy));
             emit NodeAdded(accounts[k]);
         }
-        moduleProxy.addNodes{value: 1 ether}(accounts);
+        moduleProxy.addNodes{ value: 1 ether }(accounts);
 
         for (uint256 m = 0; m < accounts.length; m++) {
             assertTrue(moduleProxy.isNode(accounts[m]));
@@ -213,7 +217,7 @@ contract HoprNodeManagementModuleTest is
             vm.expectEmit(true, false, false, false, address(moduleProxy));
             emit NodeAdded(accounts[k]);
         }
-        moduleProxy.includeNodes{value: 1 ether}(accounts);
+        moduleProxy.includeNodes{ value: 1 ether }(accounts);
 
         for (uint256 m = 0; m < accounts.length; m++) {
             assertTrue(moduleProxy.isNode(accounts[m]));
@@ -235,7 +239,7 @@ contract HoprNodeManagementModuleTest is
 
         vm.startPrank(owner);
         vm.expectRevert(HoprNodeManagementModule.FailedToSendEthToNode.selector);
-        moduleProxy.addNode{value: 1 ether}(account);
+        moduleProxy.addNode{ value: 1 ether }(account);
         vm.stopPrank();
         vm.clearMockedCalls();
     }
@@ -342,10 +346,7 @@ contract HoprNodeManagementModuleTest is
     /**
      * @dev fail to add channels target(s) when the account has been scopec
      */
-    function testRevert_ScopeExistingTargetChannelsFromModule(
-        address[] memory channelsAddresses,
-        uint256 randomIndex
-    )
+    function testRevert_ScopeExistingTargetChannelsFromModule(address[] memory channelsAddresses, uint256 randomIndex)
         public
     {
         vm.assume(channelsAddresses.length > 0);
@@ -414,10 +415,7 @@ contract HoprNodeManagementModuleTest is
     /**
      * @dev fail to add token target(s) when the account has been scopec
      */
-    function testRevert_ScopeExistingTargetTokenFromModule(
-        address[] memory tokenAddresses,
-        uint256 randomIndex
-    )
+    function testRevert_ScopeExistingTargetTokenFromModule(address[] memory tokenAddresses, uint256 randomIndex)
         public
     {
         vm.assume(tokenAddresses.length > 0);
@@ -587,10 +585,10 @@ contract HoprNodeManagementModuleTest is
         vm.mockCall(channelAddress, abi.encodeWithSignature("TOKEN()"), abi.encode(tokenAddress));
 
         // token target overwritten mask
-        // <         160 bits for address         >    <>              <func>
+        // < 160 bits for address > <> <func>
         // ffffffffffffffffffffffffffffffffffffffff0000ff00000000000000ffff
         // channels target overwritten mask
-        // <         160 bits for address         >    <   functions  >
+        // < 160 bits for address > < functions >
         // ffffffffffffffffffffffffffffffffffffffff0000ffffffffffffffff0000
         Target overwrittenTokenTarget =
             _helperTargetBitwiseAnd(target, hex"ffffffffffffffffffffffffffffffffffffffff0000ff00000000000000ffff");
@@ -1418,10 +1416,7 @@ contract HoprNodeManagementModuleTest is
      * @dev return an array with all unique addresses which does not contain address zeo
      * return a random item
      */
-    function _helperGetUniqueAddressArrayAndRandomItem(
-        address[] memory addrs,
-        uint256 randomIndex
-    )
+    function _helperGetUniqueAddressArrayAndRandomItem(address[] memory addrs, uint256 randomIndex)
         private
         pure
         returns (address[] memory, address)

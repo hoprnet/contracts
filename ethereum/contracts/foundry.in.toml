@@ -58,7 +58,7 @@ eth_rpc_url = "https://gnosis.publicnode.com/"
 [profile.ci]
 # disabled for now since the CI nodes are not powerful enough
 # fuzz = { runs = 10_000 }
-verbosity = 4
+verbosity = 3
 offline = false
 
 [fmt]
@@ -94,7 +94,7 @@ ignore = [
   "src/static/HoprDistributor.sol",
   "src/static/HoprWrapperProxy.sol",
   "src/static/stake/mocks/ERC777Mock.sol",
-  "src/static/stake/mocks/ERC677Mock.sol"
+  "src/static/stake/mocks/ERC677Mock.sol",
 ]
 
 exclude_lints = [
