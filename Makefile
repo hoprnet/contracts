@@ -29,10 +29,6 @@ init: ## initialize repository (idempotent operation)
 		ln -sf "../../$${gh}" .git/hooks/; \
 	done
 
-.PHONY: test
-test: smart-contract-test ## run unit tests for all packages, or a single package if package= is set
-	$(cargo) test --features runtime-tokio
-
 .PHONY: smart-contract-test
 # Remove `--no-match-test` when https://github.com/foundry-rs/foundry/issues/10586 is fixed
 smart-contract-test: # forge test smart contracts

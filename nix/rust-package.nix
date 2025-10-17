@@ -133,7 +133,7 @@ let
     if runTests then
       sharedArgsBase
       // {
-        cargoTestExtraArgs = "--workspace -F runtime-tokio";
+        cargoTestExtraArgs = "--workspace";
         doCheck = true;
         LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.pkgsBuildHost.openssl ];
         RUST_BACKTRACE = "full";
