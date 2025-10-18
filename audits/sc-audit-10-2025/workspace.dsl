@@ -1,4 +1,4 @@
-workspace "HOPR Smart Contracts Audit 08/2024" {
+workspace "HOPR Smart Contracts Audit 10/2025" {
   !docs docs
 
     model {
