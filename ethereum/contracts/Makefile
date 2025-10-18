@@ -6,9 +6,7 @@ forge-script = env NETWORK=$(network) FOUNDRY_PROFILE=$(environment-type) ETHERS
 
 .PHONY: sc-test
 sc-test:
-	# only produce gas reports on active contracts
-	$(forge) test --match-path "./test/(static|mocks|utils)/*.t.sol"
-    $(forge) test --gas-report --no-match-path "./test/(static|mocks|utils)/*.t.sol"
+	$(forge) test
 
 .PHONY: sc-coverage
 sc-coverage:
