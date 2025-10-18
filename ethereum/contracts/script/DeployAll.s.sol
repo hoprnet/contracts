@@ -52,6 +52,8 @@ contract DeployAllContractsScript is
         }
         // deploy safe suites if needed
         deployEntireSafeSuite();
+        // check if deployed contracts need to be written in the filesystem
+        bool skipWrite = vm.envBool("UNIT_TEST_SKIP_WRITE");
 
         // 2. Get deployer internal key.
         // Set to default when it's in development environment (uint for
@@ -108,7 +110,9 @@ contract DeployAllContractsScript is
         vm.stopBroadcast();
 
         // write to file
-        writeCurrentNetwork();
+        if (!skipWrite) {
+            writeCurrentNetwork();
+        }
     }
 
     /**

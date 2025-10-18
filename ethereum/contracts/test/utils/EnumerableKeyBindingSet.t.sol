@@ -30,6 +30,14 @@ contract EnumerableKeyBindingSetTest is Test {
         _;
     }
 
+    /**
+     * @dev limit the size of the targetVals array for gas report generation
+     */
+    modifier limitSize(bytes32[] memory bytes32Vals) {
+        vm.assume(bytes32Vals.length <= 256);
+        _;
+    }
+
     modifier respectCurveRangeSingle(bytes32 privKey) {
         // Seckp256k1 curve order
         vm.assume(uint256(privKey) < SECP256K1_ORDER);
@@ -108,7 +116,12 @@ contract EnumerableKeyBindingSetTest is Test {
     /**
      * @dev fuzz test at
      */
-    function testFuzz_At(bytes32[] memory bytes32Vals) public beforeEach respectCurveRange(bytes32Vals) {
+    function testFuzz_At(bytes32[] memory bytes32Vals)
+        public
+        beforeEach
+        respectCurveRange(bytes32Vals)
+        limitSize(bytes32Vals)
+    {
         // add unique values to target
         uint256 addedCount = _helperCreateKeyBindingSet(bytes32Vals);
         KeyBindingWithSignature[] memory values = enumerableKeyBindingSetMock.values();
@@ -127,6 +140,7 @@ contract EnumerableKeyBindingSetTest is Test {
         public
         beforeEach
         respectCurveRange(bytes32Vals)
+        limitSize(bytes32Vals)
     {
         // at least one item can be found from the array
         vm.assume(bytes32Vals.length > 0);
@@ -146,7 +160,12 @@ contract EnumerableKeyBindingSetTest is Test {
     /**
      * @dev test revert condition of get, namely when the address does not exist
      */
-    function testRevert_Get(bytes32[] memory bytes32Vals) public beforeEach respectCurveRange(bytes32Vals) {
+    function testRevert_Get(bytes32[] memory bytes32Vals)
+        public
+        beforeEach
+        respectCurveRange(bytes32Vals)
+        limitSize(bytes32Vals)
+    {
         // add values to target
         _helperCreateKeyBindingSet(bytes32Vals);
 
@@ -168,7 +187,12 @@ contract EnumerableKeyBindingSetTest is Test {
     /**
      * @dev test positive condition of get
      */
-    function testFuzz_Get(bytes32[] memory bytes32Vals) public beforeEach respectCurveRange(bytes32Vals) {
+    function testFuzz_Get(bytes32[] memory bytes32Vals)
+        public
+        beforeEach
+        respectCurveRange(bytes32Vals)
+        limitSize(bytes32Vals)
+    {
         // add values to target
         _helperCreateKeyBindingSet(bytes32Vals);
 

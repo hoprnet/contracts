@@ -19,7 +19,7 @@ contract DeployNodeSafeScriptTest is Test, ERC1820RegistryFixtureTest, SafeSingl
 
         vm.setEnv("FOUNDRY_PROFILE", "local");
         vm.setEnv("NETWORK", "anvil-localhost");
-        vm.setEnv("USE_STAKING_PROXY", "true");
+        vm.setEnv("UNIT_TEST_SKIP_WRITE", "true");
         deployScriptContract = new DeployAllContractsScript();
         deployScriptContract.run();
         deployNodeSafeScriptContract = new DeployNodeSafeScript();
