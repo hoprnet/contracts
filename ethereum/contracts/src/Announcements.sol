@@ -217,6 +217,9 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
      * a secp256k1 signature of the ed25519 public key. Conversely, the EdDSA signature
      * signs the secp256k1 public key.
      *
+     * The key-id of key binding is allocated automatically and returned by the function.
+     * The key id is calculated as the current number of key bindings + 1.
+     *
      * @dev The verification of the ed25519 EdDSA signature happens off-chain.
      *
      * @dev Key binding and address announcements can happen in one call using `multicall`.
