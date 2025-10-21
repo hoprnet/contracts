@@ -46,9 +46,9 @@ abstract contract HoprLedger is HoprLedgerEvents {
         uint32 timestamp;
     }
 
-    RootStruct public latestRoot;
+    RootStruct private _latestRoot;
 
-    RootStruct public latestSnapshotRoot;
+    RootStruct private _latestSnapshotRoot;
 
     bytes32 public ledgerDomainSeparator;
 
@@ -62,10 +62,10 @@ abstract contract HoprLedger is HoprLedgerEvents {
         SNAPSHOT_INTERVAL = _snapshotInterval;
 
         // take first 28 bytes
-        latestRoot.rootHash = bytes28(keccak256(abi.encodePacked(address(this))));
-        latestRoot.timestamp = uint32(block.timestamp);
+        _latestRoot.rootHash = bytes28(keccak256(abi.encodePacked(address(this))));
+        _latestRoot.timestamp = uint32(block.timestamp);
 
-        latestSnapshotRoot = latestRoot;
+        _latestSnapshotRoot = _latestRoot;
 
         // compute the domain separator on deployment
         updateLedgerDomainSeparator();
@@ -91,14 +91,22 @@ abstract contract HoprLedger is HoprLedgerEvents {
         }
     }
 
+    function latestRoot() public view returns (RootStruct memory) {
+        return _latestRoot;
+    }
+
+    function latestSnapshotRoot() public view returns (RootStruct memory) {
+        return _latestSnapshotRoot;
+    }
+
     function indexEvent(bytes memory payload) internal {
         bool createSnapshot = false;
-        if (block.timestamp > latestRoot.timestamp + SNAPSHOT_INTERVAL) {
+        if (block.timestamp > _latestRoot.timestamp + SNAPSHOT_INTERVAL) {
             createSnapshot = true;
         }
 
         // take first 28 bytes
-        latestRoot.rootHash = bytes28(
+        _latestRoot.rootHash = bytes28(
             keccak256(
                 // keep hashed data minimal
                 abi.encodePacked(
@@ -107,16 +115,16 @@ abstract contract HoprLedger is HoprLedgerEvents {
                     // Allows the verifier to detect up until which block the snapshot includes state changes
                     uint32(block.number),
                     // Bind result to previous root
-                    latestRoot.rootHash,
+                    _latestRoot.rootHash,
                     // Information about the happened state change
                     keccak256(payload)
                 )
             )
         );
-        latestRoot.timestamp = uint32(block.timestamp);
+        _latestRoot.timestamp = uint32(block.timestamp);
 
         if (createSnapshot) {
-            latestSnapshotRoot = latestRoot;
+            _latestSnapshotRoot = _latestRoot;
         }
     }
 }
