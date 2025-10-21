@@ -86,25 +86,19 @@ abstract contract HoprChannelsType {
      * @dev Channel state machine
      *                                  redeemTicket()
      *                                     ┌──────┐
-     * finalizeOutgoingChannelClosure() v
-     *  (after notice period), or ┌──────────────────────┐
-     *  closeIncomingChannel() │ │ initiateOutgoingChannelClosure()
-     *            ┌────────────────│ Pending To Close
-     * │<─────────────────┐
-     *            │ │ │ │
-     *            │ └──────────────────────┘ │
-     *            v │
-     *     ┌────────────┐ tokensReceived() / fundChannel()
-     * ┌──────────┐
-     *     │
-     * │──────────────────────────────────────────────>│
-     * │
-     *     │ Closed │ closeIncomingChannel() │ Open │
-     *     │
-     * │<──────────────────────────────────────────────│
-     * │
-     *     └────────────┘ └──────────┘
-     *                                                                    │ ^
+     * finalizeOutgoingChannelClosure()            v      │
+     *  (after notice period), or  ┌──────────────────────┐
+     *  closeIncomingChannel()     │                      │ initiateOutgoingChannelClosure()
+     *            ┌────────────────│   Pending To Close   │<─────────────────┐
+     *            │                │                      │                  │
+     *            │                └──────────────────────┘                  │
+     *            v                                                          │
+     *     ┌────────────┐      tokensReceived() / fundChannel()         ┌──────────┐
+     *     │            │──────────────────────────────────────────────>│          │
+     *     │   Closed   │           closeIncomingChannel()              │   Open   │
+     *     │            │<──────────────────────────────────────────────│          │
+     *     └────────────┘                                               └──────────┘
+     *                                                                    │      ^
      *                                                                    └──────┘
      *                                                                  redeemTicket()
      */
