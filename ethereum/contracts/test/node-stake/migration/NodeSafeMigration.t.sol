@@ -213,6 +213,84 @@ contract NodeSafeMigrationTest is
         vm.clearMockedCalls();
     }
 
+    function test_MigrateNodeSafeWithFailedERC1820Registry() public mockTokenChannel {
+        uint256 callerPrivateKey = 0xCAFE;
+        address caller = vm.addr(callerPrivateKey);
+        address[] memory admins = new address[](1);
+        admins[0] = caller;
+        address[] memory nodes = new address[](3);
+        nodes[0] = address(0xCAB1);
+        nodes[1] = address(0xCAB2);
+        nodes[2] = address(0xCAB3);
+        uint256 nonce = 999;
+        uint256 newNonce = nonce + 1;
+
+        // create a safe via the old factory
+        vm.prank(caller);
+        (address oldModuleProxy, address payable safeAddress) = oldFactory.clone(nonce, OLD_DEFAULT_TARGET, admins);
+        // check the safe is created with the old module
+        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy)));
+        // module proxy uses old implementation, at the implementation slot
+        assertEq(
+            vm.load(address(oldModuleProxy), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(oldModuleSingleton))))
+        );
+        // check the safe is owned by the old factory
+        assertEq(IAvatar(safeAddress).getOwners().length, 1);
+        assertEq(IAvatar(safeAddress).getOwners()[0], address(caller));
+        // check the module is owned by the safe
+        assertEq(IOwner(address(oldModuleProxy)).owner(), safeAddress);
+
+        // mock a failed `setImplementer` call in the ERC1820 registry during the safe migration
+        vm.mockCall(
+            ERC1820_REGISTRY_ADDRESS,
+            abi.encodeWithSignature(
+                "setInterfaceImplementer(address,bytes32,address)",
+                safeAddress,
+                keccak256("ERC777TokensRecipient"),
+                safeAddress
+            ),
+            abi.encode(false)
+        );
+
+        // prepare safe transaction data for migration. Caller should call
+        // migrateSafeV141ToL2AndMigrateToUpgradeableModule(address,bytes32,uint256,address,address[] memory)
+        // on the migration contract via delegatecall from the safe
+        bytes memory data = abi.encodeWithSelector(
+            migrationContract.migrateSafeV141ToL2AndMigrateToUpgradeableModule.selector,
+            oldModuleProxy,
+            NEW_DEFAULT_TARGET,
+            newNonce,
+            nodes
+        );
+        // predict the new module deployment address
+        address newModuleProxyPrediction =
+            newFactory.predictModuleAddress(safeAddress, newNonce, safeAddress, NEW_DEFAULT_TARGET);
+
+        // migrate the module singleton to the new version via delegatecall from the safe, using delegatecall
+        vm.prank(caller);
+        // vm.expectEmit(false, false, false, true, safeAddress);
+        // emit SafeAndModuleMigrationCompleted(
+        // safeAddress,
+        // oldModuleProxy,
+        // newModuleProxyPrediction
+        //);
+        _helperSafeTxnDelegateCall(address(migrationContract), IAvatar(safeAddress), callerPrivateKey, data);
+
+        // check the module is now upgraded to the new singleton
+        assertEq(IOwner(address(newModuleProxyPrediction)).owner(), safeAddress); // new module is now owned by the safe
+        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction))); // new module is enabled in
+            // the safe
+        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy))); // old module is no longer enabled
+            // in the safe
+        assertEq(
+            vm.load(address(newModuleProxyPrediction), _IMPLEMENTATION_SLOT),
+            bytes32(uint256(uint160(address(newModuleSingleton))))
+        );
+
+        vm.clearMockedCalls();
+    }
+
     function _helperSafeTxnDelegateCall(address to, IAvatar safeInstance, uint256 senderPrivateKey, bytes memory data)
         private
     {
