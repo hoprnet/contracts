@@ -66,6 +66,8 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
 
     // Error when the module is not enabled in the Safe or the Safe is not the owner of the module
     error ModuleNotEnabledInSafe();
+    // Error when the contract to be used is not deployed
+    error UndeployedContract(string contractName);
 
     /**
      * @notice Checks if a module is enabled in the Safe.
@@ -91,9 +93,9 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
             SafeSuiteLibV150.SAFE_CompatibilityFallbackHandler_ADDRESS
         )
     {
-        require(hasCode(moduleSingleton), "Module Singleton is not deployed");
+        require(hasCode(moduleSingleton), UndeployedContract("Module Singleton"));
         MODULE_SINGLETON = moduleSingleton;
-        require(hasCode(nodeStakeFactory), "Node Stake Factory is not deployed");
+        require(hasCode(nodeStakeFactory), UndeployedContract("Node Stake Factory"));
         FACTORY_ADDRESS = nodeStakeFactory;
     }
 
@@ -113,6 +115,14 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
         emit ChangedModuleImplementation(moduleProxy);
     }
 
+    /**
+     * @notice Migrate the Safe from v1.4.1 to v1.4.1 SafeL2 and migrate to a new upgradeable module.
+     * Also update the fallback handler and optionally set the ERC777 interface implementer in the ERC1820 registry.
+     * @param oldModuleProxy Address of the old module proxy
+     * @param defaultTarget Default target address for the new module
+     * @param nonce Nonce for the new module deployment
+     * @param nodes List of node addresses to be included in the new module
+     */
     function migrateSafeV141ToL2AndMigrateToUpgradeableModule(
         address oldModuleProxy,
         bytes32 defaultTarget,
@@ -134,6 +144,7 @@ contract HoprNodeSafeMigration is HoprNodeSafeMigrationEvents, SafeMigration, Ex
             keccak256("ERC777TokensRecipient"),
             address(this)
         );
+        // ignore return value as the failed call indicates does not affect the migration
         execute(ERC1820_ADDRESS, 0, setInterfaceData, Enum.Operation.Call, gasleft() - 2500);
 
         // deploy a new module contract
