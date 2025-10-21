@@ -366,8 +366,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
             // - Nonce 2: Approve the channels contract to spend HOPR tokens on behalf of the safe
             bytes memory approveData = abi.encodeWithSignature(
                 "approve(address,uint256)",
-                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default
-                    // target
+                // channelAddress obtained from the default target
+                Target.wrap(uint256(defaultTarget)).getTargetAddress(),
                 approveAmount
             );
             _prepareSafeTx(safeProxyAddr, tokenAddress, approveData);
@@ -422,8 +422,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
             // - Nonce 2: Approve the channels contract to spend HOPR tokens on behalf of the safe
             bytes memory approveData = abi.encodeWithSignature(
                 "approve(address,uint256)",
-                Target.wrap(uint256(defaultTarget)).getTargetAddress(), // channelAddress obtained from the default
-                    // target
+                // channelAddress obtained from the default target
+                Target.wrap(uint256(defaultTarget)).getTargetAddress(),
                 approveAmount
             );
             _prepareSafeTx(safeProxyAddr, tokenAddress, approveData);

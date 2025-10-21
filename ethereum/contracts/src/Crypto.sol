@@ -555,8 +555,8 @@ abstract contract HoprCrypto {
             mstore(add(payload, 0x20), 0x20) // Length of Exponent
             mstore(add(payload, 0x40), 0x20) // Length of Modulus
             mstore(add(payload, 0x60), tv4) // Base
-                // The inverse is calculated with `a ^ (P - 2) === a ^ (-1) mod P` in a finite field,
-                // according to Fermat’s Little Theorem.
+            // The inverse is calculated with `a ^ (P - 2) === a ^ (-1) mod P` in a finite field,
+            // according to Fermat’s Little Theorem.
             mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p-2
             mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) //p
             if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {

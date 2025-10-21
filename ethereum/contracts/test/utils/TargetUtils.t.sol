@@ -127,7 +127,7 @@ contract TargetUtilsTest is Test {
 
         uint8 convertedMaskedDefaultPermissionAt = uint8((targetVal << 184 + position * 8) >> 248);
         vm.assume(convertedMaskedDefaultPermissionAt <= uint8(type(CapabilityPermission).max)); // valid target
-            // permission
+        // permission
 
         CapabilityPermission permission = targetUtilsMock.getDefaultCapabilityPermissionAt(position);
         assertEq(uint8(permission), convertedMaskedDefaultPermissionAt);

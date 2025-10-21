@@ -21,13 +21,14 @@ enum GranularPermission {
 }
 
 struct Role {
-    TargetSet targets; // target addresses that can be called
-    mapping(address => bool) members; // eligible caller. May be able to receive native tokens (e.g. xDAI), if set to
-        // allowed
-        // For CHANNELS target: capabilityKey (bytes32) => channel Id (keccak256(src, dest)) => GranularPermission
-        // For TOKEN target: capabilityKey (bytes32) => pair Id (keccak256(node address, spender address)) =>
-        // GranularPermission
-        // For SEND target: bytes32(0x00) => pair Id (keccak256(node address, spender address)) => GranularPermission
+    // target addresses that can be called
+    TargetSet targets;
+    // eligible caller. May be able to receive native tokens (e.g. xDAI), if set to allowed
+    mapping(address => bool) members;
+    // For CHANNELS target: capabilityKey (bytes32) => channel Id (keccak256(src, dest)) => GranularPermission
+    // For TOKEN target: capabilityKey (bytes32) => pair Id (keccak256(node address, spender address)) =>
+    // GranularPermission
+    // For SEND target: bytes32(0x00) => pair Id (keccak256(node address, spender address)) => GranularPermission
     mapping(bytes32 => mapping(bytes32 => GranularPermission)) capabilities;
 }
 

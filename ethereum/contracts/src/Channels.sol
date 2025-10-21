@@ -79,7 +79,7 @@ abstract contract HoprChannelsType {
     type TicketIndex is uint48;
     type ChannelEpoch is uint24;
     type Timestamp is uint32; // overflows in year 2105
-        // Using IEEE 754 double precision -> 53 significant bits
+    // Using IEEE 754 double precision -> 53 significant bits
     type WinProb is uint56;
 
     /**

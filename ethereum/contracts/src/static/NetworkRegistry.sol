@@ -5,19 +5,20 @@ import { AccessControlEnumerable } from "openzeppelin-contracts-5.4.0/access/ext
 import { IHoprNetworkRegistryRequirement } from "../interfaces/INetworkRegistryRequirement.sol";
 
 abstract contract HoprNetworkRegistryEvents {
-    event NetworkRegistryStatusUpdated(bool indexed isEnabled); // Global toggle of the network registry
-    event RequirementUpdated(address indexed requirementImplementation); // Emit when the network registry proxy is
-        // updated
-    event Registered(address indexed stakingAccount, address indexed nodeAddress); // Emit when a node is included in
-        // the registry
-    event Deregistered(address indexed stakingAccount, address indexed nodeAddress); // Emit when a node is removed from
-        // the registry
-    event RegisteredByManager(address indexed stakingAccount, address indexed nodeAddress); // Emit when the contract
-        // owner register a node for an account
-    event DeregisteredByManager(address indexed stakingAccount, address indexed nodeAddress); // Emit when the contract
-        // owner removes a node from the registry
-    event EligibilityUpdated(address indexed stakingAccount, bool indexed eligibility); // Emit when the eligibility of
-        // an account is updated
+    // Global toggle of the network registry
+    event NetworkRegistryStatusUpdated(bool indexed isEnabled);
+    // Emit when the network registry proxy is updated
+    event RequirementUpdated(address indexed requirementImplementation);
+    // Emit when a node is included in the registry
+    event Registered(address indexed stakingAccount, address indexed nodeAddress);
+    // Emit when a node is removed from the registry
+    event Deregistered(address indexed stakingAccount, address indexed nodeAddress);
+    // Emit when the contract owner register a node for an account
+    event RegisteredByManager(address indexed stakingAccount, address indexed nodeAddress);
+    // Emit when the contract owner removes a node from the registry
+    event DeregisteredByManager(address indexed stakingAccount, address indexed nodeAddress);
+    // Emit when the eligibility of an account is updated
+    event EligibilityUpdated(address indexed stakingAccount, bool indexed eligibility);
 }
 
 /**
@@ -223,10 +224,7 @@ contract HoprNetworkRegistry is AccessControlEnumerable, HoprNetworkRegistryEven
      * @param stakingAccounts Array of staking accounts
      * @param nodeAddresses Array of hopr nodes address
      */
-    function managerRegister(
-        address[] calldata stakingAccounts,
-        address[] calldata nodeAddresses
-    )
+    function managerRegister(address[] calldata stakingAccounts, address[] calldata nodeAddresses)
         external
         onlyRole(MANAGER_ROLE)
     {
@@ -283,10 +281,7 @@ contract HoprNetworkRegistry is AccessControlEnumerable, HoprNetworkRegistryEven
      * @dev Manager force syncs the eligibility for staking accounts
      * @param stakingAccounts array of staking accounts whose eligibility will get updated
      */
-    function managerForceSync(
-        address[] calldata stakingAccounts,
-        bool[] memory eligibilities
-    )
+    function managerForceSync(address[] calldata stakingAccounts, bool[] memory eligibilities)
         external
         onlyRole(MANAGER_ROLE)
     {
