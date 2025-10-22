@@ -4,11 +4,12 @@ pragma abicoder v2;
 
 import { Script } from "forge-std/Script.sol";
 
-import "../test/utils/ERC1820Registry.sol";
-import "../test/utils/PermittableToken.sol";
-import "./utils/NetworkConfig.s.sol";
-import "./utils/BoostUtilsLib.sol";
-import { WinProb } from "src/WinningProbabilityOracle.sol";
+import { ERC1820RegistryFixtureTest } from "../test/utils/ERC1820Registry.sol";
+import { SafeSingletonFixtureTest } from "../test/utils/SafeSingleton.sol";
+import { PermittableTokenFixtureTest } from "../test/utils/PermittableToken.sol";
+import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
+import { BoostUtilsLib } from "./utils/BoostUtilsLib.sol";
+import { WinProb } from "../src/WinningProbabilityOracle.sol";
 
 /**
  * @title Deploy all the required contracts in development, staging and production environment
@@ -16,14 +17,23 @@ import { WinProb } from "src/WinningProbabilityOracle.sol";
  * before running this script.
  * @dev It reads the environment, netork and deployer internal key from env variables
  */
-contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtureTest, PermittableTokenFixtureTest {
+contract DeployAllContractsScript is
+    Script,
+    NetworkConfig,
+    ERC1820RegistryFixtureTest,
+    SafeSingletonFixtureTest,
+    PermittableTokenFixtureTest
+{
     using BoostUtilsLib for address;
 
     bool internal isHoprChannelsDeployed;
     bool internal isHoprNetworkRegistryDeployed;
     address private owner;
 
-    function setUp() public override(ERC1820RegistryFixtureTest) { }
+    function setUp() public override(ERC1820RegistryFixtureTest, SafeSingletonFixtureTest) {
+        ERC1820RegistryFixtureTest.setUp();
+        SafeSingletonFixtureTest.setUp();
+    }
 
     function run() external {
         // 1. Network check
@@ -40,6 +50,10 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
         } else {
             owner = COMM_MULTISIG_ADDRESS;
         }
+        // deploy safe suites if needed
+        deployEntireSafeSuite();
+        // check if deployed contracts need to be written in the filesystem
+        bool skipWrite = vm.envBool("UNIT_TEST_SKIP_WRITE");
 
         // 2. Get deployer internal key.
         // Set to default when it's in development environment (uint for
@@ -52,47 +66,38 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
         vm.startBroadcast(deployerPrivateKey);
 
         // 3. Deploy
-        // 3.1 HoprNodeStakeFactory
-        _deployHoprNodeStakeFactory();
-
-        // 3.2 HoprNodeManagementModule singleton
-        _deployHoprNodeManagementModule();
-
-        // 3.3 HoprNodeSafeRegistry
-        _deployHoprHoprNodeSafeRegistry();
-
-        // 3.4. HoprToken Contract
+        // 3.1. HoprToken Contract
         // Only deploy Token contract when no deployed one is detected.
         // E.g. always in local environment, or should a new token contract be introduced in
         // development/staging/production.
         _deployHoprTokenAndMintToAddress(deployerAddress, deployerAddress);
 
-        // 3.5. HoprChannels Contract
+        // 3.2. TicketPriceOracle
+        _deployHoprTicketPriceOracle(deployerAddress);
+
+        // 3.3. WinningProbabilityOracle, with a default value of 1.0
+        _deployHoprWinningProbabilityOracle(deployerAddress, WinProb.wrap(type(uint56).max));
+
+        // 3.4 HoprNodeManagementModule singleton
+        _deployHoprNodeManagementModule();
+
+        // 3.5 HoprNodeSafeRegistry
+        _deployHoprNodeSafeRegistry();
+
+        // 3.6. HoprChannels Contract
         // Only deploy Channels contract when no deployed one is detected.
         // E.g. always in local environment, or should a new channel contract be introduced in
         // development/staging/production per meta environment.
         _deployHoprChannels();
 
-        // 3.6. NetworkRegistryProxy Contract
-        // Only deploy NetworkRegistryProxy contract when no deployed one is detected.
-        // E.g. Always in local environment, or should a new NetworkRegistryProxy contract be introduced in
-        // development/staging/production
-        _deployNRProxy(deployerAddress);
-
-        // 3.7. NetworkRegistry Contract
-        // Only deploy NetworkRegistrycontract when no deployed one is detected.
-        // E.g. Always in local environment, or should a new NetworkRegistryProxy contract be introduced in
-        // development/staging/production
-        _deployNetworkRegistry(deployerAddress);
-
-        // 3.8. TicketPriceOracle
-        _deployHoprTicketPriceOracle(deployerAddress);
-
-        // 3.9. WinningProbabilityOracle, with a default value of 1.0
-        _deployHoprWinningProbabilityOracle(deployerAddress, WinProb.wrap(type(uint56).max));
-
-        // 3.10. Announcements
+        // 3.7. Announcements
         _deployHoprAnnouncements();
+
+        // 3.8 HoprNodeStakeFactory
+        _deployHoprNodeStakeFactory(deployerAddress);
+
+        // 3.9. NodeSafeMigration contract
+        _deployNodeSafeMigration();
 
         // 4. update indexerStartBlockNumber
         // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
@@ -105,20 +110,8 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
         vm.stopBroadcast();
 
         // write to file
-        writeCurrentNetwork();
-    }
-
-    /**
-     * @dev deploy node safe factory
-     */
-    function _deployHoprNodeStakeFactory() internal {
-        if (
-            currentEnvironmentType == EnvironmentType.LOCAL
-                || !isValidAddress(currentNetworkDetail.addresses.nodeStakeV2FactoryAddress)
-        ) {
-            // deploy HoprNodeStakeFactory contract
-            currentNetworkDetail.addresses.nodeStakeV2FactoryAddress =
-                deployCode("NodeStakeFactory.sol:HoprNodeStakeFactory");
+        if (!skipWrite) {
+            writeCurrentNetwork();
         }
     }
 
@@ -130,16 +123,36 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.moduleImplementationAddress)
         ) {
-            // deploy HoprNodeManagementModule contract
+            // deploy HoprNodeManagementModule contractsd
             currentNetworkDetail.addresses.moduleImplementationAddress =
                 deployCode("NodeManagementModule.sol:HoprNodeManagementModule");
         }
     }
 
     /**
+     * @dev deploy node safe factory
+     */
+    function _deployHoprNodeStakeFactory(address deployerAddress) internal {
+        if (
+            currentEnvironmentType == EnvironmentType.LOCAL
+                || !isValidAddress(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
+        ) {
+            // deploy HoprNodeStakeFactory contract
+            currentNetworkDetail.addresses.nodeStakeFactoryAddress = deployCode(
+                "NodeStakeFactory.sol:HoprNodeStakeFactory",
+                abi.encode(
+                    currentNetworkDetail.addresses.moduleImplementationAddress,
+                    currentNetworkDetail.addresses.announcements,
+                    deployerAddress
+                )
+            );
+        }
+    }
+
+    /**
      * @dev Deploy node safe registry
      */
-    function _deployHoprHoprNodeSafeRegistry() internal {
+    function _deployHoprNodeSafeRegistry() internal {
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.nodeSafeRegistryAddress)
@@ -161,18 +174,18 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
             // deploy token contract
             currentNetworkDetail.addresses.tokenContractAddress = deployCode("HoprToken.sol");
             // grant deployer minter role
-            (bool successGrantMinterRole,) = currentNetworkDetail.addresses.tokenContractAddress.call(
-                abi.encodeWithSignature("grantRole(bytes32,address)", MINTER_ROLE, deployerAddress)
-            );
+            (bool successGrantMinterRole,) = currentNetworkDetail.addresses.tokenContractAddress
+                .call(abi.encodeWithSignature("grantRole(bytes32,address)", MINTER_ROLE, deployerAddress));
             if (!successGrantMinterRole) {
                 emit log_string("Cannot grantMinterRole");
             }
             // mint some tokens to the deployer
-            (bool successMintTokens,) = currentNetworkDetail.addresses.tokenContractAddress.call(
-                abi.encodeWithSignature(
-                    "mint(address,uint256,bytes,bytes)", recipient, 130_000_000 ether, hex"00", hex"00"
-                )
-            );
+            (bool successMintTokens,) = currentNetworkDetail.addresses.tokenContractAddress
+                .call(
+                    abi.encodeWithSignature(
+                        "mint(address,uint256,bytes,bytes)", recipient, 130_000_000 ether, hex"00", hex"00"
+                    )
+                );
             if (!successMintTokens) {
                 emit log_string("Cannot mint tokens");
             }
@@ -203,97 +216,19 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
     }
 
     /**
-     * @dev deploy network registry proxy.
-     * In development, dummy is used
-     */
-    function _deployNRProxy(address deployerAddress) internal {
-        bool shouldDeployStakingProxy = false;
-
-        if (currentEnvironmentType == EnvironmentType.LOCAL && vm.envBool("USE_STAKING_PROXY")) {
-            shouldDeployStakingProxy = true;
-        } else if (
-            currentEnvironmentType != EnvironmentType.LOCAL
-                && !isValidAddress(currentNetworkDetail.addresses.networkRegistryProxyContractAddress)
-        ) {
-            shouldDeployStakingProxy = true;
-        }
-
-        if (shouldDeployStakingProxy) {
-            // deploy StakingProxy in other environment types, if no proxy contract is given.
-            // temporarily grant default admin role to the deployer wallet
-            currentNetworkDetail.addresses.networkRegistryProxyContractAddress = deployCode(
-                "SafeProxyForNetworkRegistry.sol:HoprSafeProxyForNetworkRegistry",
-                abi.encode(
-                    deployerAddress,
-                    owner,
-                    0, // disable self-registry
-                    block.number, // latest block number
-                    currentNetworkDetail.addresses.tokenContractAddress,
-                    currentNetworkDetail.addresses.nodeSafeRegistryAddress
-                )
-            );
-
-            // swap owner and grant manager role to more wallets
-            _helperSwapOwnerGrantManager(
-                currentNetworkDetail.addresses.networkRegistryProxyContractAddress, deployerAddress, owner
-            );
-            // flag isHoprNetworkRegistryDeployed
-            isHoprNetworkRegistryDeployed = true;
-        } else {
-            // deploy DummyProxy in LOCAL environment
-            currentNetworkDetail.addresses.networkRegistryProxyContractAddress = deployCode(
-                "DummyProxyForNetworkRegistry.sol:HoprDummyProxyForNetworkRegistry", abi.encode(deployerAddress)
-            );
-            isHoprNetworkRegistryDeployed = true;
-        }
-    }
-
-    /**
-     * @dev deploy network registry
-     * in development environment, it's disabled
-     */
-    function _deployNetworkRegistry(address deployerAddress) internal {
-        if (
-            currentEnvironmentType == EnvironmentType.LOCAL
-                || !isValidAddress(currentNetworkDetail.addresses.networkRegistryContractAddress)
-        ) {
-            // deploy NetworkRegistry contract
-            // temporarily grant default admin role to the deployer wallet
-            currentNetworkDetail.addresses.networkRegistryContractAddress = deployCode(
-                "NetworkRegistry.sol:HoprNetworkRegistry",
-                abi.encode(currentNetworkDetail.addresses.networkRegistryProxyContractAddress, deployerAddress, owner)
-            );
-            // swap owner and grant manager role to more wallets
-            _helperSwapOwnerGrantManager(
-                currentNetworkDetail.addresses.networkRegistryContractAddress, deployerAddress, owner
-            );
-
-            // NetworkRegistry should be enabled (default behavior) in staging/production, and disabled in development
-            if (currentEnvironmentType == EnvironmentType.LOCAL) {
-                (bool successDisableRegistry,) = currentNetworkDetail.addresses.networkRegistryContractAddress.call(
-                    abi.encodeWithSignature("disableRegistry()")
-                );
-                if (!successDisableRegistry) {
-                    emit log_string("Cannot disableRegistry");
-                }
-            }
-        }
-    }
-
-    /**
      * @dev deploy ticket price oracle
      */
     function _deployHoprTicketPriceOracle(address deployerAddress) internal {
-        uint256 price = 100;
+        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL ? 1_000_000_000_000_000 : 100; // 0.001 HOPR in
+        // test environment
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.ticketPriceOracleContractAddress)
         ) {
-            price = 1_000_000_000_000_000; // 0.001 HOPR in test environment
+            // deploy contract
+            currentNetworkDetail.addresses.ticketPriceOracleContractAddress =
+                deployCode("TicketPriceOracle.sol:HoprTicketPriceOracle", abi.encode(deployerAddress, price));
         }
-        // deploy contract
-        currentNetworkDetail.addresses.ticketPriceOracleContractAddress =
-            deployCode("TicketPriceOracle.sol:HoprTicketPriceOracle", abi.encode(deployerAddress, price));
     }
 
     /**
@@ -328,6 +263,25 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
     }
 
     /**
+     * @dev deploy NodeSafeMigration contract
+     */
+    function _deployNodeSafeMigration() internal {
+        if (
+            currentEnvironmentType == EnvironmentType.LOCAL
+                || !isValidAddress(currentNetworkDetail.addresses.nodeSafeMigrationAddress)
+        ) {
+            // deploy HoprNodeSafeMigration contract
+            currentNetworkDetail.addresses.nodeSafeMigrationAddress = deployCode(
+                "NodeSafeMigration.sol:HoprNodeSafeMigration",
+                abi.encode(
+                    currentNetworkDetail.addresses.moduleImplementationAddress,
+                    currentNetworkDetail.addresses.nodeStakeFactoryAddress
+                )
+            );
+        }
+    }
+
+    /**
      * @dev helper function to
      * - grant manager role to manager addresses
      * - grant default admin role to the new owner
@@ -345,9 +299,12 @@ contract DeployAllContractsScript is Script, NetworkConfig, ERC1820RegistryFixtu
         }
         // grant manager roles to more accounts
         for (uint256 i = 0; i < PRODUCT_TEAM_MANAGER_ADDRESSES.length; i++) {
-            contractAddress.call(
+            (bool successGrantManagerRole,) = contractAddress.call(
                 abi.encodeWithSignature("grantRole(bytes32,address)", MANAGER_ROLE, PRODUCT_TEAM_MANAGER_ADDRESSES[i])
             );
+            if (!successGrantManagerRole) {
+                emit log_string("Cannot grant MANAGER_ROLE role on ");
+            }
         }
         if (!successGrantDefaultAdminRole) {
             emit log_string("Cannot grant MANAGER_ROLE role on ");

@@ -2,9 +2,8 @@
 pragma solidity ^0.8.0;
 
 import { Test, stdStorage, StdStorage } from "forge-std/Test.sol";
-
-import "../mocks/EnumerableTargetSetMock.sol";
-import "../../src/utils/TargetUtils.sol";
+import { EnumerableTargetSet, EnumerableTargetSetMock } from "../mocks/EnumerableTargetSetMock.sol";
+import { Target, TargetUtils } from "../../src/utils/TargetUtils.sol";
 
 contract EnumerableTargetSetTest is Test {
     using stdStorage for StdStorage;
@@ -17,6 +16,14 @@ contract EnumerableTargetSetTest is Test {
      */
     function setUp() public {
         enumerableTargetSetMock = new EnumerableTargetSetMock();
+    }
+
+    /**
+     * @dev limit the size of the targetVals array for gas report generation
+     */
+    modifier limitSize(uint256[] memory targetVals) {
+        vm.assume(targetVals.length <= 256);
+        _;
     }
 
     /**
@@ -45,7 +52,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev fuzz test on remove a random value from the set
      */
-    function testFuzz_RemoveRandom(uint256[] memory targetVals, uint256 index) public {
+    function testFuzz_RemoveRandom(uint256[] memory targetVals, uint256 index) public limitSize(targetVals) {
         vm.assume(targetVals.length > 0);
         // add values to target
         _helperCreateTargetSet(targetVals);
@@ -66,7 +73,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev fuzz test on removing the last (and the first if applicable) from the set
      */
-    function testFuzz_RemoveTheFirstAndLast(uint256[] memory targetVals) public {
+    function testFuzz_RemoveTheFirstAndLast(uint256[] memory targetVals) public limitSize(targetVals) {
         vm.assume(targetVals.length > 0);
         // add values to target
         _helperCreateTargetSet(targetVals);
@@ -91,7 +98,10 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev fuzz test on removing a non existing target address
      */
-    function testFuzz_RemoveNonExisting(uint256[] memory targetVals, address targetAddress) public {
+    function testFuzz_RemoveNonExisting(uint256[] memory targetVals, address targetAddress)
+        public
+        limitSize(targetVals)
+    {
         // add values to target
         _helperCreateTargetSet(targetVals);
         uint256 length = enumerableTargetSetMock.length();
@@ -120,7 +130,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev fuzz test at
      */
-    function testFuzz_At(uint256[] memory targetVals) public {
+    function testFuzz_At(uint256[] memory targetVals) public limitSize(targetVals) {
         // add values to target
         _helperCreateTargetSet(targetVals);
         Target[] memory values = enumerableTargetSetMock.values();
@@ -134,7 +144,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev fuzz test get and tryGet methods
      */
-    function testFuzz_GetAndTryGetWithInArray(uint256[] memory targetVals) public {
+    function testFuzz_GetAndTryGetWithInArray(uint256[] memory targetVals) public limitSize(targetVals) {
         // at least one item can be found from the array
         vm.assume(targetVals.length > 0);
 
@@ -158,7 +168,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev test revert condition of get, namely when the address does not exist
      */
-    function testRevert_Get(uint256[] memory targetVals, address targetAddress) public {
+    function testRevert_Get(uint256[] memory targetVals, address targetAddress) public limitSize(targetVals) {
         // add values to target
         _helperCreateTargetSet(targetVals);
 

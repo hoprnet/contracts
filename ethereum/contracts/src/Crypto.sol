@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.19;
+pragma solidity 0.8.30;
 
 /**
  *    &&&&
@@ -28,7 +28,8 @@ abstract contract HoprCrypto {
     uint256 internal constant SECP256K1_B = 0x0000000000000000000000000000000000000000000000000000000000000007;
     // Field order created by secp256k1 curve
     // solhint-disable-next-line max-line-length
-    uint256 internal constant SECP256K1_FIELD_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
+    uint256 internal constant SECP256K1_FIELD_ORDER =
+        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
 
     // Order of the underlying field used for secp256k1
     uint256 internal constant SECP256K1_BASE_FIELD_ORDER =
@@ -99,15 +100,14 @@ abstract contract HoprCrypto {
     function isCurvePointInternal(uint256 pX, uint256 pY) internal pure returns (bool r) {
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            r :=
-                eq(
-                    mulmod(pY, pY, SECP256K1_BASE_FIELD_ORDER),
-                    addmod(
-                        SECP256K1_B,
-                        mulmod(mulmod(pX, pX, SECP256K1_BASE_FIELD_ORDER), pX, SECP256K1_BASE_FIELD_ORDER),
-                        SECP256K1_BASE_FIELD_ORDER
-                    )
+            r := eq(
+                mulmod(pY, pY, SECP256K1_BASE_FIELD_ORDER),
+                addmod(
+                    SECP256K1_B,
+                    mulmod(mulmod(pX, pX, SECP256K1_BASE_FIELD_ORDER), pX, SECP256K1_BASE_FIELD_ORDER),
+                    SECP256K1_BASE_FIELD_ORDER
                 )
+            )
         }
     }
 
@@ -208,13 +208,7 @@ abstract contract HoprCrypto {
      * @param qY second component of Q
      * @param a curve parameter, y^2 = x^3 + a*x + b (mod p)
      */
-    function ecAdd(
-        uint256 pX,
-        uint256 pY,
-        uint256 qX,
-        uint256 qY,
-        uint256 a
-    )
+    function ecAdd(uint256 pX, uint256 pY, uint256 qX, uint256 qY, uint256 a)
         internal
         view
         returns (uint256 rx, uint256 ry)
@@ -232,7 +226,7 @@ abstract contract HoprCrypto {
             // P == Q ?
             case true {
                 // Point double
-                toInvert := addmod(mulmod(2, pY, SECP256K1_BASE_FIELD_ORDER), a, SECP256K1_BASE_FIELD_ORDER) // 2 * p.y
+                toInvert := mulmod(2, pY, SECP256K1_BASE_FIELD_ORDER) // 2 * p.y
 
                 // compute (2 * p.y) ^ -1 using expmod precompile
                 let payload := mload(0x40)
@@ -240,28 +234,35 @@ abstract contract HoprCrypto {
                 mstore(add(payload, 0x20), 0x20) // Length of Exponent
                 mstore(add(payload, 0x40), 0x20) // Length of Modulus
                 mstore(add(payload, 0x60), toInvert) // Base
-                mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 1
+                mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 2
                 mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) // Modulus
                 if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {
                     // 0x05 == expmod precompile
                     revert(0, 0)
                 }
-                lambda :=
-                    mulmod( // (3 * p.x ^ 2) * (2 * p.y) ^ -1
+                let numerator :=
+                    addmod( // 3 * p.x ^ 2 + a
                         mulmod( // 3 * p.x ^ 2
-                        3, mulmod(pX, pX, SECP256K1_BASE_FIELD_ORDER), SECP256K1_BASE_FIELD_ORDER),
-                        mload(payload),
+                            3,
+                            mulmod(pX, pX, SECP256K1_BASE_FIELD_ORDER),
+                            SECP256K1_BASE_FIELD_ORDER
+                        ),
+                        a,
                         SECP256K1_BASE_FIELD_ORDER
                     )
+                lambda := mulmod( // (3 * p.x ^ 2 + a) * (2 * p.y) ^ -1
+                    numerator,
+                    mload(payload),
+                    SECP256K1_BASE_FIELD_ORDER
+                )
             }
             case false {
                 // Point addition
-                toInvert :=
-                    addmod( // q.x - p.x
-                        qX, // q.x
-                        sub(SECP256K1_BASE_FIELD_ORDER, pX), // - p.x
-                        SECP256K1_BASE_FIELD_ORDER
-                    )
+                toInvert := addmod( // q.x - p.x
+                    qX, // q.x
+                    sub(SECP256K1_BASE_FIELD_ORDER, pX), // - p.x
+                    SECP256K1_BASE_FIELD_ORDER
+                )
 
                 // compute (q.x - p.x) ^ -1 using expmod precompile
                 let payload := mload(0x40)
@@ -269,50 +270,47 @@ abstract contract HoprCrypto {
                 mstore(add(payload, 0x20), 0x20) // Length of Exponent
                 mstore(add(payload, 0x40), 0x20) // Length of Modulus
                 mstore(add(payload, 0x60), toInvert) // Base
-                mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 1
+                mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 2
                 mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) // Modulus
                 if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {
                     // 0x05 == expmod precompile
                     revert(0, 0)
                 }
 
-                lambda :=
-                    mulmod( // (q.y - p.y) * (q.x - p.x) ^ -1
-                        addmod( // q.y - p.y
-                            qY, // q.y
-                            sub(SECP256K1_BASE_FIELD_ORDER, pY), // - p.y
-                            SECP256K1_BASE_FIELD_ORDER
-                        ),
-                        mload(payload), // (q.x - p.x) ^ -1
+                lambda := mulmod( // (q.y - p.y) * (q.x - p.x) ^ -1
+                    addmod( // q.y - p.y
+                        qY, // q.y
+                        sub(SECP256K1_BASE_FIELD_ORDER, pY), // - p.y
                         SECP256K1_BASE_FIELD_ORDER
-                    )
+                    ),
+                    mload(payload), // (q.x - p.x) ^ -1
+                    SECP256K1_BASE_FIELD_ORDER
+                )
             }
 
-            rx :=
-                addmod( // lambda^2 - q.x - p.x
-                    mulmod(lambda, lambda, SECP256K1_BASE_FIELD_ORDER), // lambda^2
-                    addmod( // - q.x - p.x
-                        sub(SECP256K1_BASE_FIELD_ORDER, qX), // - q.x
-                        sub(SECP256K1_BASE_FIELD_ORDER, pX), // - p.x
-                        SECP256K1_BASE_FIELD_ORDER
-                    ),
+            rx := addmod( // lambda^2 - q.x - p.x
+                mulmod(lambda, lambda, SECP256K1_BASE_FIELD_ORDER), // lambda^2
+                addmod( // - q.x - p.x
+                    sub(SECP256K1_BASE_FIELD_ORDER, qX), // - q.x
+                    sub(SECP256K1_BASE_FIELD_ORDER, pX), // - p.x
                     SECP256K1_BASE_FIELD_ORDER
-                )
+                ),
+                SECP256K1_BASE_FIELD_ORDER
+            )
 
-            ry :=
-                addmod( // lambda * (p.x - r.x) - p.y
-                    mulmod( // lambda * (p.x - r.x)
-                        lambda,
-                        addmod( // p.x - r.x
-                            pX, // p.x
-                            sub(SECP256K1_BASE_FIELD_ORDER, rx), // - r.x
-                            SECP256K1_BASE_FIELD_ORDER
-                        ),
+            ry := addmod( // lambda * (p.x - r.x) - p.y
+                mulmod( // lambda * (p.x - r.x)
+                    lambda,
+                    addmod( // p.x - r.x
+                        pX, // p.x
+                        sub(SECP256K1_BASE_FIELD_ORDER, rx), // - r.x
                         SECP256K1_BASE_FIELD_ORDER
                     ),
-                    sub(SECP256K1_BASE_FIELD_ORDER, pY),
                     SECP256K1_BASE_FIELD_ORDER
-                )
+                ),
+                sub(SECP256K1_BASE_FIELD_ORDER, pY),
+                SECP256K1_BASE_FIELD_ORDER
+            )
         }
     }
 
@@ -390,7 +388,7 @@ abstract contract HoprCrypto {
             mstore(add(payload, 0x20), 0x20) // Length of Exponent
             mstore(add(payload, 0x40), 0x20) // Length of Modulus
             mstore(add(payload, 0x60), xDen) // Base
-            mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 1
+            mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 2
             mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) // Modulus
             if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {
                 // 0x05 == expmod precompile
@@ -428,8 +426,8 @@ abstract contract HoprCrypto {
             mstore(add(payload, 0x20), 0x20) // Length of Exponent
             mstore(add(payload, 0x40), 0x20) // Length of Modulus
             mstore(add(payload, 0x60), y_den) // Base
-            mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 1
-            mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) // p
+            mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p - 2
+            mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) //p
             if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {
                 // 0x05 == expmod precompile
                 revert(0, 0)
@@ -456,24 +454,25 @@ abstract contract HoprCrypto {
      *
      * @param u the field element to map to a secp256k1 curve point
      */
+    /// forge-lint: disable-next-line(mixed-case-function)
     function mapToCurveSimpleSWU(uint256 u) internal view returns (uint256 rx, uint256 ry) {
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            let tv1 := mulmod(u, u, SECP256K1_BASE_FIELD_ORDER) // 1.  tv1 = u^2
-            tv1 := mulmod(Z, tv1, SECP256K1_BASE_FIELD_ORDER) // 2.  tv1 = Z * tv1
-            let tv2 := mulmod(tv1, tv1, SECP256K1_BASE_FIELD_ORDER) // 3.  tv2 = tv1^2
-            tv2 := addmod(tv2, tv1, SECP256K1_BASE_FIELD_ORDER) // 4.  tv2 = tv2 + tv1
-            let tv3 := addmod(tv2, 1, SECP256K1_BASE_FIELD_ORDER) // 5.  tv3 = tv2 + 1
-            tv3 := mulmod(tv3, B_PRIME, SECP256K1_BASE_FIELD_ORDER) // 6.  tv3 = B * tv3
+            let tv1 := mulmod(u, u, SECP256K1_BASE_FIELD_ORDER) // 1. tv1 = u^2
+            tv1 := mulmod(Z, tv1, SECP256K1_BASE_FIELD_ORDER) // 2. tv1 = Z * tv1
+            let tv2 := mulmod(tv1, tv1, SECP256K1_BASE_FIELD_ORDER) // 3. tv2 = tv1^2
+            tv2 := addmod(tv2, tv1, SECP256K1_BASE_FIELD_ORDER) // 4. tv2 = tv2 + tv1
+            let tv3 := addmod(tv2, 1, SECP256K1_BASE_FIELD_ORDER) // 5. tv3 = tv2 + 1
+            tv3 := mulmod(tv3, B_PRIME, SECP256K1_BASE_FIELD_ORDER) // 6. tv3 = B * tv3
 
             let tv4
             switch eq(tv2, 0)
-            // 7.  tv4 = CMOV(Z, -tv2, tv2 != 0)
+            // 7. tv4 = CMOV(Z, -tv2, tv2 != 0)
             case true { tv4 := Z }
             case false { tv4 := sub(SECP256K1_BASE_FIELD_ORDER, tv2) }
 
-            tv4 := mulmod(A_PRIME, tv4, SECP256K1_BASE_FIELD_ORDER) // 8.  tv4 = A * tv4
-            tv2 := mulmod(tv3, tv3, SECP256K1_BASE_FIELD_ORDER) // 9.  tv2 = tv3^2
+            tv4 := mulmod(A_PRIME, tv4, SECP256K1_BASE_FIELD_ORDER) // 8. tv4 = A * tv4
+            tv2 := mulmod(tv3, tv3, SECP256K1_BASE_FIELD_ORDER) // 9. tv2 = tv3^2
             let tv6 := mulmod(tv4, tv4, SECP256K1_BASE_FIELD_ORDER) // 10. tv6 = tv4^2
             let tv5 := mulmod(A_PRIME, tv6, SECP256K1_BASE_FIELD_ORDER) // 11. tv5 = A * tv6
             tv2 := addmod(tv2, tv5, SECP256K1_BASE_FIELD_ORDER) // 12. tv2 = tv2 + tv5
@@ -481,7 +480,7 @@ abstract contract HoprCrypto {
             tv6 := mulmod(tv6, tv4, SECP256K1_BASE_FIELD_ORDER) // 14. tv6 = tv6 * tv4
             tv5 := mulmod(B_PRIME, tv6, SECP256K1_BASE_FIELD_ORDER) // 15. tv5 = B * tv6
             tv2 := addmod(tv2, tv5, SECP256K1_BASE_FIELD_ORDER) // 16. tv2 = tv2 + tv5
-            rx := mulmod(tv1, tv3, SECP256K1_BASE_FIELD_ORDER) // 17.   x = tv1 * tv3
+            rx := mulmod(tv1, tv3, SECP256K1_BASE_FIELD_ORDER) // 17. x = tv1 * tv3
 
             // 18. (is_gx1_square, y1) = sqrt_ratio(tv2, tv6)
             let y1
@@ -536,18 +535,18 @@ abstract contract HoprCrypto {
 
             // =====================================
 
-            ry := mulmod(tv1, u, SECP256K1_BASE_FIELD_ORDER) // 19.   y = tv1 * u
-            ry := mulmod(ry, y1, SECP256K1_BASE_FIELD_ORDER) // 20.   y = y * y1
+            ry := mulmod(tv1, u, SECP256K1_BASE_FIELD_ORDER) // 19. y = tv1 * u
+            ry := mulmod(ry, y1, SECP256K1_BASE_FIELD_ORDER) // 20. y = y * y1
 
             if isSquare {
-                rx := tv3 // 21.   x = CMOV(x, tv3, is_gx1_square)
-                ry := y1 // 22.   y = CMOV(y, y1, is_gx1_square)
+                rx := tv3 // 21. x = CMOV(x, tv3, is_gx1_square)
+                ry := y1 // 22. y = CMOV(y, y1, is_gx1_square)
             }
 
-            // 23.  e1 = sgn0(u) == sgn0(y)
+            // 23. e1 = sgn0(u) == sgn0(y)
             if iszero(eq(mod(u, 2), mod(ry, 2))) {
                 // sgn0(x) ~= x % 2
-                ry := sub(SECP256K1_BASE_FIELD_ORDER, ry) // 24.   y = CMOV(-y, y, e1)
+                ry := sub(SECP256K1_BASE_FIELD_ORDER, ry) // 24. y = CMOV(-y, y, e1)
             }
 
             // compute tv4 ^ -1
@@ -556,14 +555,16 @@ abstract contract HoprCrypto {
             mstore(add(payload, 0x20), 0x20) // Length of Exponent
             mstore(add(payload, 0x40), 0x20) // Length of Modulus
             mstore(add(payload, 0x60), tv4) // Base
+            // The inverse is calculated with `a ^ (P - 2) === a ^ (-1) mod P` in a finite field,
+            // according to Fermat’s Little Theorem.
             mstore(add(payload, 0x80), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2D) // p-2
-            mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) // p
+            mstore(add(payload, 0xa0), SECP256K1_BASE_FIELD_ORDER) //p
             if iszero(staticcall(not(0), 0x05, payload, 0xC0, payload, 0x20)) {
                 // 0x05 == expmod precompile
                 revert(0, 0)
             }
 
-            rx := mulmod(rx, mload(payload), SECP256K1_BASE_FIELD_ORDER) // 25.   x = x / tv4
+            rx := mulmod(rx, mload(payload), SECP256K1_BASE_FIELD_ORDER) // 25. x = x / tv4
         }
     }
 
@@ -577,6 +578,7 @@ abstract contract HoprCrypto {
      * @param message the message to hash
      * @param dst domain separation tag, used to make protocol instantiations unique
      */
+    /// forge-lint: disable-next-line(mixed-case-function)
     function hash_to_field(bytes memory message, bytes memory dst) internal view returns (uint256 u0, uint256 u1) {
         (bytes32 b1, bytes32 b2, bytes32 b3) = expand_message_xmd_keccak256(message, dst);
 
@@ -658,10 +660,8 @@ abstract contract HoprCrypto {
      * @param message the message to hash
      * @param dst domain separation tag, used to make protocol instantiations unique
      */
-    function expand_message_xmd_keccak256(
-        bytes memory message,
-        bytes memory dst
-    )
+    /// forge-lint: disable-next-line(mixed-case-function)
+    function expand_message_xmd_keccak256(bytes memory message, bytes memory dst)
         internal
         pure
         returns (bytes32 b1, bytes32 b2, bytes32 b3)
@@ -676,6 +676,9 @@ abstract contract HoprCrypto {
                 let b0Payload := mload(0x40)
 
                 // payload[0..KECCAK256_BLOCKSIZE] = 0
+                for { let i := 0 } lt(i, KECCAK256_BLOCKSIZE) { i := add(i, 0x20) } {
+                    mstore(add(b0Payload, i), 0)
+                }
 
                 let b0PayloadO := KECCAK256_BLOCKSIZE // leave first block empty
                 let msg_o := 0x20 // skip length prefix
@@ -762,10 +765,8 @@ abstract contract HoprCrypto {
      * @param message the message to hash
      * @param dst domain separation tag, used to make protocol instantiations unique
      */
-    function expand_message_xmd_keccak256_single(
-        bytes memory message,
-        bytes memory dst
-    )
+    /// forge-lint: disable-next-line(mixed-case-function)
+    function expand_message_xmd_keccak256_single(bytes memory message, bytes memory dst)
         internal
         pure
         returns (bytes32 b1, bytes32 b2)
@@ -780,6 +781,9 @@ abstract contract HoprCrypto {
                 let b0Payload := mload(0x40)
 
                 // payload[0..KECCAK256_BLOCKSIZE] = 0
+                for { let i := 0 } lt(i, KECCAK256_BLOCKSIZE) { i := add(i, 0x20) } {
+                    mstore(add(b0Payload, i), 0)
+                }
 
                 let b0PayloadO := KECCAK256_BLOCKSIZE // leave first block empty
                 let msg_o := 0x20 // skip length prefix
@@ -847,6 +851,7 @@ abstract contract HoprCrypto {
     /**
      * Bundles values to verify the validity of the VRF
      */
+    /// forge-lint: disable-next-item(pascal-case-struct)
     struct VRFParameters {
         // the main deterministic pseudo-random values
         uint256 vx;
@@ -868,6 +873,7 @@ abstract contract HoprCrypto {
      * Bundles payload used to create a VRF-generated deterministic
      * pseudo-random value.
      */
+    /// forge-lint: disable-next-item(pascal-case-struct)
     struct VRFPayload {
         // the main message, e.g. ticket Hash
         bytes32 message;

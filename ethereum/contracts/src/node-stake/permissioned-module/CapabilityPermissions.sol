@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.0 <0.9.0;
 
-import { Enum } from "safe-contracts/common/Enum.sol";
+import { Enum } from "safe-contracts-1.4.1/common/Enum.sol";
 import { HoprChannels } from "../../Channels.sol";
 import { EnumerableTargetSet, TargetSet } from "../../utils/EnumerableTargetSet.sol";
 import {
@@ -21,13 +21,14 @@ enum GranularPermission {
 }
 
 struct Role {
-    TargetSet targets; // target addresses that can be called
-    mapping(address => bool) members; // eligible caller. May be able to receive native tokens (e.g. xDAI), if set to
-        // allowed
+    // target addresses that can be called
+    TargetSet targets;
+    // eligible caller. May be able to receive native tokens (e.g. xDAI), if set to allowed
+    mapping(address => bool) members;
     // For CHANNELS target: capabilityKey (bytes32) => channel Id (keccak256(src, dest)) => GranularPermission
     // For TOKEN target: capabilityKey (bytes32) => pair Id (keccak256(node address, spender address)) =>
     // GranularPermission
-    // For SEND target:  bytes32(0x00) => pair Id (keccak256(node address, spender address)) => GranularPermission
+    // For SEND target: bytes32(0x00) => pair Id (keccak256(node address, spender address)) => GranularPermission
     mapping(bytes32 => mapping(bytes32 => GranularPermission)) capabilities;
 }
 
@@ -68,7 +69,8 @@ struct Role {
  * - Permissions are not stored bitwise in `scopeConig` (uint256) due to lack of customization
  * - Utility functions, such as `packLeft`, `packRight`, `unpackFunction`, `unpackParameter`, `checkExecutionOptions`
  * are removed
- * - Specific helper functions, such as `pluckOneStaticAddress`, `pluckTwoStaticAddresses`, `pluckDynamicAddresses`,  `pluckSendPayload`
+ * - Specific helper functions, such as `pluckOneStaticAddress`, `pluckTwoStaticAddresses`, `pluckDynamicAddresses`,
+ * `pluckSendPayload`
  * are derived from `pluckStaticValue` and `pluckDynamicValue`
  * - helper functions to encode array of function signatures and their respective permissions are added.
  *
@@ -295,18 +297,14 @@ library HoprCapabilityPermissions {
         // check permission result
         if (
             granularPermission == GranularPermission.BLOCK
-                || (
-                    granularPermission == GranularPermission.NONE
-                        && defaultPermission == TargetPermission.SPECIFIC_FALLBACK_BLOCK
-                )
+                || (granularPermission == GranularPermission.NONE
+                    && defaultPermission == TargetPermission.SPECIFIC_FALLBACK_BLOCK)
         ) {
             revert GranularPermissionRejected();
         } else if (
             granularPermission == GranularPermission.ALLOW
-                || (
-                    granularPermission == GranularPermission.NONE
-                        && defaultPermission == TargetPermission.SPECIFIC_FALLBACK_ALLOW
-                )
+                || (granularPermission == GranularPermission.NONE
+                    && defaultPermission == TargetPermission.SPECIFIC_FALLBACK_ALLOW)
         ) {
             return;
         } else {
@@ -355,12 +353,12 @@ library HoprCapabilityPermissions {
     {
         // check the first two evm slots of data payload
         // according to the following ABIs
-        //  - fundChannelSafe(address selfAddress, address account, Balance amount)  // src,dst
-        //  - redeemTicketSafe(address selfAddress, RedeemableTicket calldata redeemable) // dst,channelId
-        //  - initiateOutgoingChannelClosureSafe(address selfAddress, address destination) // src,dst
-        //  - closeIncomingChannelSafe(address selfAddress, address source) // dst,src
-        //  - finalizeOutgoingChannelClosureSafe(address selfAddress, address destination) // src,dst
-        //  - setCommitmentSafe(address selfAddress, address source, bytes32 newCommitment) // dst,src
+        // - fundChannelSafe(address selfAddress, address account, Balance amount) // src,dst
+        // - redeemTicketSafe(address selfAddress, RedeemableTicket calldata redeemable) // dst,channelId
+        // - initiateOutgoingChannelClosureSafe(address selfAddress, address destination) // src,dst
+        // - closeIncomingChannelSafe(address selfAddress, address source) // dst,src
+        // - finalizeOutgoingChannelClosureSafe(address selfAddress, address destination) // src,dst
+        // - setCommitmentSafe(address selfAddress, address source, bytes32 newCommitment) // dst,src
         address selfAddress = pluckOneStaticAddress(0, data);
         // the first slot should always store the selfAddress address
         if (selfAddress != msg.sender) {
@@ -394,12 +392,7 @@ library HoprCapabilityPermissions {
      * @param functionSig Function method ID
      * @param data payload (with function signature)
      */
-    function checkHoprTokenParameters(
-        Role storage role,
-        bytes32 capabilityKey,
-        bytes4 functionSig,
-        bytes memory data
-    )
+    function checkHoprTokenParameters(Role storage role, bytes32 capabilityKey, bytes4 functionSig, bytes memory data)
         internal
         view
         returns (GranularPermission)
@@ -434,11 +427,7 @@ library HoprCapabilityPermissions {
      * @param target Taret of the operation
      * @param functionSig bytes4 method Id of the operation
      */
-    function getDefaultPermission(
-        uint256 dataLength,
-        Target target,
-        bytes4 functionSig
-    )
+    function getDefaultPermission(uint256 dataLength, Target target, bytes4 functionSig)
         internal
         pure
         returns (TargetPermission)
@@ -485,6 +474,9 @@ library HoprCapabilityPermissions {
 
     /**
      * @dev Revokes the target address from the Role by setting its clearance and target type to None.
+     * @notice After removing a target, if the target contains some custom permissions,
+     * the customized granular permissions are not automatically removed.
+     * When the target gets added again to the module, all the previously added custom permissions are retained.
      * @param role The storage reference to the Role struct.
      * @param targetAddress The address of the target to be revoked.
      */
@@ -652,6 +644,7 @@ library HoprCapabilityPermissions {
     // ======================================================
 
     function getChannelId(address source, address destination) internal pure returns (bytes32) {
+        // forge-lint: disable-next-line(asm-keccak256)
         return keccak256(abi.encodePacked(source, destination));
     }
 
@@ -717,10 +710,7 @@ library HoprCapabilityPermissions {
      * @param functionSigs array of function signatures on target
      * @param permissions array of granular permissions on target
      */
-    function encodeFunctionSigsAndPermissions(
-        bytes4[] memory functionSigs,
-        GranularPermission[] memory permissions
-    )
+    function encodeFunctionSigsAndPermissions(bytes4[] memory functionSigs, GranularPermission[] memory permissions)
         internal
         pure
         returns (bytes32 encoded, uint256 length)
@@ -755,10 +745,7 @@ library HoprCapabilityPermissions {
      * @param encoded encode permissions in bytes32
      * @param length length of permissions
      */
-    function decodeFunctionSigsAndPermissions(
-        bytes32 encoded,
-        uint256 length
-    )
+    function decodeFunctionSigsAndPermissions(bytes32 encoded, uint256 length)
         internal
         pure
         returns (bytes4[] memory functionSigs, GranularPermission[] memory permissions)

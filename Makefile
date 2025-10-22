@@ -30,6 +30,5 @@ init: ## initialize repository (idempotent operation)
 	done
 
 .PHONY: smart-contract-test
-# Remove `--no-match-test` when https://github.com/foundry-rs/foundry/issues/10586 is fixed
 smart-contract-test: # forge test smart contracts
 	$(MAKE) -C ethereum/contracts/ sc-test

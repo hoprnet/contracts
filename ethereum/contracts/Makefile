@@ -6,10 +6,7 @@ forge-script = env NETWORK=$(network) FOUNDRY_PROFILE=$(environment-type) ETHERS
 
 .PHONY: sc-test
 sc-test:
-	# we must run the tests in separate groups to avoid IO race conditions
-	$(forge) test --gas-report --match-path "./test/scripts/DeployAll.t.sol"
-	$(forge) test --gas-report --match-path "./test/scripts/DeployNodeManagement.t.sol"
-	$(forge) test --gas-report --no-match-path "./test/scripts/Deploy*.t.sol" --no-match-test "test.*_.*DomainSeparator"
+	$(forge) test
 
 .PHONY: sc-coverage
 sc-coverage:
@@ -21,7 +18,7 @@ sc-audit-coverage:
 
 .PHONY: forked-local-anvil
 forked-local-anvil:
-	anvil -f 'https://gnosis-provider.rpch.tech/'
+	anvil -f 'https://gnosis.publicnode.com/'
 
 .PHONY: anvil-deploy-erc1820
 anvil-deploy-erc1820: ensure-environment-and-network-are-set
@@ -47,7 +44,8 @@ anvil-deploy-safe-singleton: ## deploy Safe Singleton contract according to http
 
 # E.g. make anvil-deploy-contracts network=anvil-localhost environment-type=local
 .PHONY: anvil-deploy-contracts
-anvil-deploy-contracts: ensure-environment-and-network-are-set
+anvil-deploy-contracts: ensure-environment-and-network-are-set 
+anvil-deploy-contracts: export USE_STAKING_PROXY=true
 anvil-deploy-contracts: ## deploy HOPR contracts
 	$(forge-script) --broadcast script/DeployAll.s.sol:DeployAllContractsScript
 

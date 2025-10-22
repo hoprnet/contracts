@@ -3,10 +3,15 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { Script } from "forge-std/Script.sol";
 import { Test } from "forge-std/Test.sol";
-
-import "./utils/NetworkConfig.s.sol";
-import "./DeployAll.s.sol";
-import "../src/utils/TargetUtils.sol";
+import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
+import {
+    Clearance,
+    CapabilityPermission,
+    Target,
+    TargetType,
+    TargetUtils,
+    TargetPermission
+} from "../src/utils/TargetUtils.sol";
 
 contract DeployNodeSafeScript is Script, Test, NetworkConfig {
     using TargetUtils for address;
@@ -68,7 +73,7 @@ contract DeployNodeSafeScript is Script, Test, NetworkConfig {
         emit log_named_bytes32("defaultChannelsTarget", bytes32(Target.unwrap(defaultChannelsTarget)));
 
         (bool success, bytes memory returnedData) =
-            currentNetworkDetail.addresses.nodeStakeV2FactoryAddress.call(cloneCallData);
+            currentNetworkDetail.addresses.nodeStakeFactoryAddress.call(cloneCallData);
         require(success, "call node stake factory must succeed");
 
         (address module, address safe) = abi.decode(returnedData, (address, address));

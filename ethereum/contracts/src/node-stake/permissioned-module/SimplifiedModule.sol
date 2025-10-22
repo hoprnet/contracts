@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import { Enum } from "safe-contracts/common/Enum.sol";
+import { Enum } from "safe-contracts-1.4.1/common/Enum.sol";
 import { IAvatar } from "../../interfaces/IAvatar.sol";
-import { UUPSUpgradeable } from "openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { OwnableUpgradeable } from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { UUPSUpgradeable } from "openzeppelin-contracts-upgradeable-5.4.0/proxy/utils/UUPSUpgradeable.sol";
+import { OwnableUpgradeable } from "openzeppelin-contracts-upgradeable-5.4.0/access/OwnableUpgradeable.sol";
 
 abstract contract SimplifiedModuleEvents {
     // module emit event when execution is successful on avator
@@ -31,12 +31,7 @@ abstract contract SimplifiedModule is UUPSUpgradeable, OwnableUpgradeable, Simpl
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
      */
-    function exec(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function exec(address to, uint256 value, bytes memory data, Enum.Operation operation)
         internal
         returns (bool success)
     {
@@ -56,12 +51,7 @@ abstract contract SimplifiedModule is UUPSUpgradeable, OwnableUpgradeable, Simpl
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction: 0 == call, 1 == delegate call.
      */
-    function execAndReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    )
+    function execAndReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
         internal
         returns (bool success, bytes memory returnedData)
     {
