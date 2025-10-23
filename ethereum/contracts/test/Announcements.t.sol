@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.6.0 <0.9.0;
 
-import { Test } from "forge-std/Test.sol";
+import { Test, Vm } from "forge-std/Test.sol";
 import {
     HoprAnnouncements,
     ZeroAddress,
@@ -50,7 +50,7 @@ contract AnnouncementsTest is Test {
         announcements = new HoprAnnouncements(HoprNodeSafeRegistry(address(0)));
     }
 
-    function testKeyBinding(address caller) public {
+    function testFuzz_KeyBinding(address caller) public {
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
         );
@@ -66,7 +66,7 @@ contract AnnouncementsTest is Test {
 
     event AddressAnnouncement(address node, string baseMultiaddr);
 
-    function testAnnouncements(address caller) public {
+    function testFuzz_Announcements(address caller) public {
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
         );
@@ -82,7 +82,7 @@ contract AnnouncementsTest is Test {
 
     event RevokeAnnouncement(address node);
 
-    function testAddressRevocation(address caller) public {
+    function testFuzz_AddressRevocation(address caller) public {
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
         );
@@ -96,7 +96,7 @@ contract AnnouncementsTest is Test {
         vm.clearMockedCalls();
     }
 
-    function testAllInOneAnnouncement(address caller) public {
+    function testFuzz_AllInOneAnnouncement(address caller) public {
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
         );
@@ -119,7 +119,7 @@ contract AnnouncementsTest is Test {
         vm.clearMockedCalls();
     }
 
-    function testBindKeyAnnounce(address caller) public {
+    function testFuzz_BindKeyMaybeAnnounce(address caller) public {
         vm.mockCall(
             address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
         );
@@ -131,7 +131,26 @@ contract AnnouncementsTest is Test {
         emit AddressAnnouncement(caller, MULTIADDRESS);
 
         vm.prank(caller);
-        announcements.bindKeysAnnounce(ED25519_SIG_0, ED25519_SIG_1, ED25519_PUB_KEY, MULTIADDRESS);
+        announcements.bindKeysMaybeAnnounce(ED25519_SIG_0, ED25519_SIG_1, ED25519_PUB_KEY, MULTIADDRESS);
+
+        vm.clearMockedCalls();
+    }
+
+    function testFuzz_BindKeyMaybeAnnounceEmptyMultiAddress(address caller) public {
+        vm.mockCall(
+            address(safeRegistry), abi.encodeWithSignature("nodeToSafe(address)", caller), abi.encode(address(0))
+        );
+
+        // Start the recorder
+        vm.recordLogs();
+
+        vm.prank(caller);
+        announcements.bindKeysMaybeAnnounce(ED25519_SIG_0, ED25519_SIG_1, ED25519_PUB_KEY, "");
+
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        // only keybinding event was emitted
+        assertEq(entries.length, 1);
+        assertEq(entries[0].topics[0], keccak256("KeyBinding(bytes32,bytes32,bytes32,address)"));
 
         vm.clearMockedCalls();
     }
@@ -181,7 +200,7 @@ contract AnnouncementsTest is Test {
         emit AddressAnnouncement(nodeAddress, MULTIADDRESS);
 
         vm.prank(safeAddress);
-        announcements.bindKeysAnnounceSafe(nodeAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key, MULTIADDRESS);
+        announcements.bindKeysMaybeAnnounceSafe(nodeAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key, MULTIADDRESS);
 
         vm.clearMockedCalls();
     }
