@@ -697,10 +697,10 @@ contract HoprNodeStakeFactoryTest is
         admins2[1] = vm.addr(601);
 
         bytes[] memory data = new bytes[](2);
-        data[0] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce1, DEFAULT_TARGET, admins1); // approve
-        // on token
-        data[1] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce2, DEFAULT_TARGET, admins2); // approve
-        // on token
+        // approve on token
+        data[0] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce1, DEFAULT_TARGET, admins1);
+        // approve on token
+        data[1] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce2, DEFAULT_TARGET, admins2);
         uint256[] memory dataLengths = new uint256[](2);
         dataLengths[0] = data[0].length;
         dataLengths[1] = data[1].length;
