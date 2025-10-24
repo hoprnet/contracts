@@ -5,7 +5,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { HoprNodeManagementModule } from "../../src/node-stake/permissioned-module/NodeManagementModule.sol";
 import { HoprCapabilityPermissions } from "../../src/node-stake/permissioned-module/CapabilityPermissions.sol";
-import { 
+import {
     HoprNodeStakeFactory,
     HoprNodeStakeFactoryEvents,
     SafeModuleDeployment

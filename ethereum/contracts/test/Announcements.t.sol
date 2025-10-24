@@ -200,7 +200,9 @@ contract AnnouncementsTest is Test {
         emit AddressAnnouncement(nodeAddress, MULTIADDRESS);
 
         vm.prank(safeAddress);
-        announcements.bindKeysMaybeAnnounceSafe(nodeAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key, MULTIADDRESS);
+        announcements.bindKeysMaybeAnnounceSafe(
+            nodeAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key, MULTIADDRESS
+        );
 
         vm.clearMockedCalls();
     }

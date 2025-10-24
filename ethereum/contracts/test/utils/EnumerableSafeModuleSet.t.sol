@@ -53,18 +53,13 @@ contract EnumerableSafeModuleSetTest is Test {
     /**
      * @dev fuzz test on add, length and contains
      */
-    function testFuzz_AddLengthContains(address safe1, address safe2)
-        public
-        beforeEach
-    {
+    function testFuzz_AddLengthContains(address safe1, address safe2) public beforeEach {
         vm.assume(safe1 != safe2);
         assumeUnusedAddress(safe1);
         assumeUnusedAddress(safe2);
 
-        SafeModuleDeployment memory safeModuleAddresses1 =
-            SafeModuleDeployment(safe1, safe1);
-        SafeModuleDeployment memory safeModuleAddresses2 =
-            SafeModuleDeployment(safe2, safe2);
+        SafeModuleDeployment memory safeModuleAddresses1 = SafeModuleDeployment(safe1, safe1);
+        SafeModuleDeployment memory safeModuleAddresses2 = SafeModuleDeployment(safe2, safe2);
 
         // Include the first item
         assertEq(enumerableSafeModuleSetMock.add(safeModuleAddresses1), 0);
@@ -87,8 +82,7 @@ contract EnumerableSafeModuleSetTest is Test {
 
     function testRevert_AddExistingSafeModule(address safe) public beforeEach {
         assumeUnusedAddress(safe);
-        SafeModuleDeployment memory safeModuleAddresses =
-            SafeModuleDeployment(safe, safe);
+        SafeModuleDeployment memory safeModuleAddresses = SafeModuleDeployment(safe, safe);
         assertEq(enumerableSafeModuleSetMock.add(safeModuleAddresses), 0);
         // check adding the same safeModuleAddresses again reverts
         vm.expectRevert(EnumerableSafeModuleSet.ExistingSafeModule.selector);
@@ -107,11 +101,7 @@ contract EnumerableSafeModuleSetTest is Test {
     /**
      * @dev fuzz test at
      */
-    function testFuzz_At(address[] memory safes)
-        public
-        beforeEach
-        limitSize(safes)
-    {
+    function testFuzz_At(address[] memory safes) public beforeEach limitSize(safes) {
         // add unique values to target
         uint256 addedCount = _helperCreateSafeModuleSet(safes);
         SafeModuleDeployment[] memory values = enumerableSafeModuleSetMock.values();
@@ -150,12 +140,7 @@ contract EnumerableSafeModuleSetTest is Test {
     /**
      * @dev test revert condition of get, namely when the address does not exist
      */
-    function testRevert_Get(address[] memory safes)
-        public
-        beforeEach
-        uniqueValues(safes)
-        limitSize(safes)
-    {
+    function testRevert_Get(address[] memory safes) public beforeEach uniqueValues(safes) limitSize(safes) {
         // add values to target
         _helperCreateSafeModuleSet(safes);
 
@@ -169,20 +154,13 @@ contract EnumerableSafeModuleSetTest is Test {
 
         assertFalse(tryResult);
         assertEq(index, 0);
-        assertTrue(
-            _compareSafeModule(tryDeployment, SafeModuleDeployment(address(0), address(0)))
-        );
+        assertTrue(_compareSafeModule(tryDeployment, SafeModuleDeployment(address(0), address(0))));
     }
 
     /**
      * @dev test positive condition of get
      */
-    function testFuzz_Get(address[] memory safes)
-        public
-        beforeEach
-        uniqueValues(safes)
-        limitSize(safes)
-    {
+    function testFuzz_Get(address[] memory safes) public beforeEach uniqueValues(safes) limitSize(safes) {
         // add values to target
         _helperCreateSafeModuleSet(safes);
 
@@ -207,11 +185,7 @@ contract EnumerableSafeModuleSetTest is Test {
         for (uint256 i = 0; i < safes.length; i++) {
             // only add unique non-existing safe addresses
             if (!enumerableSafeModuleSetMock.contains(safes[i])) {
-                enumerableSafeModuleSetMock.add(
-                    SafeModuleDeployment(
-                        safes[i], safes[i]
-                    )
-                );
+                enumerableSafeModuleSetMock.add(SafeModuleDeployment(safes[i], safes[i]));
                 counter++;
             }
         }
