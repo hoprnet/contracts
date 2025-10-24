@@ -51,7 +51,7 @@ contract EnumerableSafeModuleSetTest is Test {
     }
 
     /**
-     * @dev fuzz test oln add, length and contains
+     * @dev fuzz test on add, length and contains
      */
     function testFuzz_AddLengthContains(address safe1, address safe2)
         public
@@ -199,13 +199,13 @@ contract EnumerableSafeModuleSetTest is Test {
 
     /**
      * @dev helper function to create a set for fuzz testing
-     *      chain_key (address) is derived from the uint256 value, non-zero address only
-     * @param safes array of ed25519_pub_key values to be added to the set
+     *      Safe addresses to be added to the set, non-zero addresses only
+     * @param safes Array of safe addresses to be added to the set (non-zero addresses only)
      */
     function _helperCreateSafeModuleSet(address[] memory safes) private returns (uint256) {
         uint256 counter = 0;
         for (uint256 i = 0; i < safes.length; i++) {
-            // only add unique non-existing ed25519_pub_key
+            // only add unique non-existing safe addresses
             if (!enumerableSafeModuleSetMock.contains(safes[i])) {
                 enumerableSafeModuleSetMock.add(
                     SafeModuleDeployment(

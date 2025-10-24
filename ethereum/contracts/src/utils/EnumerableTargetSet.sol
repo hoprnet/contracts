@@ -26,7 +26,7 @@ struct TargetSet {
 library EnumerableTargetSet {
     using TargetUtils for Target;
 
-    // when the address is not stared as a target address
+    // when the address is not stored as a target address
     error NonExistentKey();
 
     /**

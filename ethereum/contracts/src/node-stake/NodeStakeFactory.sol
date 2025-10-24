@@ -382,7 +382,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         validateAdmins(admins)
         returns (address, address payable)
     {
-        // Temporarily expand one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))
@@ -441,7 +441,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         validateAdmins(admins)
         returns (address, address payable)
     {
-        // Temporarily expand one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))
@@ -697,7 +697,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * with the provided nonce.
      */
     function predictSafeAddress(address[] memory admins, uint256 nonce) public view returns (address predicted) {
-        // Temporarily expand one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))

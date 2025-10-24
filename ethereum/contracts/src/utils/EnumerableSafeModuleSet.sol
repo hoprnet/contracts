@@ -22,7 +22,7 @@ struct SafeModuleSet {
  * library, for SafeModuleDeployment type.
  */
 library EnumerableSafeModuleSet {
-    // when the address is not stared as a target address
+    // when the address is not stored as a target address
     error NonExistentKey();
     // when the safeProxyInstance is already in the set
     error ExistingSafeModule();
