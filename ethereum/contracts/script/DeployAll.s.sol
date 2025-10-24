@@ -219,8 +219,8 @@ contract DeployAllContractsScript is
      * @dev deploy ticket price oracle
      */
     function _deployHoprTicketPriceOracle(address deployerAddress) internal {
-        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL ? 1_000_000_000_000_000 : 100; // 0.001 HOPR in
-        // test environment
+        // 0.001 HOPR in test environment
+        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL ? 1_000_000_000_000_000 : 100;
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.ticketPriceOracleContractAddress)

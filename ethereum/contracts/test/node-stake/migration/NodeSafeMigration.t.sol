@@ -200,11 +200,12 @@ contract NodeSafeMigrationTest is
         _helperSafeTxnDelegateCall(address(migrationContract), IAvatar(safeAddress), callerPrivateKey, data);
 
         // check the module is now upgraded to the new singleton
-        assertEq(IOwner(address(newModuleProxyPrediction)).owner(), safeAddress); // new module is now owned by the safe
-        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction))); // new module is enabled in
-        // the safe
-        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy))); // old module is no longer enabled
-        // in the safe
+        // new module is now owned by the safe
+        assertEq(IOwner(address(newModuleProxyPrediction)).owner(), safeAddress);
+        // new module is enabled in the safe
+        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction)));
+        // old module is no longer enabled in the safe
+        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy)));
         assertEq(
             vm.load(address(newModuleProxyPrediction), _IMPLEMENTATION_SLOT),
             bytes32(uint256(uint160(address(newModuleSingleton))))
@@ -279,10 +280,10 @@ contract NodeSafeMigrationTest is
 
         // check the module is now upgraded to the new singleton
         assertEq(IOwner(address(newModuleProxyPrediction)).owner(), safeAddress); // new module is now owned by the safe
-        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction))); // new module is enabled in
-        // the safe
-        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy))); // old module is no longer enabled
-        // in the safe
+        // new module is enabled in the safe
+        assertTrue(IAvatar(safeAddress).isModuleEnabled(address(newModuleProxyPrediction)));
+        // old module is no longer enabled in the safe
+        assertFalse(IAvatar(safeAddress).isModuleEnabled(address(oldModuleProxy)));
         assertEq(
             vm.load(address(newModuleProxyPrediction), _IMPLEMENTATION_SLOT),
             bytes32(uint256(uint160(address(newModuleSingleton))))

@@ -87,6 +87,10 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         setNodeSafeRegistry(safeRegistry);
     }
 
+    /**
+     * @dev Bind off-chain keys to the caller's on-chain identity.
+     *      MUST be called by the Safe contract associated with the node in the NodeSafeRegistry
+     */
     function bindKeysSafe(address selfAddress, bytes32 ed25519_sig_0, bytes32 ed25519_sig_1, bytes32 ed25519_pub_key)
         external
         HoprMultiSig.onlySafe(selfAddress)
@@ -94,6 +98,10 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         _bindKeysInternal(selfAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key);
     }
 
+    /**
+     * @dev Bind off-chain keys to the caller's on-chain identity.
+     *      MUST be called by the node itself, if the node is not associated with any Safe
+     */
     function bindKeys(bytes32 ed25519_sig_0, bytes32 ed25519_sig_1, bytes32 ed25519_pub_key)
         external
         HoprMultiSig.noSafeSet
@@ -101,7 +109,12 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         _bindKeysInternal(msg.sender, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key);
     }
 
-    function bindKeysAnnounceSafe(
+    /**
+     * @dev Convenience method to bind keys and announce in one call.
+     *      If an empty multiaddress is provided, skip the announcement and only bind keys
+     *      MUST be called by the Safe contract associated with the node in the NodeSafeRegistry
+     */
+    function bindKeysMaybeAnnounceSafe(
         address selfAddress,
         bytes32 ed25519_sig_0,
         bytes32 ed25519_sig_1,
@@ -112,13 +125,17 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         HoprMultiSig.onlySafe(selfAddress)
     {
         _bindKeysInternal(selfAddress, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key);
-        _announceInternal(selfAddress, baseMultiaddr);
+        if (bytes(baseMultiaddr).length != 0) {
+            _announceInternal(selfAddress, baseMultiaddr);
+        }
     }
 
     /**
-     * Convenience method to bind keys and announce in one call.
+     * @dev Convenience method to bind keys and announce in one call.
+     *      If an empty multiaddress is provided, skip the announcement and only bind keys
+     *      MUST be called by the node itself, if the node is not associated with any Safe
      */
-    function bindKeysAnnounce(
+    function bindKeysMaybeAnnounce(
         bytes32 ed25519_sig_0,
         bytes32 ed25519_sig_1,
         bytes32 ed25519_pub_key,
@@ -128,9 +145,15 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         HoprMultiSig.noSafeSet
     {
         _bindKeysInternal(msg.sender, ed25519_sig_0, ed25519_sig_1, ed25519_pub_key);
-        _announceInternal(msg.sender, baseMultiaddr);
+        if (bytes(baseMultiaddr).length != 0) {
+            _announceInternal(msg.sender, baseMultiaddr);
+        }
     }
 
+    /**
+     * @dev Announces a new multiaddress for the sender.
+     *     MUST be called by the Safe contract associated with the node in the NodeSafeRegistry
+     */
     function announceSafe(address selfAddress, string calldata baseMultiaddr)
         external
         HoprMultiSig.onlySafe(selfAddress)
@@ -138,14 +161,28 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         _announceInternal(selfAddress, baseMultiaddr);
     }
 
+    /**
+     * @dev Announces a new multiaddress for the sender.
+     *      MUST be called by the node itself, if the node is not associated with any Safe
+     */
     function announce(string calldata baseMultiaddr) external HoprMultiSig.noSafeSet {
         _announceInternal(msg.sender, baseMultiaddr);
     }
 
+    /**
+     * @dev Opts out from acting as a public relay node (PRN)
+     *      MUST be called by the Safe contract associated with the node in the NodeSafeRegistry
+     *      This only removes the multiaddress announcement, but keeps the key-binding
+     */
     function revokeSafe(address selfAddress) external HoprMultiSig.onlySafe(selfAddress) {
         _revokeInternal(selfAddress);
     }
 
+    /**
+     * @dev Opts out from acting as a public relay node (PRN)
+     *      MUST be called by the node itself, if the node is not associated with any Safe
+     *      This only removes the multiaddress announcement, but keeps the key-binding
+     */
     function revoke() external HoprMultiSig.noSafeSet {
         _revokeInternal(msg.sender);
     }
@@ -184,6 +221,10 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         return _keyBindings.contains(ed25519_pub_key);
     }
 
+    /**
+     * @dev Returns the key binding associated with the off-chain public key.
+     *      Returns (false, 0, empty) if the off-chain public key does not exist in the list.
+     */
     function tryGetKeyBinding(bytes32 ed25519_pub_key)
         external
         view
@@ -194,16 +235,26 @@ contract HoprAnnouncements is Multicall, HoprMultiSig, HoprAnnouncementsEvents, 
         return (success, KeyId.wrap(uint32(possibleKeyId)), keyBinding);
     }
 
+    /**
+     * @dev Returns the key binding at a specific key id.
+     */
     function getKeyBindingWithKeyId(KeyId keyId) external view returns (KeyBindingWithSignature memory) {
         uint256 index = uint256(uint32(KeyId.unwrap(keyId)));
         return _keyBindings.at(index);
     }
 
+    /**
+     * @dev Returns the off-chain public key associated with the key id.
+     */
     function getOffchainKeyWithKeyId(KeyId keyId) external view returns (bytes32 ed25519_pub_key) {
         uint256 index = uint256(uint32(KeyId.unwrap(keyId)));
         return _keyBindings.at(index).ed25519_pub_key;
     }
 
+    /**
+     * @dev Returns the key id associated with the off-chain public key.
+     *      Returns (false, 0) if the off-chain public key does not exist in the list.
+     */
     function getKeyIdWithOffchainKey(bytes32 ed25519_pub_key) external view returns (bool, KeyId) {
         (bool success, uint256 possibleKeyId,) = _keyBindings.tryGet(ed25519_pub_key);
         return (success, KeyId.wrap(uint32(possibleKeyId)));
