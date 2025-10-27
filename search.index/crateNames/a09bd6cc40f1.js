@@ -1,0 +1,1 @@
+rd_("mhopr_bindingsAghopr_contract_addresses")
