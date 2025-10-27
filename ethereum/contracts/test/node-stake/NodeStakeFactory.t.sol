@@ -5,7 +5,11 @@ import { Test } from "forge-std/Test.sol";
 
 import { HoprNodeManagementModule } from "../../src/node-stake/permissioned-module/NodeManagementModule.sol";
 import { HoprCapabilityPermissions } from "../../src/node-stake/permissioned-module/CapabilityPermissions.sol";
-import { HoprNodeStakeFactory, HoprNodeStakeFactoryEvents } from "../../src/node-stake/NodeStakeFactory.sol";
+import {
+    HoprNodeStakeFactory,
+    HoprNodeStakeFactoryEvents,
+    SafeModuleDeployment
+} from "../../src/node-stake/NodeStakeFactory.sol";
 import { Safe } from "safe-contracts-1.4.1/Safe.sol";
 import { SafeSuiteLibV141 } from "../../src/utils/SafeSuiteLibV141.sol";
 import { SafeSuiteLibV150 } from "../../src/utils/SafeSuiteLibV150.sol";
@@ -88,6 +92,27 @@ contract HoprNodeStakeFactoryTest is
                 defaultTokenAllowance: defaultAllowance
             })
         );
+        _;
+    }
+
+    /**
+     * @dev limit the size of the targetVals array for gas report generation
+     */
+    modifier limitSize(address[] memory addresses) {
+        vm.assume(addresses.length <= 256);
+        _;
+    }
+
+    /**
+     * @dev modifier to ensure all addresses in the array are unique
+     */
+    modifier uniqueValues(address[] memory addresses) {
+        for (uint256 i = 0; i < addresses.length; i++) {
+            vm.assume(addresses[i] != address(0));
+            for (uint256 j = 0; j < i; j++) {
+                vm.assume(addresses[i] != addresses[j]);
+            }
+        }
         _;
     }
 
@@ -507,6 +532,40 @@ contract HoprNodeStakeFactoryTest is
         vm.clearMockedCalls();
     }
 
+    function testFuzz_GetSafeModuleDeployment(uint256 count) public mockTokenChannel {
+        count = bound(count, 1, 10);
+        // create a safe with the factory
+        address[] memory admins = new address[](1);
+        admins[0] = vm.addr(888);
+        uint256 nonce = 12_345;
+
+        vm.prank(admins[0]);
+        for (uint256 i = 0; i < count; i++) {
+            factory.clone(nonce + i, DEFAULT_TARGET, admins);
+        }
+
+        SafeModuleDeployment[] memory results = factory.getAllDeployments();
+
+        assertEq(results.length, count);
+        assertEq(results.length, factory.getDeploymentsCount());
+
+        for (uint256 i = 0; i < count; i++) {
+            SafeModuleDeployment memory result_i = factory.getDeploymentAtIndex(i);
+            assertTrue(factory.isSafeDeployedByFactory(result_i.safeProxyInstance));
+
+            (bool success, uint256 index, SafeModuleDeployment memory tryDeployment_i) =
+                factory.tryGetDeployment(result_i.safeProxyInstance);
+            assertTrue(success);
+            assertEq(index, i);
+            assertTrue(_compareDeployment(tryDeployment_i, result_i));
+
+            SafeModuleDeployment memory at_i = factory.getDeploymentAtIndex(i);
+            assertTrue(_compareDeployment(at_i, result_i));
+        }
+
+        vm.clearMockedCalls();
+    }
+
     /**
      * @dev internal function to ensure the safe and module are properly wired after cloning
      */
@@ -638,10 +697,10 @@ contract HoprNodeStakeFactoryTest is
         admins2[1] = vm.addr(601);
 
         bytes[] memory data = new bytes[](2);
-        data[0] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce1, DEFAULT_TARGET, admins1); // approve
-        // on token
-        data[1] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce2, DEFAULT_TARGET, admins2); // approve
-        // on token
+        // approve on token
+        data[0] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce1, DEFAULT_TARGET, admins1);
+        // approve on token
+        data[1] = abi.encodeWithSelector(HoprNodeStakeFactory.clone.selector, nonce2, DEFAULT_TARGET, admins2);
         uint256[] memory dataLengths = new uint256[](2);
         dataLengths[0] = data[0].length;
         dataLengths[1] = data[1].length;
@@ -659,5 +718,13 @@ contract HoprNodeStakeFactoryTest is
     {
         expectedSafeAddress = factory.predictSafeAddress(admins, nonce);
         expectedModuleAddress = factory.predictModuleAddress(txCaller, nonce, expectedSafeAddress, DEFAULT_TARGET);
+    }
+
+    function _compareDeployment(SafeModuleDeployment memory a, SafeModuleDeployment memory b)
+        private
+        pure
+        returns (bool)
+    {
+        return (a.safeProxyInstance == b.safeProxyInstance && a.moduleProxyInstance == b.moduleProxyInstance);
     }
 }

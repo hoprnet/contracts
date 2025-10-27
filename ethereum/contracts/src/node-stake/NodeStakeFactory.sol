@@ -15,6 +15,7 @@ import { TargetUtils, Target } from "../utils/TargetUtils.sol";
 import { IERC777Recipient } from "openzeppelin-contracts-5.4.0/interfaces/IERC777Recipient.sol";
 import { IERC1820Registry } from "openzeppelin-contracts-5.4.0/interfaces/IERC1820Registry.sol";
 import { IERC20, SafeERC20 } from "openzeppelin-contracts-5.4.0/token/ERC20/utils/SafeERC20.sol";
+import { SafeModuleDeployment, SafeModuleSet, EnumerableSafeModuleSet } from "../utils/EnumerableSafeModuleSet.sol";
 
 abstract contract HoprNodeStakeFactoryEvents {
     // Emit when a new module implementation is set
@@ -59,6 +60,7 @@ interface IHoprNodeStakeFactory {
 contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC777Recipient, IHoprNodeStakeFactory {
     using TargetUtils for Target;
     using SafeERC20 for IERC20;
+    using EnumerableSafeModuleSet for SafeModuleSet;
 
     // Error indicating that there are too few owners provided
     error TooFewOwners();
@@ -107,6 +109,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     address public moduleSingletonAddress;
     // Signature of the approved hash used for EIP-1271 signature verification
     bytes internal approvalHashSig;
+    // storage of deployed Safes and modules
+    SafeModuleSet internal _safeModule;
 
     // Safe library addresses. Defaults to SafeSuiteLibV141 constants, but can be updated by the owner
     SafeLibAddress public safeLibAddresses = SafeLibAddress({
@@ -235,6 +239,47 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     }
 
     /**
+     * @dev Returns the number of deployments.
+     */
+    function getDeploymentsCount() external view returns (uint256) {
+        return _safeModule.length();
+    }
+
+    /**
+     * @dev Returns the list of all safe module deployments.
+     * Note: this function is gas expensive.
+     */
+    function getAllDeployments() external view returns (SafeModuleDeployment[] memory) {
+        return _safeModule.values();
+    }
+
+    /**
+     * @dev Returns if the safe proxy address is deployed by the factory.
+     */
+    function isSafeDeployedByFactory(address safeProxyAddress) external view returns (bool) {
+        return _safeModule.contains(safeProxyAddress);
+    }
+
+    /**
+     * @dev Returns the deployed safe and module addresses, if they were created by the factory.
+     * If not, it will return (false, 0, address(0))
+     */
+    function tryGetDeployment(address safeProxyAddress)
+        external
+        view
+        returns (bool, uint256, SafeModuleDeployment memory)
+    {
+        return _safeModule.tryGet(safeProxyAddress);
+    }
+
+    /**
+     * @dev Returns the deployed safe and module addresses at a specific index.
+     */
+    function getDeploymentAtIndex(uint256 index) external view returns (SafeModuleDeployment memory) {
+        return _safeModule.at(index);
+    }
+
+    /**
      * @dev Updates the module singleton address. Can only be called by the contract owner.
      * @param _newModuleSingletonAddress The new address of the module singleton.
      */
@@ -337,7 +382,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         validateAdmins(admins)
         returns (address, address payable)
     {
-        // Temporarily replace one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))
@@ -349,6 +394,9 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
 
         // 2. Prepare module initializer data
         address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
+
+        // store the deployed pair
+        _safeModule.add(SafeModuleDeployment(address(safeProxyAddr), moduleProxy));
 
         // 3. Send safe transactions
         {
@@ -393,7 +441,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         validateAdmins(admins)
         returns (address, address payable)
     {
-        // Temporarily replace one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))
@@ -405,6 +453,9 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
 
         // 2. Prepare module initializer data
         address moduleProxy = _deployModule(safeProxyAddr, defaultTarget, caller, nonce);
+
+        // store the deployed pair
+        _safeModule.add(SafeModuleDeployment(address(safeProxyAddr), moduleProxy));
 
         // 3. Send safe transactions
         {
@@ -646,7 +697,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
      * with the provided nonce.
      */
     function predictSafeAddress(address[] memory admins, uint256 nonce) public view returns (address predicted) {
-        // Temporarily replace one owner with the factory address
+        // Temporarily add the factory address as an owner
         assembly {
             let len := mload(admins)
             mstore(admins, add(len, 1))

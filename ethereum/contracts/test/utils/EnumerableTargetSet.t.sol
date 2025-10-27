@@ -27,7 +27,7 @@ contract EnumerableTargetSetTest is Test {
     }
 
     /**
-     * @dev fuzz test oln add, length and contains
+     * @dev fuzz test on add, length and contains
      */
     function testFuzz_AddLengthContains(uint256 targetVal) public {
         Target target = Target.wrap(targetVal);

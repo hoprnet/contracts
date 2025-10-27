@@ -61,7 +61,7 @@ contract EnumerableKeyBindingSetTest is Test {
     }
 
     /**
-     * @dev fuzz test oln add, length and contains
+     * @dev fuzz test on add, length and contains
      */
     function testFuzz_AddLengthContains(bytes32 pubkey1, bytes32 pubkey2)
         public
@@ -221,7 +221,6 @@ contract EnumerableKeyBindingSetTest is Test {
 
     /**
      * @dev helper function to create a set for fuzz testing
-     *      chain_key (address) is derived from the uint256 value, non-zero address only
      * @param bytes32Vals array of ed25519_pub_key values to be added to the set
      */
     function _helperCreateKeyBindingSet(bytes32[] memory bytes32Vals) private returns (uint256) {
