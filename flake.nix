@@ -87,7 +87,7 @@
               ./.cargo/config.toml
               ./Cargo.lock
               ./README.md
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               (fs.fileFilter (file: file.hasExt "rs") ./.)
@@ -102,7 +102,7 @@
               ./.cargo/config.toml
               ./Cargo.lock
               ./README.md
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               (fs.fileFilter (file: file.hasExt "rs") ./.)
@@ -228,7 +228,7 @@
           anvilSrc = fs.toSource {
             root = ./.;
             fileset = fs.unions [
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               ./ethereum/contracts/Makefile
@@ -497,7 +497,7 @@
               "ethereum/bindings/src/codegen/*"
               "ethereum/contracts/Makefile"
               "ethereum/contracts/broadcast/*"
-              "ethereum/contracts/contracts-addresses.json"
+              "ethereum/bindings/contracts-addresses.json"
               "ethereum/contracts/remappings.txt"
               "ethereum/contracts/src/static/*"
               "ethereum/contracts/test/static/*"

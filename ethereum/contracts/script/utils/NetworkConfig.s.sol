@@ -63,7 +63,8 @@ contract NetworkConfig is Script {
     EnvironmentType public currentEnvironmentType;
     NetworkDetail public currentNetworkDetail;
 
-    string public pathToDeploymentFile = string(abi.encodePacked(vm.projectRoot(), "/contracts-addresses.json"));
+    string public pathToDeploymentFile =
+        string(abi.encodePacked(vm.projectRoot(), "/../bindings/contracts-addresses.json"));
 
     function getNetwork() public {
         // get environment of the script

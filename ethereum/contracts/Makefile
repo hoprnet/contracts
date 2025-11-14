@@ -286,7 +286,7 @@ ensure-network-is-set:
 ifeq ($(network),)
 	echo "parameter <network> missing" >&2 && exit 1
 else
-environment-type != jq '.networks."$(network)".environment_type // empty' contracts-addresses.json
+environment-type != jq '.networks."$(network)".environment_type // empty' ../bindings/contracts-addresses.json
 endif
 
 .PHONY: ensure-etherscan-api-key-is-set
@@ -300,7 +300,7 @@ endif
 
 ensure-environment-is-set:
 ifeq ($(environment-type),)
-	echo "could not read environment info from contracts-addresses.json" >&2 && exit 1
+	echo "could not read environment info from ../bindings/contracts-addresses.json" >&2 && exit 1
 endif
 
 ensure-privatekey-is-set:
