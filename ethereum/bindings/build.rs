@@ -18,8 +18,10 @@ fn main() -> anyhow::Result<()> {
             config_path
         ));
     } else {
-        fs::copy(config_path.clone(), &dest_path)
-            .context(format!("Failed to copy {CONTRACTS_ADDRESSES_FILENAME} to OUT_DIR"))?;
+        fs::copy(config_path.clone(), &dest_path).context(format!(
+            "Failed to copy {:#?} to OUT_DIR: {:#?}",
+            config_path, dest_path
+        ))?;
     }
 
     // Tell Cargo to rerun this build script if the config file changes
