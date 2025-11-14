@@ -7,9 +7,10 @@ const CONTRACTS_ADDRESSES_PATH: &str = const_format::formatcp!("../contracts/{}"
 
 fn main() -> anyhow::Result<()> {
     let out_dir = env::var("OUT_DIR").context("OUT_DIR environment variable should be set")?;
-    let dest_path = Path::new(&out_dir).join(CONTRACTS_ADDRESSES_FILENAME);
+    let src_dir = env::var("CARGO_MANIFEST_DIR").context("CARGO_MANIFEST_DIR environment variable should be set")?;
 
-    let config_path = Path::new(CONTRACTS_ADDRESSES_PATH);
+    let dest_path = Path::new(&out_dir).join(CONTRACTS_ADDRESSES_FILENAME);
+    let config_path = Path::new(&src_dir).join(CONTRACTS_ADDRESSES_PATH);
 
     if !config_path.exists() {
         return Err(anyhow::anyhow!(
