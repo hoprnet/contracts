@@ -18,6 +18,7 @@ fn main() -> anyhow::Result<()> {
             config_path
         ));
     } else {
+        fs::create_dir_all(out_dir)?;
         fs::copy(config_path.clone(), &dest_path).context(format!(
             "Failed to copy {:#?} to OUT_DIR: {:#?}",
             config_path, dest_path
