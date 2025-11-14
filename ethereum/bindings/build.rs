@@ -19,14 +19,15 @@ fn main() -> anyhow::Result<()> {
         ));
     } else {
         fs::create_dir_all(out_dir)?;
-        fs::copy(config_path.clone(), &dest_path).context(format!(
-            "Failed to copy {:#?} to OUT_DIR: {:#?}",
-            config_path, dest_path
+        fs::copy(&config_path, &dest_path).context(format!(
+            "Failed to copy {} to OUT_DIR: {}",
+            config_path.display(),
+            dest_path.display()
         ))?;
     }
 
     // Tell Cargo to rerun this build script if the config file changes
-    println!("cargo:rerun-if-changed={:#?}", config_path);
+    println!("cargo:rerun-if-changed={}", config_path.display());
 
     Ok(())
 }
