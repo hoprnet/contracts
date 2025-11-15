@@ -13,7 +13,8 @@
 /.github/ @ausias-armesto @tolbrino @Teebor-Choka
 
 # Blockchain and smart contracts
-/ethereum/ @QYuQianchen @tolbrino
+/ethereum/contracts/ @QYuQianchen @tolbrino
+/ethereum/bindings/src/codegen @QYuQianchen @tolbrino
 *.sol @QYuQianchen @tolbrino
 
 # Documentation
