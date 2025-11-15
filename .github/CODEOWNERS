@@ -14,7 +14,7 @@
 
 # Blockchain and smart contracts
 /ethereum/contracts/ @QYuQianchen @tolbrino
-/ethereum/bindings/src/codegen @QYuQianchen @tolbrino
+/ethereum/bindings/src/codegen/ @QYuQianchen @tolbrino
 *.sol @QYuQianchen @tolbrino
 
 # Documentation
