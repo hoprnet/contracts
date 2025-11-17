@@ -42,10 +42,21 @@ pub struct ContractAddresses {
     pub module_implementation: Address,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, strum::EnumString, strum::Display)]
+#[strum(serialize_all = "lowercase")]
+pub enum EnvironmentType {
+    Local,
+    Staging,
+    Production,
+}
+
+#[serde_with::serde_as]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SingleNetworkContractAddresses {
     pub indexer_start_block_number: u32,
     pub addresses: ContractAddresses,
+    #[serde_as(as = "DisplayFromStr")]
+    pub environment_type: EnvironmentType,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -71,11 +82,29 @@ impl FromStr for NetworksWithContractAddresses {
 #[cfg(test)]
 mod tests {
     use super::NetworksWithContractAddresses;
+    use crate::config::EnvironmentType;
 
     #[test]
     fn networks_with_contract_addresses_are_default_constructible() {
         let contract_addresses: NetworksWithContractAddresses = Default::default();
 
         assert!(!contract_addresses.networks.is_empty());
+    }
+
+    #[test]
+    fn environment_type_serializes_in_lowercase() {
+        let environment_type = EnvironmentType::Production;
+
+        assert_eq!(environment_type.to_string().as_str(), "production");
+    }
+
+    #[test]
+    fn environment_type_deserializes_in_lowercase() -> anyhow::Result<()> {
+        let environment_type = EnvironmentType::Production;
+        let actual: EnvironmentType = "production".try_into()?;
+
+        assert_eq!(actual, environment_type);
+
+        Ok(())
     }
 }
