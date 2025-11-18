@@ -8,7 +8,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay/master";
     crane.url = "github:ipetkov/crane/v0.21.0";
     # pin it to a version which we are compatible with
-    foundry.url = "github:hoprnet/foundry.nix/tb/202505-add-xz";
+    foundry.url = "github:shazow/foundry.nix/be409169ca05954e28cfd6206934bdaffe695c4a";
     solc.url = "github:hellwolf/solc.nix";
     pre-commit.url = "github:cachix/git-hooks.nix";
     treefmt-nix.url = "github:numtide/treefmt-nix";
@@ -60,7 +60,7 @@
           ];
           pkgs = import nixpkgs { inherit localSystem overlays; };
           buildPlatform = pkgs.stdenv.buildPlatform;
-          solcDefault = solc.mkDefault pkgs pkgs.solc_0_8_19;
+          solcDefault = solc.mkDefault pkgs pkgs.solc_0_8_30;
           craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable.latest.default);
           hoprBindingsInfoOriginal = craneLib.crateNameFromCargoToml {
             cargoToml = ./ethereum/bindings/Cargo.toml;
@@ -87,7 +87,7 @@
               ./.cargo/config.toml
               ./Cargo.lock
               ./README.md
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               (fs.fileFilter (file: file.hasExt "rs") ./.)
@@ -102,7 +102,7 @@
               ./.cargo/config.toml
               ./Cargo.lock
               ./README.md
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               (fs.fileFilter (file: file.hasExt "rs") ./.)
@@ -228,7 +228,7 @@
           anvilSrc = fs.toSource {
             root = ./.;
             fileset = fs.unions [
-              ./ethereum/contracts/contracts-addresses.json
+              ./ethereum/bindings/contracts-addresses.json
               ./ethereum/contracts/foundry.in.toml
               ./ethereum/contracts/remappings.txt
               ./ethereum/contracts/Makefile
@@ -497,7 +497,7 @@
               "ethereum/bindings/src/codegen/*"
               "ethereum/contracts/Makefile"
               "ethereum/contracts/broadcast/*"
-              "ethereum/contracts/contracts-addresses.json"
+              "ethereum/bindings/contracts-addresses.json"
               "ethereum/contracts/remappings.txt"
               "ethereum/contracts/src/static/*"
               "ethereum/contracts/test/static/*"

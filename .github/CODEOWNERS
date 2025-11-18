@@ -13,7 +13,8 @@
 /.github/ @ausias-armesto @tolbrino @Teebor-Choka
 
 # Blockchain and smart contracts
-/ethereum/ @QYuQianchen @tolbrino
+/ethereum/contracts/ @QYuQianchen @tolbrino
+/ethereum/bindings/src/codegen/ @QYuQianchen @tolbrino
 *.sol @QYuQianchen @tolbrino
 
 # Documentation
@@ -24,7 +25,7 @@
 *.toml @Teebor-Choka @NumberFour8
 
 # Secure changes to critical files
-/.github/CODEOWNERS @tolbrino @QYuQianchen
+/.github/CODEOWNERS @tolbrino @QYuQianchen @Teebor-Choka 
 
 # Emergency contacts (for critical issues)
 # Lead maintainers: @Teebor-Choka @tolbrino @QYuQianchen
