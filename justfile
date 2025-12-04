@@ -8,6 +8,8 @@ generate-bindings:
 
 # smart contract tests
 # we only produce gas reports on active contracts
-smart-contract-test:
-    forge test --root ./ethereum/contracts --match-path "./test/(static|mocks|utils)/*.t.sol" && \
-    forge test --gas-report --root ./ethereum/contracts --no-match-path "./test/(static|mocks|utils)/*.t.sol"
+
+# NOTE:gas reports are disabled currently due to OOM issues
+smart-contract-test *PARAMETERS:
+    forge test {{ PARAMETERS }} --root ./ethereum/contracts --match-path "./test/(static|mocks|utils)/*.t.sol"
+    forge test {{ PARAMETERS }} --root ./ethereum/contracts --no-match-path "./test/(static|mocks|utils)/*.t.sol"

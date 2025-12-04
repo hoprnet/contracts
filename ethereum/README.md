@@ -196,7 +196,7 @@ Note that in local deployment, the deployment for `HoprDistributor` and `HoprWra
 ### Deployed contracts
 
 The `./contracts/contracts-address.json` file defines contract deployments across multiple networks, including local, staging, and production environments.
-For each network, it specifies deployed contract addresses, the environment type, and the starting block number for indexers.
+For each network, it specifies deployed contract addresses, the chain ID, the environment type, and the starting block number for indexers.
 It serves as a centralized reference for frontend, indexer, and integration scripts to locate on-chain components.
 
 This file is automatically populated with the latest deployment addresses.

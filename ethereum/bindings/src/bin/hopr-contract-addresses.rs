@@ -19,11 +19,11 @@
 //!        "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
 //!        "winning_probability_oracle": "0xa641822a52AcbDc0c0123337f715C1d9756c21bD"
 //!      },
+//!      "chain_id": 100,
 //!      "environment_type": "staging",
 //!      "indexer_start_block_number": 42671336
 //!    },
 //!     "debug-staging": {
-//!       "indexer_start_block_number": 29690235,
 //!       "addresses": {
 //!         "announcements": "0x5cE40E4b330eA20d9217f0120E3329b98017f9Fb",
 //!         "channels": "0x09b77F370c2F379F3dB42B799fa7EDBB37D9E51a",
@@ -34,7 +34,10 @@
 //!         "ticket_price_oracle": "0x344f8DD6dBCd5Bc0B396dDD47F20FDc9A89c3c90",
 //!         "token": "0x02e1009fd222917Ee7bdfdBF8AE1e56c4ae3F6f3",
 //!         "winning_probability_oracle": "0xF2d64bb29A5207DFCF6185161e43364D3B2D9A27"
-//!       }
+//!       },
+//!       "chain_id": 100,
+//!       "environment_type": "staging",
+//!       "indexer_start_block_number": 29690235
 //!     }
 //!   }
 //! }

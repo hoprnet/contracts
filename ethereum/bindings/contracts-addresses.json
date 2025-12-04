@@ -12,9 +12,10 @@
         "token": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
         "winning_probability_oracle": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
       },
+      "chain_id": 31337,
       "environment_type": "local",
       "indexer_start_block_number": 1
-    },
+      },
     "rotsee": {
       "addresses": {
         "announcements": "0x45b000742a693AB00fA4839a086dfB6155a15D3C",
@@ -26,9 +27,10 @@
         "ticket_price_oracle": "0xFA251d4C367683d6181531afd5964E660aCf43A0",
         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
         "winning_probability_oracle": "0xa641822a52AcbDc0c0123337f715C1d9756c21bD"
-      },
-      "environment_type": "staging",
-      "indexer_start_block_number": 42671336
+        },
+        "chain_id": 100,
+        "environment_type": "staging",
+        "indexer_start_block_number": 42671336
     },
     "debug-staging": {
       "addresses": {
@@ -41,9 +43,10 @@
         "ticket_price_oracle": "0x344f8DD6dBCd5Bc0B396dDD47F20FDc9A89c3c90",
         "token": "0x02e1009fd222917Ee7bdfdBF8AE1e56c4ae3F6f3",
         "winning_probability_oracle": "0xF2d64bb29A5207DFCF6185161e43364D3B2D9A27"
-      },
-      "environment_type": "staging",
-      "indexer_start_block_number": 29690235
+        },
+        "chain_id": 100,
+        "environment_type": "staging",
+        "indexer_start_block_number": 29690235
     }
   }
 }

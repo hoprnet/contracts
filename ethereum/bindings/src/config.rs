@@ -70,6 +70,7 @@ pub enum EnvironmentType {
 #[serde_with::serde_as]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SingleNetworkContractAddresses {
+    pub chain_id: u64,
     pub indexer_start_block_number: u32,
     pub addresses: ContractAddresses,
     #[serde_as(as = "DisplayFromStr")]

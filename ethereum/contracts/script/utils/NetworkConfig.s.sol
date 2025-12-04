@@ -31,12 +31,14 @@ contract NetworkConfig is Script {
 
     struct NetworkDetailIntermediate {
         Addresses addresses;
+        uint256 chainId;
         string environmentType;
         uint256 indexerStartBlockNumber;
     }
 
     struct NetworkDetail {
         Addresses addresses;
+        uint256 chainId;
         EnvironmentType environmentType;
         uint256 indexerStartBlockNumber;
     }
@@ -84,6 +86,7 @@ contract NetworkConfig is Script {
 
         networkDetail = NetworkDetail(
             networkDetailIntermediate.addresses,
+            networkDetailIntermediate.chainId,
             parseEnvironmentTypeFromString(networkDetailIntermediate.environmentType),
             networkDetailIntermediate.indexerStartBlockNumber
         );
@@ -114,6 +117,7 @@ contract NetworkConfig is Script {
         );
 
         obj.serialize("addresses", addresses);
+        obj.serialize("chain_id", networkDetail.chainId);
         obj.serialize("environment_type", parseEnvironmentTypeToString(networkDetail.environmentType));
         obj = obj.serialize("indexer_start_block_number", networkDetail.indexerStartBlockNumber);
 
