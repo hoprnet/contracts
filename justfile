@@ -4,7 +4,7 @@ generate-bindings:
     forge bind --offline --bindings-path ./../bindings/src/codegen \
       --module --alloy --overwrite \
       --force --skip-cargo-toml \
-      --select '^(HoprAnnouncements|HoprAnnouncementsProxy|HoprAnnouncementsEvents|HoprCapabilityPermissions|HoprChannels|HoprChannelsEvents|HoprCrypto|HoprBoost|HoprToken|HoprLedger|HoprLedgerevents|HoprMultisig|HoprNodeManagementModule|HoprNodeSafeRegistry|HoprNodeSafeRegistryEvents|HoprNodeStakeFactory|HoprNodeStakeFactoryEvents|HoprTicketPriceOracle|HoprTicketPriceOracleEvents|HoprWinningProbabilityOracle|HoprWinningProbabilityOracleEvents)$'
+      --select '^(HoprAnnouncements|HoprAnnouncementsProxy|HoprAnnouncementsEvents|HoprCapabilityPermissions|HoprChannels|HoprChannelsEvents|HoprCrypto|HoprBoost|HoprToken|HoprLedger|HoprLedgerEvents|HoprMultisig|HoprNodeManagementModule|HoprNodeSafeRegistry|HoprNodeSafeRegistryEvents|HoprNodeStakeFactory|HoprNodeStakeFactoryEvents|HoprTicketPriceOracle|HoprTicketPriceOracleEvents|HoprWinningProbabilityOracle|HoprWinningProbabilityOracleEvents|HoprNodeSafeMigration|HoprNodeSafeMigrationEvents)$'
 
 # smart contract tests
 # we only produce gas reports on active contracts
