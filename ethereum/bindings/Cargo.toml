@@ -1,8 +1,12 @@
 [package]
 name = "hopr-bindings"
 version = "4.2.0"
-edition = "2021"
 description = "This package only exists to automate the export and generation of Rust bindings into the HOPR project"
+edition = "2021"
+homepage = "https://hoprnet.org/"
+authors = ["HOPR Association <tech@hoprnet.org>"]
+repository = "https://github.com/hoprnet/contracts"
+license = "GPL-3.0-only"
 
 [build-dependencies]
 anyhow = { workspace = true }
