@@ -22,6 +22,17 @@ jobs:
           - architecture: x86_64-linux
             runner: self-hosted-hoprnet-bigger
             build_command: nix build -L .#lib-hopr-bindings-x86_64-linux
+            required_label: ""
+          - architecture: aarch64-linux
+            runner: self-hosted-hoprnet-bigger
+            build_command: nix build -L .#lib-hopr-bindings-aarch64-linux
+            required_label: "binary:aarch64-linux"
+          - architecture: aarch64-darwin
+            runner: macos-15-xlarge
+            build_command: nix build -L .#lib-hopr-bindings-aarch64-darwin
+            required_label: binary:aarch64-darwin
+
+
     uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v1
     permissions:
       contents: read
@@ -32,5 +43,6 @@ jobs:
       build_file: ethereum/bindings/Cargo.toml
       build_command: ${{ matrix.build_command }}
       runner: ${{ matrix.runner }}
+      enabled: ${{ matrix.required_label == '' || contains(github.event.pull_request.labels.*.name, matrix.required_label) }}
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
