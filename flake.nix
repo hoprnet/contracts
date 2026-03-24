@@ -8,7 +8,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     # HOPR Nix Library (provides flake-utils and reusable build functions)
-    nix-lib.url = "github:hoprnet/nix-lib/ausias/export-docker-image";
+    nix-lib.url = "github:hoprnet/nix-lib/v1.1.0";
 
     # Rust build system
     crane.url = "github:ipetkov/crane";

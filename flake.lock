@@ -165,16 +165,16 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1772564290,
-        "narHash": "sha256-RTlTbRgmba93arP04Oglyc8dRlWwd/onVaIhT9mHSEY=",
+        "lastModified": 1774276825,
+        "narHash": "sha256-IV3mmWG5VvrP823sn5MBprMOe3ONKdMr9mc6LzFgGYM=",
         "owner": "hoprnet",
         "repo": "nix-lib",
-        "rev": "c69118539eb552eea671e94ff7cea9c0c85f96ea",
+        "rev": "42a9dba36c23f39301cc0d8b1c13be871e1964c6",
         "type": "github"
       },
       "original": {
         "owner": "hoprnet",
-        "ref": "ausias/export-docker-image",
+        "ref": "v1.1.0",
         "repo": "nix-lib",
         "type": "github"
       }
