@@ -31,8 +31,6 @@ jobs:
             runner: macos-15-xlarge
             build_command: nix build -L .#lib-hopr-bindings-aarch64-darwin
             required_label: binary:aarch64-darwin
-
-
     uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v1
     permissions:
       contents: read
