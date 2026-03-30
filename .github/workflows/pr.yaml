@@ -89,10 +89,13 @@ jobs:
       unit_test_command: "nix build -L .#test"
       nightly_tests: true
       nightly_test_command: "nix build -L .#test-nightly"
+      coverage: true
+      unit_coverage_command: "nix run .#coverage-unit"
       runner: self-hosted-hoprnet-bigger
       test_timeout: 60
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
   tests-smart-contracts:
     name: Smart Contracts
     runs-on: self-hosted-hoprnet-bigger

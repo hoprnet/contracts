@@ -247,6 +247,11 @@
                 zizmor
               ];
             };
+            coverage = nixLib.mkDevShell {
+              rustToolchainFile = ./rust-toolchain.toml;
+              shellName = "Coverage";
+              withLlvmTools = true;
+            };
           };
         in
         {
@@ -357,6 +362,12 @@
             update-github-labels = nixLib.mkUpdateGithubLabelsApp;
             check = nixLib.mkCheckApp { inherit system; };
             audit = nixLib.mkAuditApp { rustToolchainFile = ./rust-toolchain.toml; };
+            coverage-unit = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "coverage-unit" ''
+                nix develop .#coverage -c cargo llvm-cov --lib --lcov --output-path coverage.lcov
+              '');
+            };
           };
 
           packages = {
