@@ -238,6 +238,15 @@
               }
               // shellArgs
             );
+            ci = nixLib.mkDevShell {
+              rustToolchain = stableToolchain;
+              shellName = "CI";
+              treefmtWrapper = config.treefmt.build.wrapper;
+              treefmtPrograms = pkgs.lib.attrValues config.treefmt.build.programs;
+              extraPackages = with pkgs; [
+                zizmor
+              ];
+            };
           };
         in
         {
