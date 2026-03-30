@@ -364,9 +364,11 @@
             audit = nixLib.mkAuditApp { rustToolchainFile = ./rust-toolchain.toml; };
             coverage-unit = {
               type = "app";
-              program = toString (pkgs.writeShellScript "coverage-unit" ''
-                nix develop .#coverage -c cargo llvm-cov --lib --lcov --output-path coverage.lcov
-              '');
+              program = toString (
+                pkgs.writeShellScript "coverage-unit" ''
+                  nix develop .#coverage -c cargo llvm-cov --workspace --all-features --lib --lcov --output-path coverage.lcov
+                ''
+              );
             };
           };
 
