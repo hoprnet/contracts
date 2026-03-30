@@ -1,6 +1,4 @@
----
 name: PR
-
 on:
   merge_group:
     types: [checks_requested]
@@ -10,14 +8,11 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.event.pull_request.head.ref || github.ref_name }}-pr
   cancel-in-progress: true
-
 jobs:
   validate-pr-title:
     name: Validate title
@@ -48,7 +43,6 @@ jobs:
           ignoreLabels: |
             bot
             ignore-semantic-pull-request
-
   label:
     name: Add labels
     if: github.event_name == 'pull_request'
@@ -80,7 +74,6 @@ jobs:
           if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
             gh pr edit "$PR_NUMBER" --add-label "external"
           fi
-
   checks:
     name: Check
     uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@3c72575db6e76c5b15cea218dfd828f322b93a25 # checks-v1
@@ -91,7 +84,6 @@ jobs:
       deps: false
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
   tests:
     name: Test
     uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@3c72575db6e76c5b15cea218dfd828f322b93a25 # tests-v1
@@ -105,7 +97,6 @@ jobs:
       test_timeout: 60
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
   tests-smart-contracts:
     name: Smart Contracts
     runs-on: self-hosted-hoprnet-bigger
