@@ -1,5 +1,7 @@
 # Smart Contracts
 
+[![codecov](https://codecov.io/gh/hoprnet/contracts/branch/main/graph/badge.svg)](https://codecov.io/gh/hoprnet/contracts)
+
 Smart Contracts for the HOPR mixnet.
 
 ## Deprecated Smart Contracts
