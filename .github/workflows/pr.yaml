@@ -125,7 +125,6 @@ jobs:
         env:
           HOPR_NETWORK: anvil-localhost
         run: nix develop -L -c make -j smart-contract-test
-
   build-library:
     name: Library ${{ matrix.architecture }}
     strategy:
