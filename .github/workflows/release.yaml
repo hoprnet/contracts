@@ -46,7 +46,7 @@ jobs:
     with:
       source_branch: ${{ github.ref_name }}
       package: hopr-bindings
-      dry_run: false
+      version_type: release
       cachix_cache_name: contracts
       runner: self-hosted-hoprnet-bigger
     secrets:

@@ -165,7 +165,7 @@ jobs:
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
       package: hopr-bindings
-      dry_run: true
+      version_type: pr
       cachix_cache_name: contracts
       runner: self-hosted-hoprnet-bigger
     secrets:
