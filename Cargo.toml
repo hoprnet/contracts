@@ -5,7 +5,7 @@ resolver = "2"
 members = ["ethereum/bindings"]
 
 [workspace.dependencies]
-alloy = { version = "=1.0.42", default-features = false, features = [
+alloy = { version = "=2.0.4", default-features = false, features = [
   "essentials",
   "json-rpc",
   "node-bindings",
