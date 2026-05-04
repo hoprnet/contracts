@@ -124,8 +124,23 @@
               pkgs.lib.lists.take 3 (builtins.splitVersion info.package.version)
             );
 
+          # pre-commit in nixpkgs bundles heavyweight test-only dependencies
+          # (dotnet-sdk, nodejs, go, coursier, …) into nativeBuildInputs via
+          # its preCheck string interpolation, even though doCheck is already
+          # false on Darwin. Filter them out so `direnv allow` / `nix develop`
+          # doesn't have to build dotnet from source.
+          pre-commit-lightweight = pkgs.pre-commit.overridePythonAttrs {
+            nativeCheckInputs = [ ];
+            doCheck = false;
+            doInstallCheck = false;
+            dontUsePytestCheck = true;
+            preCheck = "";
+            postCheck = "";
+          };
+
           pre-commit-check = pre-commit.lib.${system}.run {
             src = ./.;
+            package = pre-commit-lightweight;
             hooks = {
               # https://github.com/cachix/git-hooks.nix
               treefmt.enable = false;
@@ -145,7 +160,6 @@
                 language = "system";
               };
             };
-            tools = pkgs;
             excludes = [
               "vendor/"
               "ethereum/contracts/"

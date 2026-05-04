@@ -25,7 +25,7 @@ jobs:
           - architecture: x86_64-linux
             runner: self-hosted-hoprnet-bigger
             build_command: nix build -L .#lib-hopr-bindings-x86_64-linux
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v1
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@5ef5e50e028143b53da6545c1ca92477b70f42fc # build-library-v1
     permissions:
       contents: read
     with:
@@ -61,7 +61,7 @@ jobs:
       contents: write
     steps:
       - name: Release version
-        uses: hoprnet/hopr-workflows/actions/release-version@0d6e82b5bfb948c58ac2f850a331443054486565 # release-version-v2
+        uses: hoprnet/hopr-workflows/actions/release-version@4e3c270b51ed1817bc0b0f6996dfc8a7b0e757c1 # release-version-v2
         with:
           source_branch: ${{ github.ref_name }}
           file: ethereum/bindings/Cargo.toml

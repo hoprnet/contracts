@@ -2,7 +2,7 @@
 name = "hopr-bindings"
 version = "4.7.4"
 description = "This package only exists to automate the export and generation of Rust bindings into the HOPR project"
-edition = "2021"
+edition = "2024"
 homepage = "https://hoprnet.org/"
 authors = ["HOPR Association <tech@hoprnet.org>"]
 repository = "https://github.com/hoprnet/contracts"
