@@ -136,7 +136,7 @@ jobs:
             required_label: "binary:aarch64-linux"
           - architecture: aarch64-darwin
             runner: depot-macos-15
-            required_label: binary:aarch64-darwin
+            required_label: "binary:aarch64-darwin"
     uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v2
     permissions:
       contents: read
