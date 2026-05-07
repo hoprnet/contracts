@@ -30,7 +30,6 @@ jobs:
       version_type: pr
       architecture: ${{ matrix.architecture }}
       cachix_cache_name: contracts
-      build_file: ethereum/bindings/Cargo.toml
       package_name: hopr-bindings
       runner: ${{ matrix.runner }}
     secrets:

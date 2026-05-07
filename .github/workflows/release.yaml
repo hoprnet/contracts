@@ -26,7 +26,6 @@ jobs:
       version_type: release
       architecture: x86_64-linux
       cachix_cache_name: contracts
-      build_file: ethereum/bindings/Cargo.toml
       package_name: hopr-bindings
       runner: depot-ubuntu-24.04-4
     secrets:
