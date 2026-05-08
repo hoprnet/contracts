@@ -27,6 +27,7 @@ contract NetworkConfig is Script {
         address ticketPriceOracleContractAddress;
         address tokenContractAddress;
         address winningProbabilityContractAddress;
+        address xhoprTokenContractAddress;
     }
 
     struct NetworkDetailIntermediate {
@@ -112,9 +113,8 @@ contract NetworkConfig is Script {
         addresses.serialize("node_stake_factory", networkDetail.addresses.nodeStakeFactoryAddress);
         addresses.serialize("ticket_price_oracle", networkDetail.addresses.ticketPriceOracleContractAddress);
         addresses.serialize("token", networkDetail.addresses.tokenContractAddress);
-        addresses = addresses.serialize(
-            "winning_probability_oracle", networkDetail.addresses.winningProbabilityContractAddress
-        );
+        addresses.serialize("winning_probability_oracle", networkDetail.addresses.winningProbabilityContractAddress);
+        addresses = addresses.serialize("xhopr_token", networkDetail.addresses.xhoprTokenContractAddress);
 
         obj.serialize("addresses", addresses);
         obj.serialize("chain_id", networkDetail.chainId);
@@ -126,111 +126,6 @@ contract NetworkConfig is Script {
 
     function writeCurrentNetwork() internal {
         writeNetwork(currentNetworkId, currentNetworkDetail);
-    }
-
-    // FIXME: remove this temporary method
-    function displayNetworkDetail(string memory filePath, NetworkDetail memory networkDetail) internal {
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"environment_type": "', parseEnvironmentTypeToString(networkDetail.environmentType), '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"indexer_start_block_umber": ', vm.toString(networkDetail.indexerStartBlockNumber), ","
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"token_contract_address": "', vm.toString(networkDetail.addresses.tokenContractAddress), '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"channels_contract_address": "', vm.toString(networkDetail.addresses.channelsContractAddress), '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"node_stake_factory_address": "', vm.toString(networkDetail.addresses.nodeStakeFactoryAddress), '"'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"module_implementation_address": "',
-                    vm.toString(networkDetail.addresses.moduleImplementationAddress),
-                    '"'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"node_safe_migration_address": "',
-                    vm.toString(networkDetail.addresses.nodeSafeMigrationAddress),
-                    '"'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"node_safe_registry_address": "', vm.toString(networkDetail.addresses.nodeSafeRegistryAddress), '"'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"ticket_price_oracle_contract_address": "',
-                    vm.toString(networkDetail.addresses.ticketPriceOracleContractAddress),
-                    '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"winning_probability_oracle_contract_address": "',
-                    vm.toString(networkDetail.addresses.winningProbabilityContractAddress),
-                    '",'
-                )
-            )
-        );
-        vm.writeLine(
-            filePath,
-            string(
-                abi.encodePacked(
-                    '"announcements_contract_address": "', vm.toString(networkDetail.addresses.announcements), '",'
-                )
-            )
-        );
-    }
-
-    // FIXME: remove this temporary method
-    function displayCurrentNetworkDetail() internal {
-        displayNetworkDetail("test.txt", currentNetworkDetail);
     }
 
     function isValidAddress(address addr) public pure returns (bool) {

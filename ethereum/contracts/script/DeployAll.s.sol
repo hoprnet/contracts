@@ -101,6 +101,8 @@ contract DeployAllContractsScript is
         // 3.9. NodeSafeMigration contract
         _deployNodeSafeMigration();
 
+        // 3.10. Note that the xHOPR token contract is not deployed
+
         // 4. update indexerStartBlockNumber
         // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
         // indexer
