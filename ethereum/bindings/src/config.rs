@@ -1,12 +1,30 @@
 use std::{collections::BTreeMap, str::FromStr};
 
-use alloy::{contract::Result as ContractResult, network::TransactionBuilder, primitives::{Address, U256}, providers::MULTICALL3_ADDRESS, rpc::types::TransactionRequest, sol_types::{SolCall, SolValue}};
+use alloy::{
+    contract::Result as ContractResult,
+    network::TransactionBuilder,
+    primitives::{Address, U256},
+    providers::MULTICALL3_ADDRESS,
+    rpc::types::TransactionRequest,
+    sol_types::{SolCall, SolValue},
+};
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, serde_as};
 use tracing::debug;
 
-use crate::{constants::*, hopr_announcements::HoprAnnouncements::{self, HoprAnnouncementsInstance}, hopr_announcements_proxy::HoprAnnouncementsProxy, hopr_channels::HoprChannels::{self, HoprChannelsInstance}, hopr_node_management_module::HoprNodeManagementModule::{self, HoprNodeManagementModuleInstance}, hopr_node_safe_migration::HoprNodeSafeMigration::{self, HoprNodeSafeMigrationInstance}, hopr_node_safe_registry::HoprNodeSafeRegistry::{self, HoprNodeSafeRegistryInstance}, hopr_node_stake_factory::HoprNodeStakeFactory::{self, HoprNodeStakeFactoryInstance}, hopr_ticket_price_oracle::HoprTicketPriceOracle::{self, HoprTicketPriceOracleInstance}, hopr_token::HoprToken::{self, HoprTokenInstance}, hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance}};
-
+use crate::{
+    constants::*,
+    hopr_announcements::HoprAnnouncements::{self, HoprAnnouncementsInstance},
+    hopr_announcements_proxy::HoprAnnouncementsProxy,
+    hopr_channels::HoprChannels::{self, HoprChannelsInstance},
+    hopr_node_management_module::HoprNodeManagementModule::{self, HoprNodeManagementModuleInstance},
+    hopr_node_safe_migration::HoprNodeSafeMigration::{self, HoprNodeSafeMigrationInstance},
+    hopr_node_safe_registry::HoprNodeSafeRegistry::{self, HoprNodeSafeRegistryInstance},
+    hopr_node_stake_factory::HoprNodeStakeFactory::{self, HoprNodeStakeFactoryInstance},
+    hopr_ticket_price_oracle::HoprTicketPriceOracle::{self, HoprTicketPriceOracleInstance},
+    hopr_token::HoprToken::{self, HoprTokenInstance},
+    hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance},
+};
 pub const CONTRACTS_ADDRESSES_FILE_CONTENT: &str = include_str!(concat!(env!("OUT_DIR"), "/contracts-addresses.json"));
 
 /// Holds addresses of all smart contracts.
@@ -161,7 +179,7 @@ where
         // Fund Multicall3 deployer and deploy Multicall3
         let multicall3_code = provider.get_code_at(MULTICALL3_ADDRESS).await?;
         if multicall3_code.is_empty() {
-            // Fund Multicall3 deployer and deploy ERC1820Registry
+            // Fund Multicall3 deployer and deploy Multicall3
             let tx = TransactionRequest::default()
                 .with_to(crate::constants::MULTICALL3_DEPLOYER)
                 .with_value(crate::constants::ETH_VALUE_FOR_MULTICALL3_DEPLOYER);
@@ -189,7 +207,7 @@ where
             debug!("deploying safe code");
             // Deploy Safe diamond deployment proxy singleton
             let safe_diamond_proxy_address = {
-                // Fund Safe singleton deployer 0.01 anvil-eth and deploy Safe singleton
+                // Fund the Safe deployer with 0.01 anvil-eth and deploy the Safe diamond deployment proxy singleton
                 let tx = TransactionRequest::default()
                     .with_to(SAFE_DEPLOYER_ADDRESS)
                     .with_value(SAFE_DEPLOYER_BALANCE);
@@ -306,8 +324,9 @@ where
         let win_prob_oracle = HoprWinningProbabilityOracle::deploy(
             provider.clone(),
             deployer_address,
-            alloy::primitives::aliases::U56::from(0xFFFFFFFFFFFFFF_u64), /* 0xFFFFFFFFFFFFFF in hex or 72057594037927935 in
-                                                                   * decimal values */
+            alloy::primitives::aliases::U56::from(0xFFFFFFFFFFFFFF_u64), /* 0xFFFFFFFFFFFFFF in hex or
+                                                                          * 72057594037927935 in
+                                                                          * decimal values */
         )
         .await?;
         let token = HoprToken::deploy(provider.clone()).await?;
@@ -399,7 +418,8 @@ where
             node_stake_factory: *self.stake_factory.address(),
             module_implementation: *self.module_implementation.address(),
             node_safe_migration: *self.node_safe_migration.address(),
-            xhopr_token: Address::ZERO, /* xHOPR token is not used by the node and is only included in the addresses for completeness, so we can set it to zero here */   
+            xhopr_token: Address::ZERO, /* xHOPR token is not used by the node and is only included in the addresses
+                                         * for completeness, so we can set it to zero here */
         }
     }
 }
@@ -419,7 +439,8 @@ where
             node_safe_migration: *instances.node_safe_migration.address(),
             node_stake_factory: *instances.stake_factory.address(),
             module_implementation: *instances.module_implementation.address(),
-            xhopr_token: Address::ZERO, /* xHOPR token is not used by the node and is only included in the addresses for completeness, so we can set it to zero here */
+            xhopr_token: Address::ZERO, /* xHOPR token is not used by the node and is only included in the addresses
+                                         * for completeness, so we can set it to zero here */
         }
     }
 }
