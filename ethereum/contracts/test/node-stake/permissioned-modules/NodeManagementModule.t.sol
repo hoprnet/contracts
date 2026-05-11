@@ -152,6 +152,8 @@ contract HoprNodeManagementModuleTest is
         assumeNotPrecompile(account);
         assumeNotForgeAddress(account);
         vm.assume(account != address(0) && account.code.length == 0); // EOA only
+        vm.assume(account != 0x000000000000000000636F6e736F6c652e6c6f67); // avoid conflict with console.log precompile
+
         address owner = moduleProxy.owner();
         vm.deal(owner, 2 ether);
 
