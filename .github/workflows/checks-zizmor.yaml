@@ -3,8 +3,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths: [".github/**"]
-  merge_group:
-    types: [checks_requested]
 concurrency:
   group: ${{ github.event.pull_request.head.ref || github.ref_name }}-zizmor
   cancel-in-progress: true
@@ -19,6 +17,6 @@ jobs:
       security-events: write
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      runner: self-hosted-hoprnet-bigger
+      runner: depot-ubuntu-24.04-4
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
