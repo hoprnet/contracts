@@ -150,7 +150,6 @@ contract HoprNodeManagementModuleTest is
 
     function testFuzz_AddNodeAndFundNode(address account) public initializeModuleProxy(address(1)) {
         assumeNotPrecompile(account);
-        assumeNotForgeAddress(account);
         vm.assume(account != address(0) && account.code.length == 0); // EOA only
         vm.assume(account != 0x000000000000000000636F6e736F6c652e6c6f67); // avoid conflict with console.log precompile
 
