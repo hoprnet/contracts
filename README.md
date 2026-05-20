@@ -4,7 +4,7 @@
 
 Smart Contracts for the HOPR mixnet.
 
-### Current addresses are placed in [`/ethereum/bindings/contracts-addresses.json`](https://github.com/hoprnet/contracts/blob/main/ethereum/bindings/contracts-addresses.json).
+### Current addresses are placed in [`/ethereum/bindings/contracts-addresses.json`](./ethereum/bindings/contracts-addresses.json).
 
 ## Deprecated Smart Contracts
 
