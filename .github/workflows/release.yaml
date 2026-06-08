@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-library:
     name: Build Library
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v2
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@64cb8ba34ff2e8caa43e366207d0cb1faa8d43d4 # build-library-v2
     permissions:
       contents: read
     with:
@@ -40,7 +40,7 @@ jobs:
       contents: write
     steps:
       - name: Release version
-        uses: hoprnet/hopr-workflows/actions/release-version@release-version-v4
+        uses: hoprnet/hopr-workflows/actions/release-version@53b6df9c98ee8a327d7533e76cd9aafcac6a1c2e # release-version-v4
         with:
           source_branch: ${{ github.ref_name }}
           file: ethereum/bindings/Cargo.toml
