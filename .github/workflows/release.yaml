@@ -40,7 +40,7 @@ jobs:
       contents: write
     steps:
       - name: Release version
-        uses: hoprnet/hopr-workflows/actions/release-version@release-version-v4
+        uses: hoprnet/hopr-workflows/actions/release-version@53b6df9c98ee8a327d7533e76cd9aafcac6a1c2e # release-version-v4
         with:
           source_branch: ${{ github.ref_name }}
           file: ethereum/bindings/Cargo.toml
