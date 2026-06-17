@@ -7,7 +7,7 @@ on:
       - main
 permissions:
   contents: read
-  id-token: write
+  id-token: write # zizmor: ignore[excessive-permissions]
 concurrency:
   group: merge-${{ github.event.pull_request.base.ref }}
   cancel-in-progress: false
