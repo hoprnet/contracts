@@ -245,8 +245,8 @@
             treefmtPrograms = pkgs.lib.attrValues config.treefmt.build.programs;
             shellHook = ''
               echo "Running pre-commit checks..."
-              ${pre-commit-check.shellHook}
               export GITHUB_TOKEN="''${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}"
+              ${pre-commit-check.shellHook}
 
               if ! { [ -f ethereum/contracts/foundry.toml ] && grep -q "solc = \"${solcDefault}/bin/solc\"" ethereum/contracts/foundry.toml; }; then
                 echo "Generating foundry.toml file!" >&2
@@ -257,6 +257,7 @@
               unset SOURCE_DATE_EPOCH
             '';
             extraPackages = with pkgs; [
+              gh
               solcDefault
               foundry-bin
               sqlite
