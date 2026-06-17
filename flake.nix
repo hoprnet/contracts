@@ -262,6 +262,7 @@
               foundry-bin
               sqlite
               gnuplot
+              cargo-release
               zizmor
               yq-go
             ];
