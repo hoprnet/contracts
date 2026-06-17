@@ -281,6 +281,7 @@
               treefmtWrapper = config.treefmt.build.wrapper;
               treefmtPrograms = pkgs.lib.attrValues config.treefmt.build.programs;
               extraPackages = with pkgs; [
+                cargo-release
                 zizmor
               ];
             };
