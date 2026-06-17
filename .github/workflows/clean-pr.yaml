@@ -37,8 +37,8 @@ jobs:
           install_sdk: 'true'
       - name: Cleanup Github pipeline cache
         run: |
-          cacheKeysForPR=($(gh actions-cache list -R ${{ github.repository }} -B refs/pull/${{ github.event.inputs.pr_number }}/merge | cut -f 1 | tr '\n' ' '))
-          for cacheKey in $cacheKeysForPR
+          mapfile -t cacheKeysForPR < <(gh actions-cache list -R "${{ github.repository }}" -B "refs/pull/${{ github.event.inputs.pr_number }}/merge" | cut -f 1)
+          for cacheKey in "${cacheKeysForPR[@]}"
           do
-            gh actions-cache delete $cacheKey -R hoprnet/contracts -B refs/pull/${{ github.event.inputs.pr_number }}/merge --confirm
+            gh actions-cache delete "$cacheKey" -R hoprnet/contracts -B "refs/pull/${{ github.event.inputs.pr_number }}/merge" --confirm
           done
