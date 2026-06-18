@@ -37,7 +37,7 @@ jobs:
           PRIVATE_CARGO_REGISTRY_PROXY_URL: ${{ secrets.PRIVATE_CARGO_REGISTRY_PROXY_URL }}
         run: "cat >> .cargo/config.toml<< EOF        \n[source.hopr-cargo-registry-cache]\nregistry = \"sparse+${PRIVATE_CARGO_REGISTRY_PROXY_URL}\"\n    #magic___^_^___line\n[source.crates-io]\nreplace-with = \"hopr-cargo-registry-cache\"\nEOF\n    #magic___^_^___line\n"
       - name: Install Nix
-        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17

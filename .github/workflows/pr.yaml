@@ -20,7 +20,7 @@ jobs:
     permissions:
       pull-requests: read
     steps:
-      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -137,9 +137,10 @@ jobs:
           - architecture: aarch64-darwin
             runner: depot-macos-15
             required_label: "binary:aarch64-darwin"
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@64cb8ba34ff2e8caa43e366207d0cb1faa8d43d4 # build-library-v2
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@19d69bd81be66220932b18f1a7a655b422180b4e # build-library-v3
     permissions:
       contents: read
+      id-token: write
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
       version_type: commit
