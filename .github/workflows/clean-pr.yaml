@@ -31,7 +31,7 @@ jobs:
           ref: main
       - name: Setup GCP
         id: gcp
-        uses: hoprnet/hopr-workflows/actions/setup-gcp@ac3e0b6137b0ba470a30c373aab2ceba9e0879e4 # setup-gcp-v4
+        uses: hoprnet/hopr-workflows/actions/setup-gcp@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
         with:
           login_artifact_registry: 'true'
           install_sdk: 'true'
