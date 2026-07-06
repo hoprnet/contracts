@@ -156,3 +156,7 @@ pub const DEPLOYSAFEMODULE_FUNCTION_IDENTIFIER: FixedBytes<32> =
 /// used in creating userdata when sending tokens along with safe creation
 pub const DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER: FixedBytes<32> =
     b256!("0105b97dcdf19d454ebe36f91ed516c2b90ee79f4a46af96a0138c1f5403c1cc");
+
+/// MINTER_ROLE = keccak256("MINTER_ROLE");
+pub const HOPR_TOKEN_MINTER_ROLE: FixedBytes<32> =
+    b256!("9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6");

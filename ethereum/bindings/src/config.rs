@@ -1,12 +1,7 @@
-use std::{collections::BTreeMap, str::FromStr};
+use std::{collections::BTreeMap, ops::Add, str::FromStr};
 
 use alloy::{
-    contract::Result as ContractResult,
-    network::TransactionBuilder,
-    primitives::{Address, U256},
-    providers::MULTICALL3_ADDRESS,
-    rpc::types::TransactionRequest,
-    sol_types::{SolCall, SolValue},
+    contract::Result as ContractResult, network::{EthereumWallet, TransactionBuilder}, node_bindings::{Anvil, AnvilInstance}, primitives::{Address, Bytes, U256}, providers::{MULTICALL3_ADDRESS, ProviderBuilder, WalletProvider}, rpc::types::TransactionRequest, signers::{k256::ecdsa::SigningKey, local::PrivateKeySigner}, sol_types::{SolCall, SolValue}
 };
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, serde_as};
@@ -146,11 +141,12 @@ where
         }
     }
 
-    pub async fn deploy_erc1820_registry(provider: P) -> ContractResult<()> {
+    pub async fn deploy_erc1820_registry(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying ERC1820 registry...");
         // Fund 1820 deployer and deploy ERC1820Registry
         let tx = TransactionRequest::default()
             .with_to(ERC_1820_DEPLOYER)
+            .with_from(common_deployer_address)
             .with_value(ETH_VALUE_FOR_ERC1820_DEPLOYER);
 
         // Sequentially executing the following transactions:
@@ -166,7 +162,7 @@ where
         Ok(())
     }
 
-    pub async fn deploy_multicall3(provider: P) -> ContractResult<()> {
+    pub async fn deploy_multicall3(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying Multicall3...");
         // Fund Multicall3 deployer and deploy Multicall3
         let multicall3_code = provider.get_code_at(MULTICALL3_ADDRESS).await?;
@@ -174,6 +170,7 @@ where
             // Fund Multicall3 deployer and deploy Multicall3
             let tx = TransactionRequest::default()
                 .with_to(crate::constants::MULTICALL3_DEPLOYER)
+                .with_from(common_deployer_address)
                 .with_value(crate::constants::ETH_VALUE_FOR_MULTICALL3_DEPLOYER);
             // Sequentially executing the following transactions:
             // 1. Fund the deployer wallet
@@ -188,7 +185,7 @@ where
         Ok(())
     }
 
-    pub async fn deploy_safe_suites(provider: P) -> ContractResult<()> {
+    pub async fn deploy_safe_suites(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying Safe contracts...");
 
         // Check if safe suite has been deployed. If so, skip this step
@@ -196,12 +193,12 @@ where
 
         // only deploy contracts when needed
         if code.is_empty() {
-            debug!("deploying safe code");
             // Deploy Safe diamond deployment proxy singleton
             let safe_diamond_proxy_address = {
                 // Fund the Safe deployer with 0.01 anvil-eth and deploy the Safe diamond deployment proxy singleton
                 let tx = TransactionRequest::default()
                     .with_to(SAFE_DEPLOYER_ADDRESS)
+                    .with_from(common_deployer_address)
                     .with_value(SAFE_DEPLOYER_BALANCE);
 
                 provider.send_transaction(tx).await?.watch().await?;
@@ -211,6 +208,7 @@ where
                     .await?
                     .get_receipt()
                     .await?;
+
                 tx.contract_address.unwrap()
             };
             debug!("Safe diamond proxy singleton {:?}", safe_diamond_proxy_address);
@@ -219,31 +217,38 @@ where
             // 1. Safe proxy factory deploySafeProxyFactory();
             let _tx_safe_proxy_factory = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_PROXY_FACTORY_DEPLOY_CODE);
             // 2. Handler: only CompatibilityFallbackHandler and omit TokenCallbackHandler as it's not used now
             // 2. Handler: deploy Safe ExtensibleFallbackHandler, v1.5.0
             let _tx_safe_compatibility_fallback_handler = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_COMPATIBILITY_FALLBACK_HANDLER_DEPLOY_CODE_V150);
             // 3. Library: only MultiSendCallOnly and omit MultiSendCall
             let _tx_safe_multisend_call_only = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_MULTISEND_CALL_ONLY_DEPLOY_CODE);
             // 4. Safe singleton v1.4.1 deploySafe();
             let _tx_safe_singleton_v141 = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_SINGLETON_DEPLOY_CODE_V141);
             // 5. Safe L2 singleton v1.4.1 deploySafe();
             let _tx_safe_l2_singleton_v141 = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_SINGLETON_L2_DEPLOY_CODE_V141);
             // 6. Safe multisend:
             let _tx_safe_multisend = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_MULTISEND_DEPLOY_CODE);
             // 7. Safe L2 singleton v1.5.0 deploySafe();
             let _tx_safe_l2_singleton_v150 = TransactionRequest::default()
                 .with_to(safe_diamond_proxy_address)
+                .with_from(common_deployer_address)
                 .with_input(SAFE_SINGLETON_L2_DEPLOY_CODE_V150);
             // other omitted libs: SimulateTxAccessor, CreateCall, and SignMessageLib
             // broadcast those transactions
@@ -296,32 +301,64 @@ where
         Ok(())
     }
 
-    /// Deploys testing environment (with dummy network registry proxy) via the given provider.
-    async fn inner_deploy_common_contracts_for_testing(provider: P, deployer_address: Address) -> ContractResult<Self> {
+    async fn inner_deploy_common_contracts_for_testing(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         // Pre-deploy common contracts
-        ContractInstances::deploy_erc1820_registry(provider.clone()).await?;
-        ContractInstances::deploy_multicall3(provider.clone()).await?;
-        ContractInstances::deploy_safe_suites(provider.clone()).await?;
+        debug!("Commoneployer nonce before: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
+        debug!("Commoneployer balance before: {}", provider.get_balance(common_deployer_address).await?);
+        Self::deploy_erc1820_registry(provider.clone(), common_deployer_address).await?;
+        Self::deploy_multicall3(provider.clone(), common_deployer_address).await?;
+        Self::deploy_safe_suites(provider.clone(), common_deployer_address).await?;
+        debug!("Commoneployer nonce after: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
+        debug!("Commoneployer balance after: {}", provider.get_balance(common_deployer_address).await?);
+        Ok(())
+    }
 
+    /// Deploys testing environment (with dummy network registry proxy) via the given provider.
+    async fn inner_deploy_hopr_contracts_for_testing(provider: P, hopr_deployer_address: Address) -> ContractResult<Self> {
         debug!("deploying contracts...");
+        debug!("Hoprdeployer nonce before: {}", provider.get_transaction_count(hopr_deployer_address).latest().await?);
+        // HoprToken contract
+        let token = HoprToken::deploy(provider.clone()).await?;
+        // - grant deployer minter role in the token contract, so that the deployer can mint tokens for testing
+        token
+            .grantRole(HOPR_TOKEN_MINTER_ROLE, hopr_deployer_address)
+            .send()
+            .await?
+            .watch()
+            .await?;
+        // - mint some tokens to the deployer for testing
+        token
+            .mint(hopr_deployer_address, U256::from(1000000000000000000000_u128), Bytes::default(), Bytes::default()) // mint 1000 tokens to the deployer
+            .send()
+            .await?
+            .watch()
+            .await?;
 
-        let module_implementation = HoprNodeManagementModule::deploy(provider.clone()).await?;
-        let safe_registry = HoprNodeSafeRegistry::deploy(provider.clone()).await?;
+        // HoprTicketPriceOracle contract
         let price_oracle = HoprTicketPriceOracle::deploy(
             provider.clone(),
-            deployer_address,
+            hopr_deployer_address,
             U256::from(100000000000000000_u128), // U256::from(100000000000000000_u128),
         )
         .await?;
+
+        // HoprWinningProbabilityOracle contract
         let win_prob_oracle = HoprWinningProbabilityOracle::deploy(
             provider.clone(),
-            deployer_address,
+            hopr_deployer_address,
             alloy::primitives::aliases::U56::from(0xFFFFFFFFFFFFFF_u64), /* 0xFFFFFFFFFFFFFF in hex or
                                                                           * 72057594037927935 in
                                                                           * decimal values */
         )
         .await?;
-        let token = HoprToken::deploy(provider.clone()).await?;
+
+        // HoprNodeManagementModule contract
+        let module_implementation = HoprNodeManagementModule::deploy(provider.clone()).await?;
+
+        // HoprNodeSafeRegistry contract
+        let safe_registry = HoprNodeSafeRegistry::deploy(provider.clone()).await?;
+
+        // HoprChannels contract
         let channels = HoprChannels::deploy(
             provider.clone(),
             Address::from(token.address().as_ref()),
@@ -329,19 +366,20 @@ where
             Address::from(safe_registry.address().as_ref()),
         )
         .await?;
+
+        // HoprAnnouncements contract and proxy
         let announcements_implementation = HoprAnnouncements::deploy(provider.clone()).await?;
         let announcement_initialize_parameters = (
             *token.address(),
             *safe_registry.address(),
             INIT_KEY_BINDING_FEE,
-            deployer_address,
+            hopr_deployer_address,
         )
             .abi_encode();
         let encode_initialization = HoprAnnouncements::initializeCall {
             initParams: announcement_initialize_parameters.into(),
         }
         .abi_encode();
-
         let announcements_proxy = HoprAnnouncementsProxy::deploy(
             provider.clone(),
             Address::from(announcements_implementation.address().as_ref()),
@@ -349,20 +387,25 @@ where
         )
         .await?;
 
+        // HoprNodeStakeFactory contract
         let stake_factory = HoprNodeStakeFactory::deploy(
             provider.clone(),
             Address::from(module_implementation.address().as_ref()),
             Address::from(announcements_proxy.address().as_ref()),
-            deployer_address,
+            hopr_deployer_address,
         )
         .await?;
 
+        // HoprNodeSafeMigration contract
         let node_safe_migration = HoprNodeSafeMigration::deploy(
             provider.clone(),
             Address::from(module_implementation.address().as_ref()),
             Address::from(stake_factory.address().as_ref()),
         )
         .await?;
+
+        // Mock xHOPR token contract
+        let mock_xhopr_token = ERC677Mock::deploy(provider.clone()).await?;
 
         // get the defaultHoprNetwork from the stake factory
         let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
@@ -379,7 +422,6 @@ where
             .watch()
             .await?;
 
-        let mock_xhopr_token = ERC677Mock::deploy(provider.clone()).await?;
 
         Ok(Self {
             token,
@@ -395,9 +437,16 @@ where
         })
     }
 
-    /// Deploys testing environment (with dummy network registry proxy) via the given provider.
-    pub async fn deploy_for_testing(provider: P, deployer_address: Address) -> ContractResult<Self> {
-        let instances = Self::inner_deploy_common_contracts_for_testing(provider.clone(), deployer_address).await?;
+    /// Deploys testing environment, including both pre-deploying common contracts and deploying Hopr contracts, via the given provider.
+    pub async fn deploy_for_testing(
+        provider: P,
+        hopr_deployer_address: Address,
+        common_deployer_address: Address, 
+    ) -> ContractResult<Self> {
+        // use the common deployer wallet to pre-deploy common contracts
+        Self::inner_deploy_common_contracts_for_testing(provider.clone(), common_deployer_address).await?;
+        // use the hopr deployer wallet to deploy Hopr contracts
+        let instances = Self::inner_deploy_hopr_contracts_for_testing(provider.clone(), hopr_deployer_address).await?;
 
         Ok(Self { ..instances })
     }
@@ -438,14 +487,109 @@ where
     }
 }
 
+/// Creates and spawns an Anvil instance. 
+/// If `at_default_port` is true, the Anvil instance will be spawned at the default port 8545. 
+/// Otherwise, it will be spawned at a random available port.
+pub fn create_anvil(mnemonic: Option<&str>, at_default_port: bool, use_default_chain_id: bool) -> AnvilInstance {
+    let mut anvil = Anvil::new();
+
+    if let Some(mnemonic) = mnemonic {
+        anvil = anvil.mnemonic(mnemonic);
+    }
+
+    let random_port = {
+        let listener =
+            std::net::TcpListener::bind("127.0.0.1:0").unwrap_or_else(|_| panic!("Failed to bind localhost"));
+        listener
+            .local_addr()
+            .unwrap_or_else(|_| panic!("Failed to get local address"))
+            .port()
+    };
+
+    if at_default_port {
+        anvil = anvil.port(8545u16);
+    } else {
+        anvil = anvil.port(random_port);
+    }
+
+    if !use_default_chain_id {
+        anvil = anvil.chain_id(random_port.into());
+    }
+
+    anvil.spawn()
+}
+
+pub fn create_provider(
+    anvil: &AnvilInstance,
+    hopr_deployer_signing_key: &[u8],
+    common_deployer_signing_key: &[u8], 
+) -> Result<
+    impl alloy::providers::Provider
+        + Clone
+        + alloy::providers::WalletProvider<Wallet = EthereumWallet>,
+    crate::error::Error,
+> {
+    let common_deployer_signer = PrivateKeySigner::from_slice(common_deployer_signing_key)?;
+    let hopr_deployer_signer = PrivateKeySigner::from_slice(hopr_deployer_signing_key)?;
+
+    let mut wallet = EthereumWallet::from(common_deployer_signer);
+    wallet.register_default_signer(hopr_deployer_signer);
+
+    Ok(ProviderBuilder::new().wallet(wallet).connect_http(anvil.endpoint_url()))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::NetworksWithContractAddresses;
+    use alloy::primitives::Address;
+    use crate::config::{create_anvil, create_provider};
+    use tracing::{debug, info};
+
+    use super::{ContractInstances, NetworksWithContractAddresses};
 
     #[test]
     fn networks_with_contract_addresses_are_default_constructible() {
         let contract_addresses: NetworksWithContractAddresses = Default::default();
 
         assert!(!contract_addresses.networks.is_empty());
+    }
+
+    #[tokio::test]
+    async fn inner_deploy_common_contracts_for_testing_deploys_all_contracts() -> anyhow::Result<()> {
+        let anvil = create_anvil(None, false, true);
+        let hopr_deployer_private_key = anvil.keys()[0].to_bytes();
+        let common_deployer_private_key = anvil.keys()[1].to_bytes();
+        let hopr_deployer_address = anvil.addresses()[0];
+        let common_deployer_address = anvil.addresses()[1];
+
+        let provider = create_provider(&anvil, hopr_deployer_private_key.as_ref(), common_deployer_private_key.as_ref())?;
+
+        debug!("Anvil rpc url: {}", anvil.endpoint_url());
+        debug!("Deployer addresses:");
+        debug!("  hopr_deployer_address:      {}", hopr_deployer_address);
+        debug!("  common_deployer_address:    {}", common_deployer_address);
+
+        let instances = ContractInstances::deploy_for_testing(provider, hopr_deployer_address, common_deployer_address)
+            .await
+            .expect("deployment should succeed");
+
+        let addresses = instances.get_contract_addresses();
+
+        info!("Deployed contract addresses:");
+        info!("  token:                      {}", addresses.token);
+        info!("  channels:                   {}", addresses.channels);
+        info!("  announcements:              {}", addresses.announcements);
+        info!("  node_safe_registry:         {}", addresses.node_safe_registry);
+        info!("  ticket_price_oracle:        {}", addresses.ticket_price_oracle);
+        info!("  winning_probability_oracle: {}", addresses.winning_probability_oracle);
+        info!("  node_stake_factory:         {}", addresses.node_stake_factory);
+        info!("  module_implementation:      {}", addresses.module_implementation);
+        info!("  node_safe_migration:        {}", addresses.node_safe_migration);
+        info!("  xhopr_token:                {}", addresses.xhopr_token);
+
+        for addr in &addresses {
+            assert_ne!(addr, Address::ZERO, "contract address should not be zero");
+        }
+
+        Ok(())
     }
 }

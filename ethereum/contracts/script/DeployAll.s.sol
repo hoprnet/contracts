@@ -38,6 +38,7 @@ contract DeployAllContractsScript is
     }
 
     function run() external {
+        emit log_named_address("callerAddress", msg.sender);
         // 1. Network check
         // get environment of the script
         getNetwork();
@@ -101,7 +102,8 @@ contract DeployAllContractsScript is
         // 3.9. NodeSafeMigration contract
         _deployNodeSafeMigration();
 
-        // 3.10. Note that the xHOPR token contract is not deployed
+        // 3.10. Deploy a mock xHOPR token contract
+        _deployXHoprToken();
 
         // 4. update indexerStartBlockNumber
         // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
@@ -295,6 +297,19 @@ contract DeployAllContractsScript is
                     currentNetworkDetail.addresses.nodeStakeFactoryAddress
                 )
             );
+        }
+    }
+
+    /**
+     * @dev deploy xHOPR token contract
+     */
+    function _deployXHoprToken() internal {
+        if (
+            currentEnvironmentType == EnvironmentType.LOCAL
+                || !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
+        ) {
+            // deploy contract
+            currentNetworkDetail.addresses.xhoprTokenContractAddress = deployCode("ERC677Mock.sol:ERC677Mock");
         }
     }
 
