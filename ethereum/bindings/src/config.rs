@@ -1,7 +1,7 @@
-use std::{collections::BTreeMap, ops::Add, str::FromStr};
+use std::{collections::BTreeMap, str::FromStr};
 
 use alloy::{
-    contract::Result as ContractResult, network::{EthereumWallet, TransactionBuilder}, node_bindings::{Anvil, AnvilInstance}, primitives::{Address, Bytes, U256}, providers::{MULTICALL3_ADDRESS, ProviderBuilder, WalletProvider}, rpc::types::TransactionRequest, signers::{k256::ecdsa::SigningKey, local::PrivateKeySigner}, sol_types::{SolCall, SolValue}
+    contract::Result as ContractResult, network::{EthereumWallet, TransactionBuilder}, node_bindings::{Anvil, AnvilInstance}, primitives::{Address, Bytes, U256}, providers::{MULTICALL3_ADDRESS, ProviderBuilder}, rpc::types::TransactionRequest, signers::local::PrivateKeySigner, sol_types::{SolCall, SolValue}
 };
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, serde_as};
@@ -97,8 +97,6 @@ impl FromStr for NetworksWithContractAddresses {
 }
 
 /// Holds instances to contracts.
-/// The contract instances do not include xHOPR token,
-/// as it is not used by the node and is only included in the addresses for completeness.
 #[derive(Debug, Clone)]
 pub struct ContractInstances<P> {
     pub token: HoprTokenInstance<P>,
@@ -303,20 +301,26 @@ where
 
     async fn inner_deploy_common_contracts_for_testing(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         // Pre-deploy common contracts
-        debug!("Commoneployer nonce before: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
-        debug!("Commoneployer balance before: {}", provider.get_balance(common_deployer_address).await?);
+        debug!("Common deployer nonce before: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
+        debug!("Common deployer balance before: {}", provider.get_balance(common_deployer_address).await?);
         Self::deploy_erc1820_registry(provider.clone(), common_deployer_address).await?;
         Self::deploy_multicall3(provider.clone(), common_deployer_address).await?;
         Self::deploy_safe_suites(provider.clone(), common_deployer_address).await?;
-        debug!("Commoneployer nonce after: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
-        debug!("Commoneployer balance after: {}", provider.get_balance(common_deployer_address).await?);
+        debug!("Common deployer nonce after: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
+        debug!("Common deployer balance after: {}", provider.get_balance(common_deployer_address).await?);
         Ok(())
     }
 
     /// Deploys testing environment (with dummy network registry proxy) via the given provider.
     async fn inner_deploy_hopr_contracts_for_testing(provider: P, hopr_deployer_address: Address) -> ContractResult<Self> {
         debug!("deploying contracts...");
-        debug!("Hoprdeployer nonce before: {}", provider.get_transaction_count(hopr_deployer_address).latest().await?);
+        debug!(
+             "Hopr deployer nonce before: {}",
+             provider
+                 .get_transaction_count(hopr_deployer_address)
+                 .latest()
+                 .await?
+         );
         // HoprToken contract
         let token = HoprToken::deploy(provider.clone()).await?;
         // - grant deployer minter role in the token contract, so that the deployer can mint tokens for testing
