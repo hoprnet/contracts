@@ -594,7 +594,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn inner_deploy_common_contracts_for_testing_deploys_all_contracts() -> anyhow::Result<()> {
+    async fn deploy_for_testing_deploys_all_contracts() -> anyhow::Result<()> {
         let anvil = create_anvil(None, false, true);
         let hopr_deployer_private_key = anvil.keys()[0].to_bytes();
         let common_deployer_private_key = anvil.keys()[1].to_bytes();
