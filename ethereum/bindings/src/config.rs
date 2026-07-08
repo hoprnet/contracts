@@ -1,14 +1,32 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use alloy::{
-    contract::Result as ContractResult, network::{EthereumWallet, TransactionBuilder}, node_bindings::{Anvil, AnvilInstance}, primitives::{Address, Bytes, U256}, providers::{MULTICALL3_ADDRESS, ProviderBuilder}, rpc::types::TransactionRequest, signers::local::PrivateKeySigner, sol_types::{SolCall, SolValue}
+    contract::Result as ContractResult,
+    network::{EthereumWallet, TransactionBuilder},
+    node_bindings::{Anvil, AnvilInstance},
+    primitives::{Address, Bytes, U256},
+    providers::{MULTICALL3_ADDRESS, ProviderBuilder},
+    rpc::types::TransactionRequest,
+    signers::local::PrivateKeySigner,
+    sol_types::{SolCall, SolValue},
 };
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, serde_as};
 use tracing::debug;
 
 use crate::{
-    constants::*, erc677_mock::ERC677Mock::{self, ERC677MockInstance}, hopr_announcements::HoprAnnouncements::{self, HoprAnnouncementsInstance}, hopr_announcements_proxy::HoprAnnouncementsProxy, hopr_channels::HoprChannels::{self, HoprChannelsInstance}, hopr_node_management_module::HoprNodeManagementModule::{self, HoprNodeManagementModuleInstance}, hopr_node_safe_migration::HoprNodeSafeMigration::{self, HoprNodeSafeMigrationInstance}, hopr_node_safe_registry::HoprNodeSafeRegistry::{self, HoprNodeSafeRegistryInstance}, hopr_node_stake_factory::HoprNodeStakeFactory::{self, HoprNodeStakeFactoryInstance}, hopr_ticket_price_oracle::HoprTicketPriceOracle::{self, HoprTicketPriceOracleInstance}, hopr_token::HoprToken::{self, HoprTokenInstance}, hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance}
+    constants::*,
+    erc677_mock::ERC677Mock::{self, ERC677MockInstance},
+    hopr_announcements::HoprAnnouncements::{self, HoprAnnouncementsInstance},
+    hopr_announcements_proxy::HoprAnnouncementsProxy,
+    hopr_channels::HoprChannels::{self, HoprChannelsInstance},
+    hopr_node_management_module::HoprNodeManagementModule::{self, HoprNodeManagementModuleInstance},
+    hopr_node_safe_migration::HoprNodeSafeMigration::{self, HoprNodeSafeMigrationInstance},
+    hopr_node_safe_registry::HoprNodeSafeRegistry::{self, HoprNodeSafeRegistryInstance},
+    hopr_node_stake_factory::HoprNodeStakeFactory::{self, HoprNodeStakeFactoryInstance},
+    hopr_ticket_price_oracle::HoprTicketPriceOracle::{self, HoprTicketPriceOracleInstance},
+    hopr_token::HoprToken::{self, HoprTokenInstance},
+    hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance},
 };
 pub const CONTRACTS_ADDRESSES_FILE_CONTENT: &str = include_str!(concat!(env!("OUT_DIR"), "/contracts-addresses.json"));
 
@@ -299,28 +317,43 @@ where
         Ok(())
     }
 
-    async fn inner_deploy_common_contracts_for_testing(provider: P, common_deployer_address: Address) -> ContractResult<()> {
+    async fn inner_deploy_common_contracts_for_testing(
+        provider: P,
+        common_deployer_address: Address,
+    ) -> ContractResult<()> {
         // Pre-deploy common contracts
-        debug!("Common deployer nonce before: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
-        debug!("Common deployer balance before: {}", provider.get_balance(common_deployer_address).await?);
+        debug!(
+            "Common deployer nonce before: {}",
+            provider.get_transaction_count(common_deployer_address).latest().await?
+        );
+        debug!(
+            "Common deployer balance before: {}",
+            provider.get_balance(common_deployer_address).await?
+        );
         Self::deploy_erc1820_registry(provider.clone(), common_deployer_address).await?;
         Self::deploy_multicall3(provider.clone(), common_deployer_address).await?;
         Self::deploy_safe_suites(provider.clone(), common_deployer_address).await?;
-        debug!("Common deployer nonce after: {}", provider.get_transaction_count(common_deployer_address).latest().await?);
-        debug!("Common deployer balance after: {}", provider.get_balance(common_deployer_address).await?);
+        debug!(
+            "Common deployer nonce after: {}",
+            provider.get_transaction_count(common_deployer_address).latest().await?
+        );
+        debug!(
+            "Common deployer balance after: {}",
+            provider.get_balance(common_deployer_address).await?
+        );
         Ok(())
     }
 
     /// Deploys testing environment (with dummy network registry proxy) via the given provider.
-    async fn inner_deploy_hopr_contracts_for_testing(provider: P, hopr_deployer_address: Address) -> ContractResult<Self> {
+    async fn inner_deploy_hopr_contracts_for_testing(
+        provider: P,
+        hopr_deployer_address: Address,
+    ) -> ContractResult<Self> {
         debug!("deploying contracts...");
         debug!(
-             "Hopr deployer nonce before: {}",
-             provider
-                 .get_transaction_count(hopr_deployer_address)
-                 .latest()
-                 .await?
-         );
+            "Hopr deployer nonce before: {}",
+            provider.get_transaction_count(hopr_deployer_address).latest().await?
+        );
         // HoprToken contract
         let token = HoprToken::deploy(provider.clone()).await?;
         // - grant deployer minter role in the token contract, so that the deployer can mint tokens for testing
@@ -332,7 +365,12 @@ where
             .await?;
         // - mint some tokens to the deployer for testing
         token
-            .mint(hopr_deployer_address, U256::from(1000000000000000000000_u128), Bytes::default(), Bytes::default()) // mint 1000 tokens to the deployer
+            .mint(
+                hopr_deployer_address,
+                U256::from(1000000000000000000000_u128),
+                Bytes::default(),
+                Bytes::default(),
+            ) // mint 1000 tokens to the deployer
             .send()
             .await?
             .watch()
@@ -426,7 +464,6 @@ where
             .watch()
             .await?;
 
-
         Ok(Self {
             token,
             channels,
@@ -441,11 +478,12 @@ where
         })
     }
 
-    /// Deploys testing environment, including both pre-deploying common contracts and deploying Hopr contracts, via the given provider.
+    /// Deploys testing environment, including both pre-deploying common contracts and deploying Hopr contracts, via the
+    /// given provider.
     pub async fn deploy_for_testing(
         provider: P,
         hopr_deployer_address: Address,
-        common_deployer_address: Address, 
+        common_deployer_address: Address,
     ) -> ContractResult<Self> {
         // use the common deployer wallet to pre-deploy common contracts
         Self::inner_deploy_common_contracts_for_testing(provider.clone(), common_deployer_address).await?;
@@ -491,8 +529,8 @@ where
     }
 }
 
-/// Creates and spawns an Anvil instance. 
-/// If `at_default_port` is true, the Anvil instance will be spawned at the default port 8545. 
+/// Creates and spawns an Anvil instance.
+/// If `at_default_port` is true, the Anvil instance will be spawned at the default port 8545.
 /// Otherwise, it will be spawned at a random available port.
 pub fn create_anvil(mnemonic: Option<&str>, at_default_port: bool, use_default_chain_id: bool) -> AnvilInstance {
     let mut anvil = Anvil::new();
@@ -526,11 +564,9 @@ pub fn create_anvil(mnemonic: Option<&str>, at_default_port: bool, use_default_c
 pub fn create_provider(
     anvil: &AnvilInstance,
     hopr_deployer_signing_key: &[u8],
-    common_deployer_signing_key: &[u8], 
+    common_deployer_signing_key: &[u8],
 ) -> Result<
-    impl alloy::providers::Provider
-        + Clone
-        + alloy::providers::WalletProvider<Wallet = EthereumWallet>,
+    impl alloy::providers::Provider + Clone + alloy::providers::WalletProvider<Wallet = EthereumWallet>,
     crate::error::Error,
 > {
     let common_deployer_signer = PrivateKeySigner::from_slice(common_deployer_signing_key)?;
@@ -545,10 +581,10 @@ pub fn create_provider(
 #[cfg(test)]
 mod tests {
     use alloy::primitives::Address;
-    use crate::config::{create_anvil, create_provider};
     use tracing::{debug, info};
 
     use super::{ContractInstances, NetworksWithContractAddresses};
+    use crate::config::{create_anvil, create_provider};
 
     #[test]
     fn networks_with_contract_addresses_are_default_constructible() {
@@ -565,7 +601,11 @@ mod tests {
         let hopr_deployer_address = anvil.addresses()[0];
         let common_deployer_address = anvil.addresses()[1];
 
-        let provider = create_provider(&anvil, hopr_deployer_private_key.as_ref(), common_deployer_private_key.as_ref())?;
+        let provider = create_provider(
+            &anvil,
+            hopr_deployer_private_key.as_ref(),
+            common_deployer_private_key.as_ref(),
+        )?;
 
         debug!("Anvil rpc url: {}", anvil.endpoint_url());
         debug!("Deployer addresses:");

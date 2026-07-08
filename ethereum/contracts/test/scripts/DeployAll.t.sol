@@ -23,7 +23,7 @@ contract DeployAllTest is Test, ERC1820RegistryFixtureTest, SafeSingletonFixture
         vm.setEnv("UNIT_TEST_SKIP_WRITE", "true");
         deployScriptContract.run();
 
-        (DeployAllContractsScript.Addresses memory networkAddress, , ,) = deployScriptContract.currentNetworkDetail();
+        (DeployAllContractsScript.Addresses memory networkAddress,,,) = deployScriptContract.currentNetworkDetail();
 
         emit log_string(string("Deployed contracts:"));
         emit log_named_address("tokenContractAddress", networkAddress.tokenContractAddress);
@@ -37,5 +37,4 @@ contract DeployAllTest is Test, ERC1820RegistryFixtureTest, SafeSingletonFixture
         emit log_named_address("nodeSafeMigrationAddress", networkAddress.nodeSafeMigrationAddress);
         emit log_named_address("xHOPR token contract address", networkAddress.xhoprTokenContractAddress);
     }
-
 }
