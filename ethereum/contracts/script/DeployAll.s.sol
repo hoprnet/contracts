@@ -27,6 +27,7 @@ contract DeployAllContractsScript is
     using BoostUtilsLib for address;
     // starting key binding fee at deployment time
     uint256 public constant INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
+    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
 
     bool internal isHoprChannelsDeployed;
     bool internal isHoprNetworkRegistryDeployed;
@@ -102,8 +103,8 @@ contract DeployAllContractsScript is
         // 3.9. NodeSafeMigration contract
         _deployNodeSafeMigration();
 
-        // 3.10. Deploy a mock xHOPR token contract
-        _deployXHoprToken();
+        // 3.10. Deploy a mock xHOPR token contract and mint some tokens to the deployer. This is only for local development environment.
+        _deployXHoprTokenAndMintToAddress(deployerAddress);
 
         // 4. update indexerStartBlockNumber
         // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
@@ -189,7 +190,7 @@ contract DeployAllContractsScript is
             (bool successMintTokens,) = currentNetworkDetail.addresses.tokenContractAddress
                 .call(
                     abi.encodeWithSignature(
-                        "mint(address,uint256,bytes,bytes)", recipient, 130_000_000 ether, hex"00", hex"00"
+                        "mint(address,uint256,bytes,bytes)", recipient, MINTED_TOKEN_AMOUNT, hex"00", hex"00"
                     )
                 );
             if (!successMintTokens) {
@@ -303,13 +304,19 @@ contract DeployAllContractsScript is
     /**
      * @dev deploy xHOPR token contract
      */
-    function _deployXHoprToken() internal {
-        if (
-            currentEnvironmentType == EnvironmentType.LOCAL
-                || !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
-        ) {
+    function _deployXHoprTokenAndMintToAddress(address recipient) internal {
+        address[] memory recipients = new address[](1);
+        recipients[0] = recipient;
+
+        if (currentEnvironmentType == EnvironmentType.LOCAL) {
             // deploy contract
             currentNetworkDetail.addresses.xhoprTokenContractAddress = deployCode("ERC677Mock.sol:ERC677Mock");
+            // mint some tokens to the recipient
+            (bool successMint,) = currentNetworkDetail.addresses.xhoprTokenContractAddress
+                .call(abi.encodeWithSignature("batchMintInternal(address[],uint256)", recipients, MINTED_TOKEN_AMOUNT));
+            if (!successMint) {
+                emit log_string("Cannot mint xHOPR tokens to the recipient");
+            }
         }
     }
 

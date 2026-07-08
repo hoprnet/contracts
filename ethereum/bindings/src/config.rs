@@ -367,7 +367,7 @@ where
         token
             .mint(
                 hopr_deployer_address,
-                U256::from(1000000000000000000000_u128),
+                MINTED_TOKEN_AMOUNT,
                 Bytes::default(),
                 Bytes::default(),
             ) // mint 1000 tokens to the deployer
@@ -448,6 +448,13 @@ where
 
         // Mock xHOPR token contract
         let mock_xhopr_token = ERC677Mock::deploy(provider.clone()).await?;
+        // - mint some tokens to the deployer for testing
+        mock_xhopr_token
+            .batchMintInternal(vec![hopr_deployer_address], MINTED_TOKEN_AMOUNT) // mint 1000 tokens to the deployer
+            .send()
+            .await?
+            .watch()
+            .await?;
 
         // get the defaultHoprNetwork from the stake factory
         let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
@@ -635,6 +642,20 @@ mod tests {
         assert_eq!(
             addresses, expected_addresses,
             "contract addresses should match the ones in contracts-addresses.json"
+        );
+
+        // Check the token balance of the hopr_deployer_address
+        let wxhopr_token_balance = instances.token.balanceOf(hopr_deployer_address).call().await?;
+        assert_eq!(
+            wxhopr_token_balance,
+            crate::constants::MINTED_TOKEN_AMOUNT,
+            "hopr_deployer_address should have the expected wxHOPRtoken balance"
+        );
+        let xhopr_token_balance = instances.xhopr_token.balanceOf(hopr_deployer_address).call().await?;
+        assert_eq!(
+            xhopr_token_balance,
+            crate::constants::MINTED_TOKEN_AMOUNT,
+            "hopr_deployer_address should have the expected xHOPR token balance"
         );
 
         Ok(())
