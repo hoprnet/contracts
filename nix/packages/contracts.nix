@@ -89,11 +89,15 @@ in
 
   clippy = buildLib builders.local { runClippy = true; };
 
-  test = buildLib builders.local { runTests = true; };
+  test = buildLib builders.local {
+    runTests = true;
+    extraNativeBuildInputs = [ foundryBin ];
+  };
 
   test-nightly = buildLib builders.localNightly {
     runTests = true;
     cargoExtraArgs = "-Z panic-abort-tests";
+    extraNativeBuildInputs = [ foundryBin ];
   };
 
   docs = buildBinary builders.localNightly { buildDocs = true; };
