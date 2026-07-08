@@ -630,9 +630,12 @@ mod tests {
         info!("  node_safe_migration:        {}", addresses.node_safe_migration);
         info!("  xhopr_token:                {}", addresses.xhopr_token);
 
-        for addr in &addresses {
-            assert_ne!(addr, Address::ZERO, "contract address should not be zero");
-        }
+        // Check that the addresses are the same as the ones in the contracts-addresses.json file
+        let expected_addresses = NetworksWithContractAddresses::default().networks["anvil-localhost"].addresses;
+        assert_eq!(
+            addresses, expected_addresses,
+            "contract addresses should match the ones in contracts-addresses.json"
+        );
 
         Ok(())
     }
