@@ -587,7 +587,6 @@ pub fn create_provider(
 
 #[cfg(test)]
 mod tests {
-    use alloy::primitives::Address;
     use tracing::{debug, info};
 
     use super::{ContractInstances, NetworksWithContractAddresses};

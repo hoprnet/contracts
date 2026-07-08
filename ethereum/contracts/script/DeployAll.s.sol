@@ -303,12 +303,16 @@ contract DeployAllContractsScript is
 
     /**
      * @dev deploy xHOPR token contract
+     * @notice this is only for local development environment, and it will mint some xHOPR tokens to the recipient
+     * @param recipient address to receive the minted xHOPR tokens
      */
     function _deployXHoprTokenAndMintToAddress(address recipient) internal {
         address[] memory recipients = new address[](1);
         recipients[0] = recipient;
 
-        if (currentEnvironmentType == EnvironmentType.LOCAL) {
+        if (currentEnvironmentType == EnvironmentType.LOCAL
+            && !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
+        ) {
             // deploy contract
             currentNetworkDetail.addresses.xhoprTokenContractAddress = deployCode("ERC677Mock.sol:ERC677Mock");
             // mint some tokens to the recipient
