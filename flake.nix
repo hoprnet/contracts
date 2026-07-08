@@ -295,6 +295,9 @@
               rustToolchainFile = ./rust-toolchain.toml;
               shellName = "Coverage";
               withLlvmTools = true;
+              extraPackages = with pkgs; [
+                foundry-bin
+              ];
             };
           };
         in
