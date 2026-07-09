@@ -310,8 +310,9 @@ contract DeployAllContractsScript is
         address[] memory recipients = new address[](1);
         recipients[0] = recipient;
 
-        if (currentEnvironmentType == EnvironmentType.LOCAL
-            && !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
+        if (
+            currentEnvironmentType == EnvironmentType.LOCAL
+                && !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
         ) {
             // deploy contract
             currentNetworkDetail.addresses.xhoprTokenContractAddress = deployCode("ERC677Mock.sol:ERC677Mock");
