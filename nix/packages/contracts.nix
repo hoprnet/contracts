@@ -91,13 +91,19 @@ in
 
   test = buildLib builders.local {
     runTests = true;
-    extraNativeBuildInputs = [ foundryBin solcDefault ];
+    extraNativeBuildInputs = [
+      foundryBin
+      solcDefault
+    ];
   };
 
   test-nightly = buildLib builders.localNightly {
     runTests = true;
     cargoExtraArgs = "-Z panic-abort-tests";
-    extraNativeBuildInputs = [ foundryBin solcDefault ];
+    extraNativeBuildInputs = [
+      foundryBin
+      solcDefault
+    ];
   };
 
   docs = buildBinary builders.localNightly { buildDocs = true; };
