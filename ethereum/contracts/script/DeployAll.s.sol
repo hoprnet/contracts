@@ -312,7 +312,7 @@ contract DeployAllContractsScript is
 
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
-                && !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
+                || !isValidAddress(currentNetworkDetail.addresses.xhoprTokenContractAddress)
         ) {
             // deploy contract
             currentNetworkDetail.addresses.xhoprTokenContractAddress = deployCode("ERC677Mock.sol:ERC677Mock");
