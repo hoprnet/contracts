@@ -7,6 +7,9 @@ use hex_literal::hex;
 /// Initial key binding fee required to initialize a key binding in the HOPR token contract
 pub const INIT_KEY_BINDING_FEE: U256 = uint!(10_000_000_000_000_000_U256); // 0.01 ether
 
+/// Minted token amount for the mock xHOPR token contract and wxHOPR token contract in the local development environment
+pub const MINTED_TOKEN_AMOUNT: U256 = uint!(1_000_000_000_000_000_000_000_U256); // 1000 ether
+
 /// ERC1820 deployer wallet
 pub const ERC_1820_DEPLOYER: Address = address!("a990077c3205cbDf861e17Fa532eeB069cE9fF96");
 
@@ -156,3 +159,7 @@ pub const DEPLOYSAFEMODULE_FUNCTION_IDENTIFIER: FixedBytes<32> =
 /// used in creating userdata when sending tokens along with safe creation
 pub const DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER: FixedBytes<32> =
     b256!("0105b97dcdf19d454ebe36f91ed516c2b90ee79f4a46af96a0138c1f5403c1cc");
+
+/// MINTER_ROLE = keccak256("MINTER_ROLE");
+pub const HOPR_TOKEN_MINTER_ROLE: FixedBytes<32> =
+    b256!("9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6");

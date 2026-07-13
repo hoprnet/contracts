@@ -10,6 +10,7 @@ pub mod hopr_capability_permissions;
 pub mod hopr_channels;
 pub mod hopr_channels_events;
 pub mod hopr_crypto;
+pub mod erc677_mock;
 pub mod hopr_boost;
 pub mod hopr_token;
 pub mod hopr_ledger;
