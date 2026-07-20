@@ -1,3 +1,11 @@
+//! Contract addresses and helpers for deploying/connecting to the HOPR contracts.
+//!
+//! The central types are [`ContractAddresses`] (where each contract lives) and
+//! [`ContractInstances`] (live handles to those contracts through an [`alloy`] provider). Use
+//! [`NetworksWithContractAddresses::default`] to look up addresses of a known, already-deployed
+//! network, or [`ContractInstances::deploy_for_testing`] together with [`create_anvil`] and
+//! [`create_provider`] to spin up a fresh local deployment for tests.
+
 use std::{collections::BTreeMap, str::FromStr};
 
 use alloy::{
@@ -28,6 +36,12 @@ use crate::{
     hopr_token::HoprToken::{self, HoprTokenInstance},
     hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance},
 };
+
+/// Raw contents of the bundled `contracts-addresses.json` file, embedded at build time.
+///
+/// This is the source of truth parsed by [`NetworksWithContractAddresses::default`] and lists the
+/// deployed contract addresses for every network HOPR contracts have been published to (e.g.
+/// `anvil-localhost`, staging, production).
 pub const CONTRACTS_ADDRESSES_FILE_CONTENT: &str = include_str!(concat!(env!("OUT_DIR"), "/contracts-addresses.json"));
 
 /// Holds addresses of all smart contracts.
@@ -87,15 +101,33 @@ impl IntoIterator for &ContractAddresses {
     }
 }
 
+/// Contract addresses and indexing metadata for a single network.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct SingleNetworkContractAddresses {
+    /// Chain ID of the network these addresses were deployed to.
     pub chain_id: u64,
+    /// Block number at which the HOPR contracts were deployed on this network; indexers can use
+    /// this as their starting block to avoid scanning from genesis.
     pub indexer_start_block_number: u32,
+    /// Deployed addresses of the HOPR contracts on this network.
     pub addresses: ContractAddresses,
 }
 
+/// All known networks HOPR contracts have been deployed to, keyed by network name (e.g.
+/// `"anvil-localhost"`).
+///
+/// # Examples
+///
+/// ```
+/// use hopr_bindings::config::NetworksWithContractAddresses;
+///
+/// let networks = NetworksWithContractAddresses::default();
+/// let localhost = &networks.networks["anvil-localhost"];
+/// println!("HOPR token deployed at {}", localhost.addresses.token);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NetworksWithContractAddresses {
+    /// Map from network name to that network's contract addresses.
     pub networks: BTreeMap<String, SingleNetworkContractAddresses>,
 }
 
@@ -115,17 +147,32 @@ impl FromStr for NetworksWithContractAddresses {
 }
 
 /// Holds instances to contracts.
+///
+/// `P` is the [`alloy::providers::Provider`] used to send transactions and read state for every
+/// contract instance held here. Construct one via [`ContractInstances::new`] (from already-deployed
+/// addresses) or [`ContractInstances::deploy_for_testing`] (deploying a fresh set of contracts,
+/// typically against a local Anvil node).
 #[derive(Debug, Clone)]
 pub struct ContractInstances<P> {
+    /// HOPR token (ERC777) contract instance.
     pub token: HoprTokenInstance<P>,
+    /// Payment channels contract instance.
     pub channels: HoprChannelsInstance<P>,
+    /// Node announcements contract instance.
     pub announcements: HoprAnnouncementsInstance<P>,
+    /// Node safe registry contract instance.
     pub safe_registry: HoprNodeSafeRegistryInstance<P>,
+    /// Ticket price oracle contract instance.
     pub price_oracle: HoprTicketPriceOracleInstance<P>,
+    /// Minimum ticket winning probability oracle contract instance.
     pub win_prob_oracle: HoprWinningProbabilityOracleInstance<P>,
+    /// Node stake factory contract instance.
     pub stake_factory: HoprNodeStakeFactoryInstance<P>,
+    /// Node management module implementation contract instance.
     pub module_implementation: HoprNodeManagementModuleInstance<P>,
+    /// Node safe migration helper contract instance.
     pub node_safe_migration: HoprNodeSafeMigrationInstance<P>,
+    /// Mock xHOPR token (ERC677) contract instance.
     pub xhopr_token: ERC677MockInstance<P>,
 }
 
@@ -133,6 +180,8 @@ impl<P> ContractInstances<P>
 where
     P: alloy::providers::Provider + Clone,
 {
+    /// Binds a set of already-deployed contract addresses to `provider`, without deploying or
+    /// verifying anything on-chain.
     pub fn new(contract_addresses: &ContractAddresses, provider: P) -> Self {
         Self {
             token: HoprTokenInstance::new(contract_addresses.token, provider.clone()),
@@ -157,6 +206,11 @@ where
         }
     }
 
+    /// Deploys the [ERC-1820](https://eips.ethereum.org/EIPS/eip-1820) pseudo-introspection registry
+    /// (required by the ERC777 HOPR token) via `common_deployer_address`, funding that address first.
+    ///
+    /// This is a no-op-equivalent helper for test/local environments; it does not check whether the
+    /// registry is already deployed.
     pub async fn deploy_erc1820_registry(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying ERC1820 registry...");
         // Fund 1820 deployer and deploy ERC1820Registry
@@ -178,6 +232,8 @@ where
         Ok(())
     }
 
+    /// Deploys the [Multicall3](https://github.com/mds1/multicall3) contract via
+    /// `common_deployer_address`, if it isn't already deployed at [`MULTICALL3_ADDRESS`].
     pub async fn deploy_multicall3(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying Multicall3...");
         // Fund Multicall3 deployer and deploy Multicall3
@@ -201,6 +257,9 @@ where
         Ok(())
     }
 
+    /// Deploys the minimum [Safe](https://safe.global/) suite (proxy factory, fallback handler,
+    /// singletons and multisend libraries) required by the HOPR node-safe integration, via
+    /// `common_deployer_address`, if it isn't already deployed at [`SAFE_SINGLETON_ADDRESS`].
     pub async fn deploy_safe_suites(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying Safe contracts...");
 
@@ -500,6 +559,7 @@ where
         Ok(Self { ..instances })
     }
 
+    /// Returns the addresses of all contract instances held by this struct.
     pub fn get_contract_addresses(&self) -> ContractAddresses {
         ContractAddresses {
             token: *self.token.address(),
@@ -568,6 +628,22 @@ pub fn create_anvil(mnemonic: Option<&str>, at_default_port: bool, use_default_c
     anvil.spawn()
 }
 
+/// Builds an [`alloy`] provider connected to `anvil`, wired with two signers: a wallet used to
+/// deploy and manage the HOPR contracts (`hopr_deployer_signing_key`), and a wallet used only to
+/// pre-deploy common/shared infrastructure such as the ERC1820 registry and the Safe suite
+/// (`common_deployer_signing_key`, used e.g. by [`ContractInstances::deploy_for_testing`]).
+///
+/// # Examples
+///
+/// ```no_run
+/// use hopr_bindings::config::{create_anvil, create_provider};
+///
+/// let anvil = create_anvil(None, false, true);
+/// let hopr_deployer_key = anvil.keys()[0].to_bytes();
+/// let common_deployer_key = anvil.keys()[1].to_bytes();
+/// let provider = create_provider(&anvil, &hopr_deployer_key, &common_deployer_key)?;
+/// # Ok::<(), hopr_bindings::error::Error>(())
+/// ```
 pub fn create_provider(
     anvil: &AnvilInstance,
     hopr_deployer_signing_key: &[u8],
