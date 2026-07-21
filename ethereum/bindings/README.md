@@ -8,6 +8,7 @@ This crate only exists to automate that export: it re-generates the bindings whe
 bundles the addresses they are deployed at, so downstream HOPR Rust code (the node, indexers, tooling) never has to
 hand-write contract call boilerplate.
 
+Docs: <https://docs.rs/hopr-bindings>
 ## What's in here
 
 - `codegen` — the generated bindings themselves, one module per contract (e.g. [`crate::hopr_channels`],
