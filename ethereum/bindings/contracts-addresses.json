@@ -32,7 +32,7 @@
       },
       "chain_id": 100,
       "environment_type": "staging",
-      "indexer_start_block_number": 14635013
+      "indexer_start_block_number": 44021432
     },
     "debug-staging": {
       "addresses": {
@@ -49,7 +49,7 @@
       },
       "chain_id": 100,
       "environment_type": "staging",
-      "indexer_start_block_number": 14635013
+      "indexer_start_block_number": 44021453
     },
     "rotsee": {
       "addresses": {
@@ -66,7 +66,7 @@
       },
       "chain_id": 100,
       "environment_type": "staging",
-      "indexer_start_block_number": 14635013
+      "indexer_start_block_number": 44369742
     }
   }
 }
