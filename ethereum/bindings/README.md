@@ -1,5 +1,8 @@
 # hopr-bindings
 
+[![docs.rs](https://docs.rs/hopr-bindings/badge.svg)](https://docs.rs/hopr-bindings)
+[![crates.io](https://img.shields.io/crates/v/hopr-bindings.svg)](https://crates.io/crates/hopr-bindings)
+
 Rust bindings for the [HOPR protocol](https://hoprnet.org/) smart contracts, generated with
 [`alloy`](https://github.com/alloy-rs/alloy)'s `sol!`/`abigen!` macros from the Solidity sources and ABIs in
 [`ethereum/contracts`](https://github.com/hoprnet/contracts).
@@ -7,6 +10,21 @@ Rust bindings for the [HOPR protocol](https://hoprnet.org/) smart contracts, gen
 This crate only exists to automate that export: it re-generates the bindings whenever the contracts change and
 bundles the addresses they are deployed at, so downstream HOPR Rust code (the node, indexers, tooling) never has to
 hand-write contract call boilerplate.
+
+Full API documentation is available on [docs.rs](https://docs.rs/hopr-bindings).
+
+## Installation
+
+```sh
+cargo add hopr-bindings
+```
+
+or add it directly to `Cargo.toml`:
+
+```toml
+[dependencies]
+hopr-bindings = "4"
+```
 
 ## What's in here
 
