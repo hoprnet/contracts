@@ -26,21 +26,6 @@ or add it directly to `Cargo.toml`:
 hopr-bindings = "4"
 ```
 
-Full API documentation is available on [docs.rs](https://docs.rs/hopr-bindings).
-
-## Installation
-
-```sh
-cargo add hopr-bindings
-```
-
-or add it directly to `Cargo.toml`:
-
-```toml
-[dependencies]
-hopr-bindings = "4"
-```
-
 ## What's in here
 
 - `codegen` — the generated bindings themselves, one module per contract (e.g. [`crate::hopr_channels`],
