@@ -122,6 +122,21 @@ jobs:
         env:
           HOPR_NETWORK: anvil-localhost
         run: nix develop -L -c make -j smart-contract-test
+  check-contracts-addresses:
+    name: Contracts addresses sanity check
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check staging/production token addresses
+        run: .github/scripts/check-contracts-addresses.sh ethereum/bindings/contracts-addresses.json
   build-library:
     name: Library ${{ matrix.architecture }}
     strategy:
