@@ -106,8 +106,9 @@ impl IntoIterator for &ContractAddresses {
 pub struct SingleNetworkContractAddresses {
     /// Chain ID of the network these addresses were deployed to.
     pub chain_id: u64,
-    /// Block number at which the HOPR contracts were deployed on this network; indexers can use
-    /// this as their starting block to avoid scanning from genesis.
+    /// Earliest block number at which any contract except for the token and xHOPR token
+    /// in [`Self::addresses`] was deployed on this network.
+    /// Indexers can use this as their starting block to avoid scanning from genesis.
     pub indexer_start_block_number: u32,
     /// Deployed addresses of the HOPR contracts on this network.
     pub addresses: ContractAddresses,
