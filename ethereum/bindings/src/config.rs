@@ -209,9 +209,6 @@ where
 
     /// Deploys the [ERC-1820](https://eips.ethereum.org/EIPS/eip-1820) pseudo-introspection registry
     /// (required by the ERC777 HOPR token) via `common_deployer_address`, funding that address first.
-    ///
-    /// This is a no-op-equivalent helper for test/local environments; it does not check whether the
-    /// registry is already deployed.
     pub async fn deploy_erc1820_registry(provider: P, common_deployer_address: Address) -> ContractResult<()> {
         debug!("deploying ERC1820 registry...");
         // Fund 1820 deployer and deploy ERC1820Registry
