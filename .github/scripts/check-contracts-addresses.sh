@@ -7,6 +7,15 @@ set -euo pipefail
 
 file="${1:-ethereum/bindings/contracts-addresses.json}"
 
+if [[ ! -f "${file}" ]]; then
+  echo "error: file not found: ${file}" >&2
+  exit 2
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "error: jq is required to check ${file}" >&2
+  exit 2
+fi
+
 expected_token="0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1"
 expected_xhopr_token="0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
 
