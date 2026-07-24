@@ -28,6 +28,7 @@ let
     # Extra files not covered by the default .rs/.toml extensions
     extraFiles = [
       (root + "/ethereum/bindings/contracts-addresses.json")
+      (root + "/ethereum/bindings/README.md")
       (root + "/ethereum/contracts/remappings.txt")
       (fs.fileFilter (file: file.hasExt "sol") (root + "/vendor/solidity"))
       (fs.fileFilter (file: file.hasExt "sol") (root + "/ethereum/contracts/src"))
