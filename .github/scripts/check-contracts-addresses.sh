@@ -7,7 +7,7 @@ set -euo pipefail
 
 file="${1:-ethereum/bindings/contracts-addresses.json}"
 
-if [[ ! -f "${file}" ]]; then
+if [[ ! -f ${file} ]]; then
   echo "error: file not found: ${file}" >&2
   exit 2
 fi
@@ -36,7 +36,7 @@ mismatches="$(
   ' "${file}"
 )"
 
-if [[ -n "${mismatches}" ]]; then
+if [[ -n ${mismatches} ]]; then
   echo "error: staging/production networks in ${file} with unexpected token/xhopr_token addresses:" >&2
   echo "${mismatches}" >&2
   echo "expected: token=${expected_token} xhopr_token=${expected_xhopr_token}" >&2
