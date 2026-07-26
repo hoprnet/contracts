@@ -124,8 +124,23 @@
               pkgs.lib.lists.take 3 (builtins.splitVersion info.package.version)
             );
 
+          # pre-commit in nixpkgs bundles heavyweight test-only dependencies
+          # (dotnet-sdk, nodejs, go, coursier, …) into nativeBuildInputs via
+          # its preCheck string interpolation, even though doCheck is already
+          # false on Darwin. Filter them out so `direnv allow` / `nix develop`
+          # doesn't have to build dotnet from source.
+          pre-commit-lightweight = pkgs.pre-commit.overridePythonAttrs {
+            nativeCheckInputs = [ ];
+            doCheck = false;
+            doInstallCheck = false;
+            dontUsePytestCheck = true;
+            preCheck = "";
+            postCheck = "";
+          };
+
           pre-commit-check = pre-commit.lib.${system}.run {
             src = ./.;
+            package = pre-commit-lightweight;
             hooks = {
               # https://github.com/cachix/git-hooks.nix
               treefmt.enable = false;
@@ -144,8 +159,33 @@
                 files = "";
                 language = "system";
               };
+              renovate-config-validator = {
+                enable = true;
+                name = "Renovate config validator";
+                entry = "${pkgs.renovate}/bin/renovate-config-validator";
+                files = "renovate\\.json$";
+                language = "system";
+                pass_filenames = true;
+              };
+              actionlint.enable = true;
+              pinact = {
+                enable = true;
+                name = "pinact";
+                description = "Check GitHub Action refs are SHA-pinned and resolvable";
+                entry = "${pkgs.writeShellScript "pinact-check" ''
+                  token="''${GITHUB_TOKEN:-$(${pkgs.gh}/bin/gh auth token 2>/dev/null || true)}"
+                  if [ -z "$token" ]; then
+                    echo "pinact: skipping — no GITHUB_TOKEN and gh not authenticated" >&2
+                    exit 0
+                  fi
+                  export GITHUB_TOKEN="$token"
+                  exec ${pkgs.pinact}/bin/pinact run --check
+                ''}";
+                files = "^\\.github/workflows/.*\\.ya?ml$";
+                language = "system";
+                pass_filenames = false;
+              };
             };
-            tools = pkgs;
             excludes = [
               "vendor/"
               "ethereum/contracts/"
@@ -210,6 +250,7 @@
             treefmtPrograms = pkgs.lib.attrValues config.treefmt.build.programs;
             shellHook = ''
               echo "Running pre-commit checks..."
+              export GITHUB_TOKEN="''${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}"
               ${pre-commit-check.shellHook}
 
               if ! { [ -f ethereum/contracts/foundry.toml ] && grep -q "solc = \"${solcDefault}/bin/solc\"" ethereum/contracts/foundry.toml; }; then
@@ -221,10 +262,12 @@
               unset SOURCE_DATE_EPOCH
             '';
             extraPackages = with pkgs; [
+              gh
               solcDefault
               foundry-bin
               sqlite
               gnuplot
+              cargo-release
               zizmor
               yq-go
             ];
@@ -244,6 +287,7 @@
               treefmtWrapper = config.treefmt.build.wrapper;
               treefmtPrograms = pkgs.lib.attrValues config.treefmt.build.programs;
               extraPackages = with pkgs; [
+                cargo-release
                 zizmor
               ];
             };
@@ -251,6 +295,9 @@
               rustToolchainFile = ./rust-toolchain.toml;
               shellName = "Coverage";
               withLlvmTools = true;
+              extraPackages = with pkgs; [
+                foundry-bin
+              ];
             };
           };
         in

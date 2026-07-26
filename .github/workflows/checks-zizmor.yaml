@@ -3,8 +3,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths: [".github/**"]
-  merge_group:
-    types: [checks_requested]
 concurrency:
   group: ${{ github.event.pull_request.head.ref || github.ref_name }}-zizmor
   cancel-in-progress: true
@@ -13,12 +11,12 @@ permissions:
   security-events: write
 jobs:
   zizmor:
-    uses: hoprnet/hopr-workflows/.github/workflows/checks-zizmor.yaml@bbd22e57cf954c15f0a6051d59329857809141dd # workflow-checks-zizmor-v1
+    uses: hoprnet/hopr-workflows/.github/workflows/checks-zizmor.yaml@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
     permissions:
       contents: read
       security-events: write
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      runner: self-hosted-hoprnet-bigger
+      runner: depot-ubuntu-24.04-4
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}

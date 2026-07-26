@@ -655,6 +655,9 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
 
         (uint256 rx, uint256 ry) = ecmul(params.vx, params.vy, hTweaked);
 
+        // Skip cases where the result is the point at infinity
+        vm.assume(rx != 0 || ry != 0);
+
         params.h = hTweaked;
         params.hVx = rx;
         params.hVy = ry;

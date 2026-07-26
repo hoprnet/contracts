@@ -28,6 +28,7 @@ let
     # Extra files not covered by the default .rs/.toml extensions
     extraFiles = [
       (root + "/ethereum/bindings/contracts-addresses.json")
+      (root + "/ethereum/bindings/README.md")
       (root + "/ethereum/contracts/remappings.txt")
       (fs.fileFilter (file: file.hasExt "sol") (root + "/vendor/solidity"))
       (fs.fileFilter (file: file.hasExt "sol") (root + "/ethereum/contracts/src"))
@@ -89,11 +90,21 @@ in
 
   clippy = buildLib builders.local { runClippy = true; };
 
-  test = buildLib builders.local { runTests = true; };
+  test = buildLib builders.local {
+    runTests = true;
+    extraNativeBuildInputs = [
+      foundryBin
+      solcDefault
+    ];
+  };
 
   test-nightly = buildLib builders.localNightly {
     runTests = true;
     cargoExtraArgs = "-Z panic-abort-tests";
+    extraNativeBuildInputs = [
+      foundryBin
+      solcDefault
+    ];
   };
 
   docs = buildBinary builders.localNightly { buildDocs = true; };

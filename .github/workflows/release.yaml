@@ -17,51 +17,31 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build-library:
-    name: Library ${{ matrix.architecture }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - architecture: x86_64-linux
-            runner: self-hosted-hoprnet-bigger
-            build_command: nix build -L .#lib-hopr-bindings-x86_64-linux
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v1
+    name: Build Library
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
     permissions:
       contents: read
+      id-token: write
     with:
       source_branch: ${{ github.ref_name }}
-      architecture: ${{ matrix.architecture }}
-      cachix_cache_name: contracts
-      build_file: ethereum/bindings/Cargo.toml
-      build_command: ${{ matrix.build_command }}
-      runner: ${{ matrix.runner }}
-    secrets:
-      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-  publish:
-    name: Publish
-    needs: [build-library]
-    uses: hoprnet/hopr-workflows/.github/workflows/publish-crates.yaml@e4fadaa70234b9d734d5c51b6900602e55492ce2 # workflow-publish-crates-v3
-    permissions:
-      contents: read
-    with:
-      source_branch: ${{ github.ref_name }}
-      package: hopr-bindings
       version_type: release
+      architecture: x86_64-linux
       cachix_cache_name: contracts
-      runner: self-hosted-hoprnet-bigger
+      package_name: hopr-bindings
+      runner: depot-ubuntu-24.04-4
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      cargo_registry_token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
   release:
     name: Close release
     needs:
-      - publish
-    runs-on: self-hosted-hoprnet-small
+      - build-library
+    runs-on: depot-ubuntu-24.04
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Release version
-        uses: hoprnet/hopr-workflows/actions/release-version@0d6e82b5bfb948c58ac2f850a331443054486565 # release-version-v2
+        uses: hoprnet/hopr-workflows/actions/release-version@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
         with:
           source_branch: ${{ github.ref_name }}
           file: ethereum/bindings/Cargo.toml
@@ -72,5 +52,4 @@ jobs:
           zulip_email: ${{ secrets.ZULIP_EMAIL }}
           zulip_channel: "HOPRd"
           zulip_topic: "Releases"
-          gcp_service_account: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
-          github_token: ${{ secrets.GH_RUNNER_TOKEN }}
+          github_app_private_key: ${{ secrets.GH_APP_HOPRNET_BOT_PRIVATE_KEY }}

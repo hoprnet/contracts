@@ -1,7 +1,5 @@
 name: PR
 on:
-  merge_group:
-    types: [checks_requested]
   pull_request:
     types:
       - opened
@@ -10,6 +8,7 @@ on:
       - ready_for_review
 permissions:
   contents: read
+  id-token: write # zizmor: ignore[excessive-permissions]
 concurrency:
   group: ${{ github.event.pull_request.head.ref || github.ref_name }}-pr
   cancel-in-progress: true
@@ -17,11 +16,11 @@ jobs:
   validate-pr-title:
     name: Validate title
     if: github.event_name == 'pull_request'
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       pull-requests: read
     steps:
-      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -42,19 +41,19 @@ jobs:
   label:
     name: Add labels
     if: github.event_name == 'pull_request'
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       contents: read
       issues: write
       pull-requests: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           disable-sudo: true
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/labeler@77a4082b841706ac431479b7e2bb11216ffef250 # main on 20.02.2025
@@ -72,55 +71,53 @@ jobs:
           fi
   checks:
     name: Check
-    uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@bbd22e57cf954c15f0a6051d59329857809141dd # workflow-checks-v1
+    uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      runner_small: self-hosted-hoprnet-small
-      runner_large: self-hosted-hoprnet-bigger
+      runner_small: depot-ubuntu-24.04
+      runner_large: depot-ubuntu-24.04-4
       deps: false
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
   tests:
     name: Test
-    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@268553d7984344080e3dc65eb92778c9103af7ec # workflow-tests-v3
+    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      unit_tests: true
+      enable_unit_tests: true
       unit_test_command: "nix build -L .#test"
-      nightly_tests: true
+      enable_nightly_tests: true
       nightly_test_command: "nix build -L .#test-nightly"
-      unit_coverage: true
+      enable_unit_coverage: true
       unit_coverage_command: "nix run .#coverage-unit"
-      runner: self-hosted-hoprnet-bigger
+      runner_unit: depot-ubuntu-24.04-4
       test_timeout: 60
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      codecov_token: ${{ secrets.CODECOV_TOKEN }}
   tests-smart-contracts:
     name: Smart Contracts
-    runs-on: self-hosted-hoprnet-bigger
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 60
     if: github.event.pull_request.draft == false
     env:
       FOUNDRY_PROFILE: ci
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           disable-sudo: true
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.ref || github.ref }}
           persist-credentials: false
-      - name: Set up Google Cloud Credentials
-        id: auth
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+      - name: Setup Nix
+        uses: hoprnet/hopr-workflows/actions/setup-nix@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
         with:
-          token_format: "access_token"
-          credentials_json: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
+          cachix_cache_name: contracts
+          cachix_auth_token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Run tests
         env:
           HOPR_NETWORK: anvil-localhost
@@ -132,41 +129,25 @@ jobs:
       matrix:
         include:
           - architecture: x86_64-linux
-            runner: self-hosted-hoprnet-bigger
-            build_command: nix build -L .#lib-hopr-bindings-x86_64-linux
+            runner: depot-ubuntu-24.04-4
             required_label: ""
           - architecture: aarch64-linux
-            runner: self-hosted-hoprnet-bigger
-            build_command: nix build -L .#lib-hopr-bindings-aarch64-linux
+            runner: depot-ubuntu-24.04-arm-4
             required_label: "binary:aarch64-linux"
           - architecture: aarch64-darwin
-            runner: macos-15-xlarge
-            build_command: nix build -L .#lib-hopr-bindings-aarch64-darwin
-            required_label: binary:aarch64-darwin
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@build-library-v1
+            runner: depot-macos-15
+            required_label: "binary:aarch64-darwin"
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
     permissions:
       contents: read
+      id-token: write
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+      version_type: commit
       architecture: ${{ matrix.architecture }}
       cachix_cache_name: contracts
-      build_file: ethereum/bindings/Cargo.toml
-      build_command: ${{ matrix.build_command }}
+      package_name: hopr-bindings
       runner: ${{ matrix.runner }}
       enabled: ${{ matrix.required_label == '' || contains(github.event.pull_request.labels.*.name, matrix.required_label) }}
-    secrets:
-      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-  publish-dry-run:
-    name: Publish
-    needs: [tests]
-    uses: hoprnet/hopr-workflows/.github/workflows/publish-crates.yaml@e4fadaa70234b9d734d5c51b6900602e55492ce2 # workflow-publish-crates-v3
-    permissions:
-      contents: read
-    with:
-      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      package: hopr-bindings
-      version_type: commit
-      cachix_cache_name: contracts
-      runner: self-hosted-hoprnet-bigger
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}

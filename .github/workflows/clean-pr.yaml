@@ -11,31 +11,38 @@ on:
         description: "Pull request number"
 jobs:
   cleanup-pr:
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
     name: Remove cache
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           disable-sudo: true
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+          egress-policy: block
       - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: main
       - name: Setup GCP
         id: gcp
-        uses: hoprnet/hopr-workflows/actions/setup-gcp@12c56020e16036982e6cc529848edeedfc705865 # master
+        uses: hoprnet/hopr-workflows/actions/setup-gcp@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
         with:
-          google-credentials: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
-          login-artifact-registry: 'true'
-          install-sdk: 'true'
+          login_artifact_registry: 'true'
+          install_sdk: 'true'
       - name: Cleanup Github pipeline cache
+        env:
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cacheKeysForPR=($(gh actions-cache list -R ${{ github.repository }} -B refs/pull/${{ github.event.inputs.pr_number }}/merge | cut -f 1 | tr '\n' ' '))
-          for cacheKey in $cacheKeysForPR
+          mapfile -t cacheKeysForPR < <(gh actions-cache list -R "$REPO" -B "refs/pull/$PR_NUMBER/merge" | cut -f 1)
+          for cacheKey in "${cacheKeysForPR[@]}"
           do
-            gh actions-cache delete $cacheKey -R hoprnet/contracts -B refs/pull/${{ github.event.inputs.pr_number }}/merge --confirm
+            gh actions-cache delete "$cacheKey" -R "$REPO" -B "refs/pull/$PR_NUMBER/merge" --confirm
           done
