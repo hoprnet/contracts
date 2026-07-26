@@ -137,8 +137,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Setup Nix
+        uses: hoprnet/hopr-workflows/actions/setup-nix@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.10.1
+        with:
+          cachix_cache_name: contracts
+          cachix_auth_token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Check staging/production token addresses
-        run: .github/scripts/check-contracts-addresses.sh ethereum/bindings/contracts-addresses.json
+        run: nix shell nixpkgs#jq -c .github/scripts/check-contracts-addresses.sh ethereum/bindings/contracts-addresses.json
   build-library:
     name: Library ${{ matrix.architecture }}
     strategy:
