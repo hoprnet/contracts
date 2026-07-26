@@ -29,8 +29,8 @@ mismatches="$(
     | to_entries[]
     | select(.value.environment_type == "staging" or .value.environment_type == "production")
     | select(
-        (.value.addresses.token | ascii_downcase) != $expected_token
-        or (.value.addresses.xhopr_token | ascii_downcase) != $expected_xhopr_token
+        (.value.addresses.token? // "" | ascii_downcase) != $expected_token
+        or (.value.addresses.xhopr_token? // "" | ascii_downcase) != $expected_xhopr_token
       )
     | "  \(.key): token=\(.value.addresses.token) xhopr_token=\(.value.addresses.xhopr_token)"
   ' "${file}"
