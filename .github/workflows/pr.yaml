@@ -125,6 +125,8 @@ jobs:
   check-contracts-addresses:
     name: Contracts addresses sanity check
     runs-on: depot-ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
