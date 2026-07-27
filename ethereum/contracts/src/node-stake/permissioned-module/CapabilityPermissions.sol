@@ -619,7 +619,7 @@ library HoprCapabilityPermissions {
         for (uint256 i = 0; i < 2; i++) {
             if (functionSigs[i] != bytes4(0)) {
                 bytes32 capabilityKey = keyForFunctions(targetAddress, functionSigs[i]);
-                role.capabilities[capabilityKey][getChannelId(nodeAddress, targetAddress)] = permissions[i];
+                role.capabilities[capabilityKey][getChannelId(nodeAddress, beneficiary)] = permissions[i];
 
                 emit ScopedGranularTokenCapability(
                     nodeAddress, targetAddress, beneficiary, functionSigs[i], permissions[i]

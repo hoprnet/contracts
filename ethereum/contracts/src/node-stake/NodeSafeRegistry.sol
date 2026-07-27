@@ -39,9 +39,10 @@ abstract contract HoprNodeSafeRegistryEvents {
  * the CHAIN_KEY address. This link between the Safe and node's chain-key address
  * should be registered upon successful verification
  *
- * The CHAIN_KEY address should not be a contract
- * The Safe addres should be a contract
- * This implies that Safe and CHAIN_KEY address cannot be the same.
+ * The CHAIN_KEY address must not be a contract (enforced by addNodeSafe).
+ * By convention `safeAddress` is expected to be a Gnosis Safe contract, but this
+ * is not verified on-chain by this registry; callers are responsible for passing
+ * a genuine Safe address.
  *
  * This contract is meant to be deployed as a standalone contract
  */
@@ -64,9 +65,6 @@ contract HoprNodeSafeRegistry is HoprNodeSafeRegistryEvents {
     // Node address is a contract
     error NodeIsContract();
 
-    // Provided address is not a member of an enabled NodeManagementModule
-    error NodeNotModuleMember();
-
     // Structure to store the mapping between nodes and their associated Safe contracts
     struct NodeSafeRecord {
         address safeAddress;
@@ -80,8 +78,8 @@ contract HoprNodeSafeRegistry is HoprNodeSafeRegistryEvents {
         uint256 nodeSigNonce;
     }
 
-    // Currently deployed version, starting with 1.0.0
-    string public constant VERSION = "1.0.0";
+    // Currently deployed version
+    string public constant VERSION = "2.0.0";
 
     bytes32 public domainSeparator;
     mapping(address => NodeSafeRecord) _nodeToSafe;
