@@ -795,6 +795,53 @@ contract HoprNodeManagementModuleTest is
     }
 
     /**
+     * @dev scopeTokenCapabilities must key the granular permission on the channelId,
+     * which is computed from the (nodeAddress, beneficiary) pair.
+     */
+    function test_ScopeTokenCapabilitiesKeyedOnBeneficiaryNotTarget(
+        address nodeAddress,
+        address targetAddress,
+        address beneficiary
+    )
+        public
+    {
+        vm.assume(beneficiary != targetAddress);
+
+        bytes4[] memory functionSigs = new bytes4[](1);
+        functionSigs[0] = HoprCapabilityPermissions.APPROVE_SELECTOR;
+        GranularPermission[] memory permissions = new GranularPermission[](1);
+        permissions[0] = GranularPermission.ALLOW;
+        (bytes32 encoded,) = HoprCapabilityPermissions.encodeFunctionSigsAndPermissions(functionSigs, permissions);
+
+        vm.prank(moduleProxy.owner());
+        moduleProxy.scopeTokenCapabilities(nodeAddress, targetAddress, beneficiary, encoded);
+
+        bytes32 capabilityKey =
+            HoprCapabilityPermissions.keyForFunctions(targetAddress, HoprCapabilityPermissions.APPROVE_SELECTOR);
+
+        // readable at the (nodeAddress, beneficiary) pair, exactly as checkHoprTokenParameters looks it up
+        assertEq(
+            uint8(
+                moduleProxy.getGranularPermissions(
+                    capabilityKey, HoprCapabilityPermissions.getChannelId(nodeAddress, beneficiary)
+                )
+            ),
+            uint8(GranularPermission.ALLOW)
+        );
+
+        // must not be reachable at the (nodeAddress, targetAddress) pair -- the old, buggy key
+        assertEq(
+            uint8(
+                moduleProxy.getGranularPermissions(
+                    capabilityKey, HoprCapabilityPermissions.getChannelId(nodeAddress, targetAddress)
+                )
+            ),
+            uint8(GranularPermission.NONE)
+        );
+        vm.clearMockedCalls();
+    }
+
+    /**
      * @dev scope tokens for (source, destination)
      */
     function testFuzz_ScopeSendCapability(bytes4 functionSig) public {
@@ -1048,6 +1095,57 @@ contract HoprNodeManagementModuleTest is
         vm.prank(msgSender);
         vm.expectRevert(HoprCapabilityPermissions.GranularPermissionRejected.selector);
         moduleProxy.execTransactionFromModule(token, 0, data, Enum.Operation.Call);
+        vm.clearMockedCalls();
+    }
+
+    /**
+     * @dev H-1 regression: a node explicitly granted ALLOW to approve a specific beneficiary
+     * must actually be allowed to do so (the bug silently rejected it because the permission
+     * was stored under the wrong key), while a different, non-granted beneficiary must still
+     * be rejected by the default fallback.
+     */
+    function test_ExecTransactionFromModuleTokenGranularPermissionGrantedToBeneficiary() public {
+        address msgSender = vm.addr(1);
+        address grantedBeneficiary = vm.addr(200);
+        address otherBeneficiary = vm.addr(201);
+
+        Target target = TargetUtils.encodeDefaultPermissions(
+            channels,
+            Clearance.FUNCTION,
+            TargetType.CHANNELS,
+            TargetPermission.SPECIFIC_FALLBACK_ALLOW,
+            defaultFunctionPermission
+        ); // default fallback for APPROVE is SPECIFIC_FALLBACK_BLOCK
+        stdstore.target(address(moduleProxy)).sig("owner()").checked_write(safe);
+        vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
+        vm.mockCall(safe, abi.encodeWithSelector(IAvatar.execTransactionFromModule.selector), abi.encode(true));
+
+        address owner = moduleProxy.owner();
+        vm.startPrank(owner);
+        moduleProxy.addChannelsAndTokenTarget(target);
+        moduleProxy.addNode(msgSender);
+
+        bytes4[] memory functionSigs = new bytes4[](1);
+        functionSigs[0] = IERC20.approve.selector;
+        GranularPermission[] memory permissions = new GranularPermission[](1);
+        permissions[0] = GranularPermission.ALLOW;
+        (bytes32 encoded,) = HoprCapabilityPermissions.encodeFunctionSigsAndPermissions(functionSigs, permissions);
+        moduleProxy.scopeTokenCapabilities(msgSender, token, grantedBeneficiary, encoded);
+        vm.stopPrank();
+
+        // approve to the granted beneficiary succeeds
+        vm.prank(msgSender);
+        bool result = moduleProxy.execTransactionFromModule(
+            token, 0, abi.encodeWithSelector(IERC20.approve.selector, grantedBeneficiary, 100), Enum.Operation.Call
+        );
+        assertTrue(result);
+
+        // approve to a different, non-granted beneficiary is still rejected by the default fallback
+        vm.prank(msgSender);
+        vm.expectRevert(HoprCapabilityPermissions.GranularPermissionRejected.selector);
+        moduleProxy.execTransactionFromModule(
+            token, 0, abi.encodeWithSelector(IERC20.approve.selector, otherBeneficiary, 100), Enum.Operation.Call
+        );
         vm.clearMockedCalls();
     }
 

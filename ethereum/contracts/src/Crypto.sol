@@ -701,6 +701,14 @@ abstract contract HoprCrypto {
 
                 // payload[KECCAK256_BLOCKSIZE+message.len()+1..KECCAK256_BLOCKSIZE+message.len()+2] = 96
                 b0PayloadO := add(mload(message), 137)
+                // The message-copy loop above writes in 32-byte words and overshoots the end of
+                // the message by up to 31 bytes. Two bytes of the hashed region are never written
+                // explicitly -- the high byte of I2OSP(len_in_bytes, 2) at [136+len] and the
+                // I2OSP(0, 1) separator at [136+len+2] -- so without this they inherit whatever
+                // the caller left in scratch memory. One word starting at [136+len] covers the
+                // entire overshoot window. Bytes [136+len+1] and [136+len+3 ..] are overwritten
+                // below; [136+len+2] must stay zero, which is exactly what this leaves it as.
+                mstore(add(b0Payload, sub(b0PayloadO, 1)), 0)
                 mstore8(add(b0Payload, b0PayloadO), 0x60) // only support for 96 bytes output length
 
                 let dstO := 0x20
@@ -809,6 +817,14 @@ abstract contract HoprCrypto {
 
                 // payload[KECCAK256_BLOCKSIZE+message.len()+1..KECCAK256_BLOCKSIZE+message.len()+2] = 48
                 b0PayloadO := add(mload(message), 137)
+                // The message-copy loop above writes in 32-byte words and overshoots the end of
+                // the message by up to 31 bytes. Two bytes of the hashed region are never written
+                // explicitly -- the high byte of I2OSP(len_in_bytes, 2) at [136+len] and the
+                // I2OSP(0, 1) separator at [136+len+2] -- so without this they inherit whatever
+                // the caller left in scratch memory. One word starting at [136+len] covers the
+                // entire overshoot window. Bytes [136+len+1] and [136+len+3 ..] are overwritten
+                // below; [136+len+2] must stay zero, which is exactly what this leaves it as.
+                mstore(add(b0Payload, sub(b0PayloadO, 1)), 0)
                 mstore8(add(b0Payload, b0PayloadO), 0x30) // only support for 48 bytes output length
 
                 let dstO := 0x20
@@ -879,6 +895,13 @@ abstract contract HoprCrypto {
         uint256 sBy;
         uint256 hVx; // h * V
         uint256 hVy;
+        // --- NEW: DLEQ binding to the redeemer's secp256k1 public key A = a·G ---
+        uint256 ax; // A_x
+        uint256 ay; // A_y
+        uint256 sGx; // s * G
+        uint256 sGy;
+        uint256 hAx; // h * A
+        uint256 hAy;
     }
 
     /**
@@ -909,12 +932,23 @@ abstract contract HoprCrypto {
      * @param payload values over which the VRF was computed, e.g. ticketHash
      */
     function vrfVerify(VRFParameters memory params, VRFPayload memory payload) internal view returns (bool) {
-        if (params.h >= SECP256K1_BASE_FIELD_ORDER || params.s >= SECP256K1_BASE_FIELD_ORDER) {
+        if (params.h >= SECP256K1_FIELD_ORDER || params.s >= SECP256K1_FIELD_ORDER) {
             revert InvalidFieldElement();
         }
 
         if (!isCurvePointInternal(params.vx, params.vy)) {
             revert InvalidCurvePoint();
+        }
+
+        // Validate the redeemer's public key A is on-curve
+        if (!isCurvePointInternal(params.ax, params.ay)) {
+            revert InvalidCurvePoint();
+        }
+
+        // Bind A to the signer address: address(keccak256(A)) == signer
+        // This ensures a cannot be varied per-attempt — it's the redeemer's fixed key
+        if (pointToAddress(params.ax, params.ay) != payload.signer) {
+            revert InvalidPointWitness();
         }
 
         // we get a pseudo-random curve point
@@ -934,15 +968,42 @@ abstract contract HoprCrypto {
             revert InvalidPointWitness();
         }
 
-        // We checked the validity of precomputed sB and hV values,
+        // New witness checks for DLEQ binding: s·G and h·A
+        address sGMaybe = scalarTimesBasepoint(params.s);
+
+        if (sGMaybe != pointToAddress(params.sGx, params.sGy)) {
+            revert InvalidPointWitness();
+        }
+
+        address hAMaybe = scalarPointMultiplication(params.h, params.ax, params.ay);
+
+        if (hAMaybe != pointToAddress(params.hAx, params.hAy)) {
+            revert InvalidPointWitness();
+        }
+
+        // We checked the validity of all precomputed witnesses,
         // now use them as if they were intermediate results.
+        return _computeVrfChallenge(params, payload);
+    }
 
-        // R = sB - hV
-        // solhint-disable-next-line max-line-length
-        (uint256 rx, uint256 ry) = ecAdd(params.sBx, params.sBy, params.hVx, SECP256K1_BASE_FIELD_ORDER - params.hVy, 0);
+    /// @dev Extracted to avoid stack-too-deep in vrfVerify.
+    /// Builds the concatenated input for the challenge hash incrementally
+    /// so the optimizer never needs to hold all 10 values on the stack at once.
+    function _computeVrfChallenge(VRFParameters memory params, VRFPayload memory payload) private view returns (bool) {
+        // R_B = sB - hV
+        uint256 hVyNeg = params.hVy == 0 ? 0 : SECP256K1_BASE_FIELD_ORDER - params.hVy;
+        (uint256 rBx, uint256 rBy) = ecAdd(params.sBx, params.sBy, params.hVx, hVyNeg, 0);
 
-        uint256 hCheck =
-            hashToScalar(abi.encodePacked(payload.signer, params.vx, params.vy, rx, ry, payload.message), payload.dst);
+        // R_G = sG - hA
+        uint256 hAyNeg = params.hAy == 0 ? 0 : SECP256K1_BASE_FIELD_ORDER - params.hAy;
+        (uint256 rGx, uint256 rGy) = ecAdd(params.sGx, params.sGy, params.hAx, hAyNeg, 0);
+
+        // Build encoded bytes in stages to minimize stack depth
+        bytes memory encoded = abi.encodePacked(payload.signer, params.ax, params.ay);
+        encoded = abi.encodePacked(encoded, params.vx, params.vy, rGx, rGy);
+        encoded = abi.encodePacked(encoded, rBx, rBy, payload.message);
+
+        uint256 hCheck = hashToScalar(encoded, payload.dst);
 
         return hCheck == params.h;
     }
