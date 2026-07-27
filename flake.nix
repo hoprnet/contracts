@@ -231,6 +231,25 @@
             doCheck = true;
           };
 
+          check-contracts-addresses = pkgs.stdenv.mkDerivation {
+            pname = "check-contracts-addresses";
+            version = hoprBindingsVersion;
+
+            src = ./.;
+
+            buildInputs = [ pkgs.jq ];
+
+            dontBuild = true;
+
+            checkPhase = ''
+              bash .github/scripts/check-contracts-addresses.sh ethereum/bindings/contracts-addresses.json
+            '';
+
+            # Disable the installPhase
+            installPhase = "mkdir -p $out";
+            doCheck = true;
+          };
+
           # Rust toolchains
           stableToolchain =
             (pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override
@@ -403,6 +422,7 @@
           checks = {
             inherit (contractsPackages) clippy;
             inherit check-bindings;
+            inherit check-contracts-addresses;
           };
 
           apps = {
