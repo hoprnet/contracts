@@ -110,9 +110,9 @@ contract HoprChannelsTest is Test, ERC1820RegistryFixtureTest, CryptoUtils, Hopr
         assertEq(HoprChannelsType.Balance.unwrap(hoprChannels.MIN_USED_BALANCE()), 1);
         // Maximum balance accepted in channel funding
         assertEq(HoprChannelsType.Balance.unwrap(hoprChannels.MAX_USED_BALANCE()), 10 ** 25);
-        // current veersioning
-        string memory currentVersiosn = "2.0.0";
-        assertEq(hoprChannels.VERSION(), currentVersiosn);
+        // current versioning
+        string memory currentVersion = "3.0.0";
+        assertEq(hoprChannels.VERSION(), currentVersion);
         // acceptable data payload size in ERC777 token send hook
         assertEq(hoprChannels.ERC777_HOOK_FUND_CHANNEL_MULTI_SIZE(), 64); // 20 + 96/8 + 20 + 96/8 = 64
         assertEq(hoprChannels.ERC777_HOOK_FUND_CHANNEL_SIZE(), 40); // 20 + 20
@@ -188,13 +188,42 @@ contract HoprChannelsTest is Test, ERC1820RegistryFixtureTest, CryptoUtils, Hopr
         assertEq(hoprChannels.ERC777_HOOK_FUND_CHANNEL_MULTI_SIZE(), 64);
         assertEq(hoprChannels.ERC777_HOOK_FUND_CHANNEL_SIZE(), 40);
 
-        assertEq(hoprChannels.VERSION(), "2.0.0");
+        assertEq(hoprChannels.VERSION(), "3.0.0");
 
         // very unlikely that domainSeparator == bytes32(0)
         assertTrue(hoprChannels.domainSeparator() != bytes32(0));
 
         // correctly implement ERC-1820
         assertEq(hoprChannels.TOKENS_RECIPIENT_INTERFACE_HASH(), keccak256("ERC777TokensRecipient"));
+    }
+
+    /**
+     * Invariant: channelState() must always agree with the public channels() getter.
+     * channelState() reads the channels mapping's storage slot directly via inline assembly,
+     * while channels() is a Solidity-generated getter. They must never diverge, regardless of
+     * how the surrounding contract's storage layout evolves.
+     */
+    function test_channelStateMatchesPublicGetter(
+        address src,
+        address dest,
+        uint96 balance,
+        uint48 ticketIndex,
+        uint32 closureTime,
+        uint24 epoch,
+        uint8 statusSeed
+    )
+        public
+    {
+        HoprChannelsType.ChannelStatus status = HoprChannelsType.ChannelStatus(statusSeed % 3);
+
+        hoprChannels._storeChannel(src, dest, balance, ticketIndex, closureTime, epoch, status);
+
+        bytes32 channelId = hoprChannels._getChannelId(src, dest);
+
+        assertEq(
+            keccak256(abi.encode(_expandChannel(hoprChannels.channelState(channelId)))),
+            keccak256(abi.encode(getChannelFromTuple(src, dest)))
+        );
     }
 
     function testValidateBalance(uint96 amount) public {
@@ -1575,6 +1604,8 @@ contract HoprChannelsTest is Test, ERC1820RegistryFixtureTest, CryptoUtils, Hopr
         vrf.h = 1;
         vrf.hVx = vrf.vx;
         vrf.hVy = vrf.vy;
+        vrf.hAx = vrf.ax;
+        vrf.hAy = vrf.ay;
         vm.prank(dest);
 
         vm.expectRevert(HoprChannels.InvalidVRFProof.selector);

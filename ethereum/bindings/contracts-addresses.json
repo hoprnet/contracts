@@ -19,54 +19,54 @@
     },
     "jura": {
       "addresses": {
-        "announcements": "0x225b4b6FFe08228db1182946b5F9e905f1A19A4D",
-        "channels": "0x69E63A01a2209F733C83ECa619ddDa2BEA4d5Cdf",
-        "module_implementation": "0x1167FB204298799B0B9E98896D58958cAEd164B0",
-        "node_safe_migration": "0x74dfCdF50340b772696cAeF3F3Bc4cD776D37E8A",
-        "node_safe_registry": "0x0e4e1a2D851663462523bF38Ca56259aceCCBc76",
-        "node_stake_factory": "0xE9A9cf50534Eb0817F9fBb115E00Bf8463E973Db",
-        "ticket_price_oracle": "0x147899Ca57111d9081df125C2bcbd839981f04c2",
+        "announcements": "0xa91976fe366a0BAAA6265cd14613fc7E9a5317C8",
+        "channels": "0x860f50B24Ba6A862736c5045747323e03aa52Aa4",
+        "module_implementation": "0x9aD7064558c468AFf5b4Cb6aC91c4C591036662A",
+        "node_safe_migration": "0xFCac123d6957F7F5c88C721A42fa6BF60821C7F3",
+        "node_safe_registry": "0x3deBB42dD93aa87A246cB25D9A33859368FF5Fd3",
+        "node_stake_factory": "0x172550Ed1D2085Fa7E1D2B7243227Dc567B03B50",
+        "ticket_price_oracle": "0xCD638Cd10913971D6a6C058C4a4BbCF3029D1Df3",
         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
-        "winning_probability_oracle": "0x74329f8153cBb33aABdEd79Ee84748fE8923c5E3",
+        "winning_probability_oracle": "0x69081e1a1419C5265B66Ee89081919b9Fb56Ae0E",
         "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
       },
       "chain_id": 100,
       "environment_type": "staging",
-      "indexer_start_block_number": 43675353
+      "indexer_start_block_number": 47415377
     },
     "debug-staging": {
       "addresses": {
-        "announcements": "0x060DbC55867f0FFc20E69f9273113AeB90F4d049",
-        "channels": "0x55271288D8c0Ba3B2fF2D55BDc5FdafEe6188732",
-        "module_implementation": "0x3b008Cb90D252b731ceB8952a6Ed78B84Ab31Ea3",
-        "node_safe_migration": "0x593eA8942E8b1D36F7714a15D43b5914DEF7B449",
-        "node_safe_registry": "0x7b8E16ADa4720EB87b8000B9D5700EebbB6b1b5C",
-        "node_stake_factory": "0x8E9e7BEDAe175D57054D15e8870E00E5bc66d954",
-        "ticket_price_oracle": "0x95566eFB62b7D1e95a9BA05E1E43042a95Da1e42",
+        "announcements": "0x7a89a488a3275b411194560C583e76E33f2E81Bf",
+        "channels": "0x075f0F26ca76eb088C919599b823B292C4fa945d",
+        "module_implementation": "0xd9a1F715944a5894cAd12277964cE66df7287AA0",
+        "node_safe_migration": "0x0E5A13A48E92860bB47A806fC4CA1129F1Fc205D",
+        "node_safe_registry": "0x09E092dEd8701b9433333CF144749a2C77c9734A",
+        "node_stake_factory": "0x3dE4A77EEE176D6AC1ba3B21Df74452eFF5F34B4",
+        "ticket_price_oracle": "0xD4744f638A6Bc3d65eE4413AEB416eCea76c0613",
         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
-        "winning_probability_oracle": "0x3C5CbDfc873a6a52093c1d3801E29c2D78b26c7f",
+        "winning_probability_oracle": "0x1C9e77bA32105078a0f2790899E3d93659a7bC86",
         "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
       },
       "chain_id": 100,
       "environment_type": "staging",
-      "indexer_start_block_number": 43675291
+      "indexer_start_block_number": 47414941
     },
     "rotsee": {
       "addresses": {
-        "announcements": "0xe08E8EfAc66c83a5e2cE9E0a696f8416A5AB6136",
-        "channels": "0x81a79fcDe8FFE6452e51D8E0493B37C2a5a09c57",
-        "module_implementation": "0x5F36592e29D90558bc629a4afd87D37d38d9a595",
-        "node_safe_migration": "0xb9a6F18b40f632869dEFa4bbB2212c63767Eb159",
-        "node_safe_registry": "0x8cDf9A10646403C9aA797610D4C782aD26D334f4",
-        "node_stake_factory": "0x6827eC1Bf6232B07f30C2F2924Ea681412b07687",
-        "ticket_price_oracle": "0xca2c60433eC6a10dDEabBbE3Ce7f9737b1a0628C",
+        "announcements": "0x078B2D5C9b13e256699902704D1f9Beb79Fc51A2",
+        "channels": "0xD8C91008c68cd87E7C52Ea1a2C6f6dC6A5236008",
+        "module_implementation": "0x300Cb87f686c4FF5d975951c225969af4433ADf5",
+        "node_safe_migration": "0x04e079e7FC8E445b58d048200847206c692Deb48",
+        "node_safe_registry": "0x1267F2Ad0a70C975Cb4e2C810C4F2b42a455Cc09",
+        "node_stake_factory": "0x607b6559FE4c2bB5d97de65F0CEC5DB444824634",
+        "ticket_price_oracle": "0x9cd65f0b11B3028EadA50dE57E46C12848608fAB",
         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
-        "winning_probability_oracle": "0x5136Bac09C78af89bDA56F5086A3F3E2Ee4EAfCa",
+        "winning_probability_oracle": "0x9344093c5ac613BDBAC939E33fF760C9e6dF9F1f",
         "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
       },
       "chain_id": 100,
-      "environment_type": "staging",
-      "indexer_start_block_number": 44369742
+      "environment_type": "development",
+      "indexer_start_block_number": 47415331
     }
   }
 }

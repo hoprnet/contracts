@@ -69,9 +69,6 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
         uint256 y;
     }
 
-    uint256 constant SECP256K1_BASEPOINT_X = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
-    uint256 constant SECP256K1_BASEPOINT_Y = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8;
-
     SECP2561k secp256k1;
     CryptoProxy crypto;
 
@@ -426,65 +423,22 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
     }
 
     function test_VRFVerify() public {
-        // sample Rust code:
-        // ```rust
-        // use elliptic_curve::{hash2curve::{ExpandMsgXmd, GroupDigest}, ScalarPrimitive};
-        // use k256::{AffinePoint, Scalar, Secp256k1};
-        //
-        // let b = Secp256k1::hash_from_bytes::<ExpandMsgXmd<sha3::Keccak256>>(&[&chain_addr.to_bytes(), msg], &[dst])?;
-        // let a: Scalar = ScalarPrimitive::<Secp256k1>::from_slice(&secret)?.into();
-        // if a.is_zero().into() {
-        // return Err(crate::errors::CryptoError::InvalidSecretScalar);
-        //}
-        //
-        // let v = b * a;
-        // let r = Secp256k1::hash_to_scalar::<ExpandMsgXmd<sha3::Keccak256>>(
-        //&[
-        // &a.to_bytes(),
-        // &v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        // &random_bytes::<64>(),
-        //],
-        // &[dst],
-        // )?;
-        //
-        // let r_v = b * r;
-        //
-        // let h = Secp256k1::hash_to_scalar::<ExpandMsgXmd<sha3::Keccak256>>(
-        //&[
-        // &chain_addr.to_bytes(),
-        // &v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        // &r_v.to_affine().to_encoded_point(false).as_bytes()[1..],
-        // msg,
-        //],
-        // &[dst],
-        // )?;
-        // let s = r + h * a;
-        // ```
-        // precomputed values with Rust implementation
-        CurvePoint memory V = CurvePoint(
-            0x7e4d7332351201f79215328221cf4baeb9365cdba1255cedfe1cc635b4780a0f,
-            0xd9fe81cfdd0537cd5f73120ab2f97caa93bddf4ce8922b99c6649ecb2b15ddd7
-        );
-        bytes32 h = 0x0f6be5484fce28779f0ff72d4f68c619b3f96f1af895c7c6ec4aede81534cee8;
-        bytes32 s = 0xfdab2e0a3e314d1f2b0681e7c62e65345563907ab09751ec6292e039345f959f;
+        // Generate fresh VRF parameters using the test helper.
+        // The fixed test vector from the old challenge hash is no longer valid
+        // since the new challenge binds both bases (A, V, R_G, R_B).
+        uint256 privKey = 0xf13233ff60e1f618525dac5f7d117bef0bad0eb0b0afb2459f9cbc57a3a987ba;
+        bytes32 vrfMessage = 0xf13233ff60e1f618525dac5f7d117bef0bad0eb0b0afb2459f9cbc57a3a987ba;
+        string memory dst = "some DST tag";
 
-        CurvePoint memory h_V = CurvePoint(
-            0xa02218468ac06b30714a92a92dacca5a28a8a035efffecf03dae372646ad5489,
-            0xa2dbfa875633e485399a8b0a933b2480129c90725ecc6bbdb906d27a4231a744
-        );
-        CurvePoint memory s_B = CurvePoint(
-            0xb2eff54b867ba38bd60631df94a4dcba261bdd88f6fa1d38dee11053ec0ec9c4,
-            0xfa1f1e9cacd0b9c895e2d00e4fbedc791e2b176b261ba13ec73aaeb3e5d430f6
-        );
+        HoprCrypto.VRFPayload memory payload;
 
-        address signer = 0x0c6146f8e9A92174A309bd0d7f000148fD6e2588;
+        address chain_addr = crypto.scalarTimesBasepointProxy(privKey);
+        payload.message = vrfMessage;
+        payload.signer = chain_addr;
+        payload.dst = abi.encodePacked(dst);
 
         HoprCrypto.VRFParameters memory params =
-            HoprCrypto.VRFParameters(V.x, V.y, uint256(s), uint256(h), s_B.x, s_B.y, h_V.x, h_V.y);
-
-        HoprCrypto.VRFPayload memory payload = HoprCrypto.VRFPayload(
-            0xf13233ff60e1f618525dac5f7d117bef0bad0eb0b0afb2459f9cbc57a3a987ba, signer, "some DST tag"
-        );
+            CryptoUtils.getVRFParameters(privKey, abi.encodePacked(dst), vrfMessage);
 
         assertTrue(crypto.vrfVerifyProxy(params, payload));
     }
@@ -635,7 +589,7 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
     }
 
     function test_vrfVerifyFail(uint256 hTweaked, uint256 privKey, bytes32 vrfMessage) public {
-        hTweaked = bound(hTweaked, 1, HoprCrypto.SECP256K1_BASE_FIELD_ORDER - 1);
+        hTweaked = bound(hTweaked, 1, HoprCrypto.SECP256K1_FIELD_ORDER - 1);
 
         string memory dst = "some DST tag";
 
@@ -662,6 +616,77 @@ contract Crypto is Test, AccountsFixtureTest, HoprCrypto, CryptoUtils {
         params.hVx = rx;
         params.hVy = ry;
 
+        // Also update h·A witness to avoid InvalidPointWitness on the new binding check
+        (uint256 hax, uint256 hay) = ecmul(params.ax, params.ay, hTweaked);
+
+        // Skip cases where the result is the point at infinity
+        vm.assume(hax != 0 || hay != 0);
+
+        params.hAx = hax;
+        params.hAy = hay;
+
         assertFalse(crypto.vrfVerifyProxy(params, payload));
+    }
+
+    /// forge-config: default.allow_internal_expect_revert = true
+    function testFuzz_VRFVerify_grinding_attack_prevented(
+        uint256 privKey,
+        uint256 privKeyAttacker,
+        bytes32 vrfMessage
+    )
+        public
+    {
+        // Two different private keys
+        privKey = bound(privKey, 1, HoprCrypto.SECP256K1_FIELD_ORDER - 1);
+        privKeyAttacker = bound(privKeyAttacker, 1, HoprCrypto.SECP256K1_FIELD_ORDER - 1);
+        vm.assume(privKey != privKeyAttacker);
+
+        string memory dst = "some DST tag";
+
+        // Generate honest params for privKey
+        address chain_addr = crypto.scalarTimesBasepointProxy(privKey);
+        HoprCrypto.VRFPayload memory payload;
+        payload.message = vrfMessage;
+        payload.signer = chain_addr;
+        payload.dst = abi.encodePacked(dst);
+
+        HoprCrypto.VRFParameters memory honestParams =
+            CryptoUtils.getVRFParameters(privKey, abi.encodePacked(dst), vrfMessage);
+
+        // Honest proof passes
+        assertTrue(crypto.vrfVerifyProxy(honestParams, payload));
+
+        // Generate params with attacker's key but payload.signer still set to the honest redeemer.
+        // The binding check address(keccak256(A_attacker)) == payload.signer will fail
+        // because A_attacker doesn't hash to chain_addr.
+        HoprCrypto.VRFParameters memory attackerParams =
+            CryptoUtils.getVRFParameters(privKeyAttacker, abi.encodePacked(dst), vrfMessage);
+
+        vm.expectRevert(HoprCrypto.InvalidPointWitness.selector);
+        crypto.vrfVerifyProxy(attackerParams, payload);
+    }
+
+    /**
+     * Regression test: sweeping many candidate keys against a single fixed
+     * signer, one after another, must not turn up any that pass verification
+     * -- confirming there is no shortcut around the per-signer key binding
+     * even across repeated attempts.
+     */
+    /// forge-config: default.fuzz.runs = 32
+    function testFuzz_VRFVerify_grindingManyCandidateScalarsAllRejected(uint256 privKey, bytes32 vrfMessage) public {
+        // Keep privKey out of the small range enumerated below.
+        privKey = bound(privKey, 1000, HoprCrypto.SECP256K1_FIELD_ORDER - 1);
+
+        bytes memory dst = abi.encodePacked("some DST tag");
+
+        address chain_addr = crypto.scalarTimesBasepointProxy(privKey);
+        HoprCrypto.VRFPayload memory payload = HoprCrypto.VRFPayload(vrfMessage, chain_addr, dst);
+
+        for (uint256 k = 1; k <= 5; k++) {
+            HoprCrypto.VRFParameters memory forged = CryptoUtils.getVRFParameters(k, dst, vrfMessage);
+
+            vm.expectRevert(HoprCrypto.InvalidPointWitness.selector);
+            crypto.vrfVerifyProxy(forged, payload);
+        }
     }
 }

@@ -62,8 +62,6 @@ contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule
 
     // when a node is a member of the role
     error WithMembership();
-    // Once module gets created, the ownership cannot be transferred
-    error CannotChangeOwner();
     // when safe and multisend address are the same
     error SafeMultisendSameAddress();
     // when failing to send eth to node
@@ -107,6 +105,8 @@ contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule
         _addChannelsAndTokenTarget(Target.wrap(uint256(_defaultTokenChannelsTarget)));
 
         // transfer ownership
+        // @notice OwnableUpgradeable's transferOwnership/renounceOwnership are intentionally left
+        // callable: the owning Safe governs itself and may reassign or renounce this module as it sees fit.
         __Ownable_init_unchained(_safe);
         emit SetMultisendAddress(_multisend);
     }

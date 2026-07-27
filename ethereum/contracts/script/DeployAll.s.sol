@@ -26,8 +26,17 @@ contract DeployAllContractsScript is
 {
     using BoostUtilsLib for address;
     // starting key binding fee at deployment time
-    uint256 public constant INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
+    uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
+    uint256 public constant STAGING_INIT_KEY_BINDING_FEE = 1 ether; // 1 HOPR in gwei unit
     uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
+    // ticket price oracle
+    uint256 public constant LOCAL_TICKET_PRICE = 10_000_000 gwei; // 0.001 HOPR in gwei unit
+    uint256 public constant DEV_TICKET_PRICE = 100; // 0.0000000000000001 HOPR in gwei unit
+    uint256 public constant STAGING_TICKET_PRICE = 10_000 gwei; // 0.00001 HOPR in gwei unit
+    // winnning probability
+    uint56 public constant LOCAL_WINNING_PROBABILITY = 72_057_594_037_927_935; // 0.0005 in WinProb unit
+    uint56 public constant DEV_WINNING_PROBABILITY = 9_007_199_254_735; // 0.00012500 in WinProb unit
+    uint56 public constant STAGING_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
 
     bool internal isHoprChannelsDeployed;
     bool internal isHoprNetworkRegistryDeployed;
@@ -79,8 +88,8 @@ contract DeployAllContractsScript is
         // 3.2. TicketPriceOracle
         _deployHoprTicketPriceOracle(deployerAddress);
 
-        // 3.3. WinningProbabilityOracle, with a default value of 0.0005
-        _deployHoprWinningProbabilityOracle(deployerAddress, WinProb.wrap(uint56(72_057_594_037_927_935)));
+        // 3.3. WinningProbabilityOracle
+        _deployHoprWinningProbabilityOracle(deployerAddress);
 
         // 3.4 HoprNodeManagementModule singleton
         _deployHoprNodeManagementModule();
@@ -226,8 +235,15 @@ contract DeployAllContractsScript is
      * @dev deploy ticket price oracle
      */
     function _deployHoprTicketPriceOracle(address deployerAddress) internal {
-        // 0.001 HOPR in test environment
-        uint256 price = currentEnvironmentType == EnvironmentType.LOCAL ? 1_000_000_000_000_000 : 100;
+        // 0.001 HOPR in local environment; 0.0000000000000001 HOPR in dev; 0.00001 HOPR in staging
+        uint256 price;
+        if (currentEnvironmentType == EnvironmentType.LOCAL) {
+            price = LOCAL_TICKET_PRICE;
+        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
+            price = STAGING_TICKET_PRICE;
+        } else {
+            price = DEV_TICKET_PRICE;
+        }
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.ticketPriceOracleContractAddress)
@@ -241,7 +257,16 @@ contract DeployAllContractsScript is
     /**
      * @dev deploy winning probability oracle
      */
-    function _deployHoprWinningProbabilityOracle(address deployerAddress, WinProb winProb) internal {
+    function _deployHoprWinningProbabilityOracle(address deployerAddress) internal {
+        WinProb winProb;
+        if (currentEnvironmentType == EnvironmentType.LOCAL) {
+            winProb = WinProb.wrap(LOCAL_WINNING_PROBABILITY);
+        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
+            winProb = WinProb.wrap(STAGING_WINNING_PROBABILITY);
+        } else {
+            winProb = WinProb.wrap(DEV_WINNING_PROBABILITY);
+        }
+
         if (
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.winningProbabilityContractAddress)
@@ -261,6 +286,12 @@ contract DeployAllContractsScript is
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.announcements)
         ) {
+            uint256 keyBindingFee;
+            if (currentEnvironmentType == EnvironmentType.STAGING) {
+                keyBindingFee = STAGING_INIT_KEY_BINDING_FEE;
+            } else {
+                keyBindingFee = DEV_INIT_KEY_BINDING_FEE;
+            }
             // deploy HoprAnnouncements contract and register with current NodeSafeRegistry
             address announcementImplementation = deployCode("Announcements.sol:HoprAnnouncements");
 
@@ -273,7 +304,7 @@ contract DeployAllContractsScript is
                         abi.encode(
                             currentNetworkDetail.addresses.tokenContractAddress,
                             currentNetworkDetail.addresses.nodeSafeRegistryAddress,
-                            INIT_KEY_BINDING_FEE,
+                            keyBindingFee,
                             deployerAddress
                         )
                     )

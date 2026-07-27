@@ -17,3 +17,5 @@ title: Home
 
 ## Audit 2026 Jan
 - [01. Overview 2026 Jan](../audits/sc-audit-01-2026/docs/01-overview.md)
+- [Audit report](../audits/sc-audit-01-2026/docs/hopr_v4_update.pdf)
+- [Response to audit](../audits/sc-audit-01-2026/docs/02-response-to-audit-202602.md)
