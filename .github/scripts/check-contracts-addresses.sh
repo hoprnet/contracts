@@ -7,7 +7,7 @@ set -euo pipefail
 
 file="${1:-ethereum/bindings/contracts-addresses.json}"
 
-if [[ ! -f "${file}" ]]; then
+if [[ ! -f ${file} ]]; then
   echo "error: file not found: ${file}" >&2
   exit 2
 fi
