@@ -1,6 +1,6 @@
 [package]
 name = "hopr-bindings"
-version = "4.12.1"
+version = "4.12.2"
 description = "This package only exists to automate the export and generation of Rust bindings into the HOPR project"
 edition = "2024"
 homepage = "https://hoprnet.org/"
