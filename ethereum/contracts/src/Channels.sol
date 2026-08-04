@@ -146,7 +146,7 @@ abstract contract HoprChannelsType {
         // Get the channel state from the storage slot
         assembly {
             mstore(0x00, channelId)
-            mstore(0x20, 0) // storage slot of channels mapping
+            mstore(0x20, channels.slot) // storage slot of channels mapping
             state := sload(keccak256(0x00, 0x40)) // load storage from the key
         }
     }
@@ -188,7 +188,7 @@ contract HoprChannels is
     // minimum balance that must be added in a channel. No empty token transactions
     Balance public constant MIN_USED_BALANCE = Balance.wrap(1);
     // Version of the contract
-    string public constant VERSION = "2.0.0";
+    string public constant VERSION = "3.0.0";
 
     // ERC-777 tokensReceived hook, fundChannelMulti
     uint256 public immutable ERC777_HOOK_FUND_CHANNEL_MULTI_SIZE =
@@ -509,11 +509,31 @@ contract HoprChannels is
     }
 
     /**
-     * Prepares a channel to pull out funds from an outgoing channel.
+     * Starts the notice period after which the source can withdraw the
+     * remaining balance of one of its outgoing channels.
      *
-     * There is a notice period to give the other end, `destination`, the
-     * opportunity to redeem their collected tickets.
+     * The notice period gives the other end, `destination`, the opportunity to
+     * redeem collected tickets before the funds leave the channel. Once it has
+     * elapsed, the source calls `finalizeOutgoingChannelClosure` to receive the
+     * remaining balance.
      *
+     * @dev Only reachable from the source side: the external entrypoints pass
+     * `msg.sender`, or the Safe registered for the node via `onlySafe`. The
+     * balance at stake is the source's own deposit, so the delay started here
+     * is borne by the caller.
+     *
+     * @dev Accepts both `OPEN` and `PENDING_TO_CLOSE`; only `CLOSED` reverts.
+     * Calling it again while already `PENDING_TO_CLOSE` deliberately pushes
+     * `closureTime` further out, which lets a source voluntarily grant
+     * `destination` more time to redeem. This is intentional and is not a
+     * griefing vector: the only party who can extend the period is the one
+     * whose funds stay locked, `destination` may keep redeeming throughout
+     * `PENDING_TO_CLOSE` (see `_redeemTicketInternal`), and `destination` can
+     * end the channel at any moment via `closeIncomingChannel`, which has no
+     * timing check.
+     *
+     * @param selfAddress source end of the channel, i.e. the node whose funds
+     * are being released
      * @param destination destination end of the channel to close
      */
     function _initiateOutgoingChannelClosureInternal(address selfAddress, address destination) internal {

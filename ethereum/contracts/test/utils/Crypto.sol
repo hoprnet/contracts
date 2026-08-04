@@ -9,6 +9,8 @@ import { Test } from "forge-std/Test.sol";
 /// forge-lint:disable-next-item(mixed-case-variable)
 abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
     uint256 constant SECP256K1_HALF_FIELD_ORDER = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
+    uint256 constant SECP256K1_BASEPOINT_X = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
+    uint256 constant SECP256K1_BASEPOINT_Y = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8;
 
     struct RedeemTicketArgBuilder {
         uint256 privKeyA;
@@ -110,7 +112,6 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
     {
         HoprCrypto.VRFPayload memory payload;
 
-        // stack height optimization, doesn't compile otherwise
         {
             address chain_addr = HoprCrypto.scalarTimesBasepoint(privKey);
             payload.message = vrfMessage;
@@ -118,39 +119,66 @@ abstract contract CryptoUtils is Test, HoprCrypto, SECP2561k {
             payload.dst = abi.encodePacked(dst);
         }
 
-        // stack height optimization, doesn't compile otherwise
+        // Everything after payload setup in a fresh stack frame
+        _buildParams(privKey, payload, params);
+    }
+
+    /// @dev Computes all VRF parameter fields in a fresh stack frame.
+    function _buildParams(
+        uint256 privKey,
+        HoprCrypto.VRFPayload memory payload,
+        HoprCrypto.VRFParameters memory params
+    )
+        internal
+        view
+    {
+        (uint256 bx, uint256 by) =
+            HoprCrypto.hashToCurve(abi.encodePacked(payload.signer, payload.message), payload.dst);
+
         {
-            (uint256 bx, uint256 by) =
-                HoprCrypto.hashToCurve(abi.encodePacked(payload.signer, payload.message), payload.dst);
-
-            {
-                (uint256 vx, uint256 vy) = SECP2561k.ecmul(bx, by, privKey);
-                params.vx = vx;
-                params.vy = vy;
-            }
-
-            uint256 r = HoprCrypto.hashToScalar(abi.encodePacked(privKey, bx, by, payload.message), payload.dst);
-
-            (uint256 brx, uint256 bry) = SECP2561k.ecmul(bx, by, r);
-
-            params.h = HoprCrypto.hashToScalar(
-                abi.encodePacked(payload.signer, params.vx, params.vy, brx, bry, payload.message), abi.encodePacked(dst)
-            );
-
-            // s = r + h * a (mod p)
-            params.s = addmod(
-                r, mulmod(params.h, privKey, HoprCrypto.SECP256K1_FIELD_ORDER), HoprCrypto.SECP256K1_FIELD_ORDER
-            );
-
-            {
-                (uint256 sBx, uint256 sBy) = SECP2561k.ecmul(bx, by, params.s);
-                params.sBx = sBx;
-                params.sBy = sBy;
-
-                (uint256 h_v_x, uint256 h_v_y) = SECP2561k.ecmul(params.vx, params.vy, params.h);
-                params.hVx = h_v_x;
-                params.hVy = h_v_y;
-            }
+            (uint256 vx, uint256 vy) = SECP2561k.ecmul(bx, by, privKey);
+            params.vx = vx;
+            params.vy = vy;
         }
+
+        // Compute A = a·G (redeemer's secp256k1 public key)
+        (uint256 ax, uint256 ay) = ecmul(SECP256K1_BASEPOINT_X, SECP256K1_BASEPOINT_Y, privKey);
+        params.ax = ax;
+        params.ay = ay;
+
+        uint256 r = HoprCrypto.hashToScalar(abi.encodePacked(privKey, bx, by, payload.message), payload.dst);
+
+        (uint256 r_v_x, uint256 r_v_y) = SECP2561k.ecmul(bx, by, r);
+        (uint256 r_g_x, uint256 r_g_y) = ecmul(SECP256K1_BASEPOINT_X, SECP256K1_BASEPOINT_Y, r);
+
+        // Challenge binds both bases: signer || A || V || R_G || R_B || message
+        bytes memory encoded = abi.encodePacked(payload.signer, params.ax, params.ay);
+        encoded = abi.encodePacked(encoded, params.vx, params.vy, r_g_x, r_g_y);
+        encoded = abi.encodePacked(encoded, r_v_x, r_v_y, payload.message);
+        uint256 h = HoprCrypto.hashToScalar(encoded, payload.dst);
+
+        params.s = addmod(r, mulmod(h, privKey, HoprCrypto.SECP256K1_FIELD_ORDER), HoprCrypto.SECP256K1_FIELD_ORDER);
+        params.h = h;
+
+        _addAllWitnesses(bx, by, params);
+    }
+
+    /// @dev Computes s·B, h·V, s·G, h·A in a fresh stack frame.
+    function _addAllWitnesses(uint256 bx, uint256 by, HoprCrypto.VRFParameters memory params) internal view {
+        (uint256 sBx, uint256 sBy) = SECP2561k.ecmul(bx, by, params.s);
+        params.sBx = sBx;
+        params.sBy = sBy;
+
+        (uint256 hVx, uint256 hVy) = SECP2561k.ecmul(params.vx, params.vy, params.h);
+        params.hVx = hVx;
+        params.hVy = hVy;
+
+        (uint256 sGx, uint256 sGy) = ecmul(SECP256K1_BASEPOINT_X, SECP256K1_BASEPOINT_Y, params.s);
+        params.sGx = sGx;
+        params.sGy = sGy;
+
+        (uint256 hAx, uint256 hAy) = SECP2561k.ecmul(params.ax, params.ay, params.h);
+        params.hAx = hAx;
+        params.hAy = hAy;
     }
 }

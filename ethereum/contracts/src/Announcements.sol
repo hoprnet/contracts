@@ -136,6 +136,8 @@ contract HoprAnnouncements is
     IERC777 public TOKEN;
     // chain-key (node address) to multiaddress base
     mapping(address => string) public multiaddrOf;
+    // storage Gap: 50 slots are reserved to allow for future additions.
+    uint256[50] private __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {

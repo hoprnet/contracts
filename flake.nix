@@ -4,7 +4,7 @@
   inputs = {
     # Core Nix ecosystem dependencies
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:NixOS/nixpkgs/release-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-26.05";
     flake-utils.url = "github:numtide/flake-utils";
 
     # HOPR Nix Library (provides flake-utils and reusable build functions)
@@ -185,6 +185,14 @@
                 language = "system";
                 pass_filenames = false;
               };
+              dependabot-validator = {
+                enable = true;
+                name = "Dependabot config validator";
+                entry = "${pkgs.check-jsonschema}/bin/check-jsonschema --builtin-schema vendor.dependabot";
+                files = "\\.github/dependabot\\.yml$";
+                language = "system";
+                pass_filenames = true;
+              };
             };
             excludes = [
               "vendor/"
@@ -224,6 +232,25 @@
                   exit 1
               fi
               echo "Bindings are up to date."
+            '';
+
+            # Disable the installPhase
+            installPhase = "mkdir -p $out";
+            doCheck = true;
+          };
+
+          check-contracts-addresses = pkgs.stdenv.mkDerivation {
+            pname = "check-contracts-addresses";
+            version = hoprBindingsVersion;
+
+            src = ./.;
+
+            buildInputs = [ pkgs.jq ];
+
+            dontBuild = true;
+
+            checkPhase = ''
+              bash .github/scripts/check-contracts-addresses.sh ethereum/bindings/contracts-addresses.json
             '';
 
             # Disable the installPhase
@@ -403,6 +430,7 @@
           checks = {
             inherit (contractsPackages) clippy;
             inherit check-bindings;
+            inherit check-contracts-addresses;
           };
 
           apps = {
