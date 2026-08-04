@@ -13,6 +13,9 @@ pub use curvy_bindings::{
     portal_factory::{CurvyTypes, PortalFactory::PortalFactoryInstance},
 };
 
+/// Number of note inputs accepted by the Curvy withdrawal verifier deployed by HOPR.
+pub const WITHDRAWAL_INPUT_COUNT: usize = 2;
+
 /// Groth16 proof coordinates accepted by the Curvy aggregator.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Groth16Proof {
@@ -23,21 +26,20 @@ pub struct Groth16Proof {
 
 /// Inputs required to construct a Curvy withdrawal transaction.
 ///
-/// `MAX_INPUTS` is part of the withdrawal verifier configuration. The fixed-size nullifier array ensures that the
-/// generated public-signal vector always agrees with that configuration.
+/// The fixed-size nullifier array matches the withdrawal verifier deployed by HOPR.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CurvyWithdrawalRequest<const MAX_INPUTS: usize> {
+pub struct CurvyWithdrawalRequest {
     pub proof: Groth16Proof,
     pub token: U256,
-    pub nullifiers: [U256; MAX_INPUTS],
+    pub nullifiers: [U256; WITHDRAWAL_INPUT_COUNT],
     pub recipient: Address,
     pub amount: U256,
     pub notes_root: U256,
 }
 
-impl<const MAX_INPUTS: usize> CurvyWithdrawalRequest<MAX_INPUTS> {
+impl CurvyWithdrawalRequest {
     fn public_signals(&self) -> Vec<U256> {
-        let mut public_signals = Vec::with_capacity(MAX_INPUTS + 4);
+        let mut public_signals = Vec::with_capacity(WITHDRAWAL_INPUT_COUNT + 4);
         public_signals.push(self.amount);
         public_signals.extend(self.nullifiers);
         public_signals.push(self.notes_root);
@@ -59,9 +61,9 @@ impl CurvyPayloadGenerator {
     }
 
     /// Constructs a transaction invoking `submitWithdrawalRequest` on the configured Curvy aggregator.
-    pub fn withdraw<const MAX_INPUTS: usize>(&self, request: CurvyWithdrawalRequest<MAX_INPUTS>) -> TransactionRequest {
+    pub fn withdraw(&self, request: CurvyWithdrawalRequest) -> TransactionRequest {
         let call = submitWithdrawalRequestCall {
-            maxInputs: U256::from(MAX_INPUTS),
+            maxInputs: WITHDRAWAL_MAX_INPUTS,
             proof_a: request.proof.a,
             proof_b: request.proof.b,
             proof_c: request.proof.c,
@@ -79,7 +81,10 @@ mod tests {
     use alloy::{network::TransactionBuilder, primitives::address, sol_types::SolCall};
     use curvy_bindings::curvy_aggregator_alpha_v2::CurvyAggregatorAlphaV2::submitWithdrawalRequestCall;
 
-    use super::{CurvyPayloadGenerator, CurvyWithdrawalRequest, Groth16Proof, U256};
+    use super::{
+        CurvyPayloadGenerator, CurvyWithdrawalRequest, Groth16Proof, U256, WITHDRAWAL_INPUT_COUNT,
+        WITHDRAWAL_MAX_INPUTS,
+    };
 
     #[test]
     fn withdrawal_payload_targets_aggregator_and_preserves_circuit_layout() {
@@ -105,7 +110,8 @@ mod tests {
         )
         .expect("withdrawal calldata should decode");
 
-        assert_eq!(call.maxInputs, U256::from(2));
+        assert_eq!(WITHDRAWAL_MAX_INPUTS, U256::from(WITHDRAWAL_INPUT_COUNT));
+        assert_eq!(call.maxInputs, WITHDRAWAL_MAX_INPUTS);
         assert_eq!(call.proof_a, request.proof.a);
         assert_eq!(call.proof_b, request.proof.b);
         assert_eq!(call.proof_c, request.proof.c);
