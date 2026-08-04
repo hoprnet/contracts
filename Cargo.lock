@@ -10,15 +10,14 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "alloy"
-version = "2.1.1"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9677ab3454c237abe6307805bea17a7912b3a516b606c7b4d3d948b9fede137"
+checksum = "d1172e33a862030da77768c11cf17a1f801590de94cf518392b65207f15810c8"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
  "alloy-core",
  "alloy-eips",
- "alloy-ens",
  "alloy-genesis",
  "alloy-json-rpc",
  "alloy-network",
@@ -212,20 +211,6 @@ dependencies = [
  "serde",
  "serde_with",
  "sha2",
-]
-
-[[package]]
-name = "alloy-ens"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88c3d803649b2023413a5b84892ed3874977dfa8b8d5481dea05488f20f6f4ef"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "async-trait",
- "thiserror",
 ]
 
 [[package]]
@@ -1383,6 +1368,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "curvy-bindings"
+version = "1.0.0-rc-1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17072d890f37cafa605470488075155c7942be71988fcc157754313a7436c62e"
+dependencies = [
+ "alloy",
+ "anyhow",
+ "hex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "tracing",
+]
+
+[[package]]
 name = "darling"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1965,6 +1965,7 @@ dependencies = [
  "alloy",
  "anyhow",
  "const_format",
+ "curvy-bindings",
  "hex-literal",
  "serde",
  "serde_json",

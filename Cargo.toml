@@ -15,6 +15,7 @@ alloy = { version = "2.1.0", default-features = false, features = [
 ] }
 anyhow = "1.0.103"
 const_format = "0.2.36"
+curvy-bindings = "=1.0.0-rc-1"
 hex-literal = "1.1.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_with = { version = "3.21.0" }

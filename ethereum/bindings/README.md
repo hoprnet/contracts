@@ -7,9 +7,8 @@ Rust bindings for the [HOPR protocol](https://hoprnet.org/) smart contracts, gen
 [`alloy`](https://github.com/alloy-rs/alloy)'s `sol!`/`abigen!` macros from the Solidity sources and ABIs in
 [`ethereum/contracts`](https://github.com/hoprnet/contracts/tree/main/ethereum/contracts).
 
-This crate only exists to automate that export: it re-generates the bindings whenever the contracts change and
-bundles the addresses they are deployed at, so downstream HOPR Rust code (the node, indexers, tooling) never has to
-hand-write contract call boilerplate.
+This crate automates that export, bundles deployed addresses, and provides HOPR-facing transaction payload helpers,
+so downstream Rust code (the node, indexers, tooling) never has to hand-write contract call boilerplate.
 
 Full API documentation is available on [docs.rs](https://docs.rs/hopr-bindings).
 
@@ -37,6 +36,7 @@ hopr-bindings = "4"
   [Anvil](https://book.getfoundry.sh/anvil/) for testing.
 - [`constants`] — well-known addresses and deployment bytecode for infrastructure the HOPR contracts depend on
   (ERC-1820 registry, [Safe](https://safe.global/) suite, Multicall3).
+- [`curvy`] — typed construction of Curvy transactions used by HOPR, including withdrawal requests.
 - [`error`] — the [`Error`](crate::error::Error) type returned by this crate's helpers.
 - the `hopr-contract-addresses` binary — dumps the bundled `contracts-addresses.json` (see below) to stdout.
 
