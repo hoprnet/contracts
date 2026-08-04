@@ -7,7 +7,6 @@ use alloy::{
     sol_types::SolCall,
 };
 use curvy_bindings::curvy_aggregator_alpha_v2::CurvyAggregatorAlphaV2::submitWithdrawalRequestCall;
-
 pub use curvy_bindings::{
     constants::WITHDRAWAL_MAX_INPUTS,
     curvy_aggregator_alpha_v2::CurvyAggregatorAlphaV2::CurvyAggregatorAlphaV2Instance,
