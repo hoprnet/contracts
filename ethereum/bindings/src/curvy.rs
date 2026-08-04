@@ -38,13 +38,11 @@ pub struct CurvyWithdrawalRequest<const MAX_INPUTS: usize> {
 impl<const MAX_INPUTS: usize> CurvyWithdrawalRequest<MAX_INPUTS> {
     fn public_signals(&self) -> Vec<U256> {
         let mut public_signals = Vec::with_capacity(MAX_INPUTS + 4);
-        public_signals.push(self.token);
+        public_signals.push(self.amount);
         public_signals.extend(self.nullifiers);
-        public_signals.extend([
-            U256::from_be_slice(self.recipient.as_slice()),
-            self.amount,
-            self.notes_root,
-        ]);
+        public_signals.push(self.notes_root);
+        public_signals.push(U256::from_be_slice(self.recipient.as_slice()));
+        public_signals.push(self.token);
         public_signals
     }
 }
@@ -114,12 +112,12 @@ mod tests {
         assert_eq!(
             call.publicSignals,
             vec![
-                request.token,
+                request.amount,
                 request.nullifiers[0],
                 request.nullifiers[1],
-                U256::from_be_slice(request.recipient.as_slice()),
-                request.amount,
                 request.notes_root,
+                U256::from_be_slice(request.recipient.as_slice()),
+                request.token,
             ]
         );
     }
