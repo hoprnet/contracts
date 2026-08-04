@@ -29,8 +29,9 @@ contract HoprDistributorTest is Test, ERC1820RegistryFixtureTest {
         startTime = uint128(block.timestamp + 5 * 60); // 5 minutes after the contract deployment;
         tokenAddress = vm.addr(1); // make vm.addr(1) HoprToken contract
         newOwner = vm.addr(100); // make address(100) owner
-        vm.prank(newOwner);
+        vm.startPrank(newOwner);
         hoprDistributor = new HoprDistributor(HoprToken(tokenAddress), startTime, DEFAULT_MAX_MINT);
+        vm.stopPrank();
     }
 
     /**
