@@ -17,7 +17,7 @@
       "environment_type": "local",
       "indexer_start_block_number": 1
     },
-    "jura": {
+    "jura-prod": {
       "addresses": {
         "announcements": "0xa91976fe366a0BAAA6265cd14613fc7E9a5317C8",
         "channels": "0x860f50B24Ba6A862736c5045747323e03aa52Aa4",
@@ -31,7 +31,7 @@
         "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
       },
       "chain_id": 100,
-      "environment_type": "staging",
+      "environment_type": "prod",
       "indexer_start_block_number": 47415377
     },
     "debug-staging": {
@@ -51,7 +51,7 @@
       "environment_type": "staging",
       "indexer_start_block_number": 47414941
     },
-    "rotsee": {
+    "jura-dev": {
       "addresses": {
         "announcements": "0x078B2D5C9b13e256699902704D1f9Beb79Fc51A2",
         "channels": "0xD8C91008c68cd87E7C52Ea1a2C6f6dC6A5236008",
