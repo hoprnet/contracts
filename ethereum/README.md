@@ -1,130 +1,160 @@
 # HOPR Ethereum Package
 
-This directory contains the Ethereum smart contracts and their bindings for the [HOPR protocol](https://github.com/hoprnet/hoprnet).
-These contracts power HOPR's privacy-preserving incentive framework.
+This directory contains the Ethereum smart contracts and Rust bindings for the [HOPR protocol](https://github.com/hoprnet/hoprnet), which powers HOPR's privacy-preserving incentive framework.
 
-Main contracts are
+## Contract overview
 
-```bash
+```
 ├── Announcements.sol            # Node announcement mechanism (independent of staking)
 ├── Channels.sol                 # Uni-directional payment channel contract
 ├── Crypto.sol                   # Cryptographic utility functions and primitives
 ├── MultiSig.sol                 # Multisig modifiers to enforce Safe-based node operations
 ├── Ledger.sol                   # Snapshot-based index for HOPR Channels
-├── TicketPriceOracle.sol        # Oracle to update HOPR ticket price across the network
-├── WinningProbabilityOracle.sol # Oracle to update HOPR minimum winning probability across the network
+├── TicketPriceOracle.sol        # Oracle for updating the HOPR ticket price network-wide
+├── WinningProbabilityOracle.sol # Oracle for updating the minimum winning probability network-wide
 
-├── interfaces                   # Solidity interfaces for contract interoperability
-│   ├── IAvatar.sol
-│   ├── INetworkRegistryRequirement.sol
-│   ├── INodeManagementModule.sol
-│   └── INodeSafeRegistry.sol
-├── node-stake                           # Node staking system built on Safe's Account-Abstraction design
-│   ├── NodeSafeRegistry.sol             # Registry mapping nodes to their Safe wallets
-│   ├── NodeStakeFactory.sol             # Factory contract to deploy and initialize node Safes
-│   └── migration                        # Contracts for upgrading safe and/or modules
-│       └── NodeSafeMigration.sol        # Upgrade Safe to v1.5.0 and module to the dedicated version
-│   └── permissioned-module              # Modules for Safe-based node management
-│       ├── CapabilityPermissions.sol    # Defines capability-based permission rules
-│       ├── NodeManagementModule.sol     # Main module to manage nodes via a Safe
-│       └── SimplifiedModule.sol         # Lightweight version of the Node Management Module
-├── utils                                # Shared utility libraries
-│   ├── EnumerableKeyBindingSet.sol   # Enumerable set for KeyBinding structs
-│   ├── EnumerableSafeModuleSet.sol   # Enumerable set for SafeModule structs
-│   ├── EnumerableStringSet.sol       # Enumerable set for strings
-│   ├── EnumerableTargetSet.sol       # Enumerable set for targets (addresses with metadata)
-│   └── SafeSuiteLibV141.sol          # Useful contract deployments of Safe v1.4.1
-│   └── SafeSuiteLibV150.sol          # Useful contract deployments of Safe v1.5.0
-│   └── TargetUtils.sol               # Helper functions for managing targets
-└── static                            # Legacy contracts (archived and not actively maintained)
-    ├── HoprDistributor.sol           # Contract for token distribution
-    ├── HoprForwarder.sol             # Minimal forwarder for meta-transactions
-    ├── HoprToken.sol                 # ERC20 token implementation for HOPR
-    ├── HoprWrapper.sol               # Legacy wrapper contract
-    ├── HoprWrapperProxy.sol          # Proxy for interacting with HoprWrapper
-    ├── NetworkRegistry.sol           # Legacy Network Registry contract
-    ├── ERC777
-    │   └── ERC777Snapshot.sol
-    ├── openzeppelin-contracts
-    │   ├── ERC777.sol
-    │   └── README.md
-    ├── proxy                        # Adapters between the NetworkRegistry and staking modules
-    │   ├── DummyProxyForNetworkRegistry.sol
-    │   ├── SafeProxyForNetworkRegistry.sol
-    │   └── StakingProxyForNetworkRegistry.sol
-    └── stake                         # Legacy staking contracts by season
-        ├── HoprBoost.sol
-        ├── HoprStake.sol
-        ├── HoprStake2.sol
-        ├── HoprStakeBase.sol
-        ├── HoprStakeSeason3.sol
-        ├── HoprStakeSeason4.sol
-        ├── HoprStakeSeason5.sol
-        ├── HoprStakeSeason6.sol
-        ├── HoprStakeSeason7.sol
-        ├── HoprWhitehat.sol
-        └── IHoprBoost.sol
+├── interfaces/                  # Solidity interfaces for contract interoperability
+│   ├── IAvatar.sol
+│   ├── INetworkRegistryRequirement.sol
+│   └── INodeManagementModule.sol
+
+├── node-stake/                          # Node staking system built on Safe's account-abstraction design
+│   ├── NodeSafeRegistry.sol             # Registry mapping nodes to their Safe wallets
+│   ├── NodeStakeFactory.sol             # Factory contract to deploy and initialize node Safes
+│   ├── migration/                       # Contracts for upgrading Safes and/or modules
+│   │   └── NodeSafeMigration.sol        # Upgrades Safe to v1.5.0 and the module to the current version
+│   └── permissioned-module/             # Modules for Safe-based node management
+│       ├── CapabilityPermissions.sol    # Defines capability-based permission rules
+│       ├── NodeManagementModule.sol     # Main module for managing nodes via a Safe
+│       └── SimplifiedModule.sol        # Lightweight version of the Node Management Module
+
+├── utils/                               # Shared utility libraries
+│   ├── EnumerableKeyBindingSet.sol      # Enumerable set for KeyBinding structs
+│   ├── EnumerableSafeModuleSet.sol      # Enumerable set for SafeModule structs
+│   ├── EnumerableStringSet.sol          # Enumerable set for strings
+│   ├── EnumerableTargetSet.sol          # Enumerable set for targets (addresses with metadata)
+│   ├── SafeSuiteLibV141.sol             # Helper for deploying Safe v1.4.1 suite contracts
+│   ├── SafeSuiteLibV150.sol             # Helper for deploying Safe v1.5.0 suite contracts
+│   └── TargetUtils.sol                  # Helper functions for managing targets
+
+└── static/                           # Legacy contracts (archived, not actively maintained)
+    ├── HoprDistributor.sol           # Token distribution
+    ├── HoprForwarder.sol             # Minimal forwarder for meta-transactions
+    ├── HoprToken.sol                 # ERC20 token implementation for HOPR
+    ├── HoprWrapper.sol               # Legacy wrapper contract
+    ├── HoprWrapperProxy.sol          # Proxy for interacting with HoprWrapper
+    ├── NetworkRegistry.sol           # Legacy Network Registry
+    ├── ERC777/
+    │   └── ERC777Snapshot.sol
+    ├── openzeppelin-contracts/
+    │   └── ERC777.sol
+    ├── proxy/                        # Adapters between NetworkRegistry and staking modules
+    │   ├── DummyProxyForNetworkRegistry.sol
+    │   ├── SafeProxyForNetworkRegistry.sol
+    │   └── StakingProxyForNetworkRegistry.sol
+    └── stake/                        # Legacy staking contracts by season
+        ├── HoprBoost.sol
+        ├── HoprStake.sol
+        ├── HoprStake2.sol
+        ├── HoprStakeBase.sol
+        ├── HoprStakeSeason3.sol
+        ├── HoprStakeSeason4.sol
+        ├── HoprStakeSeason5.sol
+        ├── HoprStakeSeason6.sol
+        ├── HoprStakeSeason7.sol
+        ├── HoprStakeSeason8.sol
+        ├── HoprWhitehat.sol
+        └── IHoprBoost.sol
 ```
 
 ## Installation
 
-Please use the [Nix environment](../README.md#develop) or install the following packages
+Use the [Nix environment](../README.md#develop), or install the following tools manually:
 
 1. `rustup`
 2. `foundryup`
-3. `brew install lcov` (to install lcov for viewing coverage report)
+3. `brew install lcov` (required for viewing coverage reports)
 
-If not using Nix, make sure to create a `foundry.toml` file based on `foundry.in.toml` and populate the solc version under "[profile.default]"
+Without Nix, create a `foundry.toml` from `foundry.in.toml` and set the `solc` version under `[profile.default]`.
 
-Create a file for environment variables:
+Set up environment variables:
 
-```
+```sh
 cp ./contracts/.env.example ./contracts/.env
 ```
 
-and populate the necessary variables.
+Then fill in the required values.
 
-## Test
+## Testing
 
 ### Unit tests
 
-```
+```sh
 cd contracts && make sc-test
 ```
 
 ### Coverage
 
-```
+```sh
 cd contracts && make sc-coverage
 ```
 
-## Deployment and source-code verification
+## Deployment
 
-### Local
+### Local (Anvil)
 
-```
-# run anvil as a daemon.
+```sh
+# Start Anvil and deploy all contracts
 anvil & make anvil-deploy-all
 ```
 
-```
-# The anvil daemon can be killed with
+```sh
+# Stop the Anvil daemon
 lsof -i :8545 -s TCP:LISTEN -t | xargs -I {} -n 1 kill {}
 ```
 
-### Staging
+### Remote networks (development, staging, production)
 
-Staging environment is on the same chain as in production - Gnosis chain
+Before deploying to a new network, update `contracts-addresses.json`:
 
+1. Add a new entry with the network name.
+2. Set all addresses to `0x0000000000000000000000000000000000000000`, except for `token` and `xhopr_token`.
+3. Set `environment_type` to `development`, `staging`, or `production`. This affects the default winning probability and ticket price.
+4. Set `indexer_start_block_number` to `0`. The deployment script will update it to the first deployment block automatically.
+
+A sample entry:
+
+```json
+"piz-palu-dev": {
+  "addresses": {
+    "announcements": "0x0000000000000000000000000000000000000000",
+    "channels": "0x0000000000000000000000000000000000000000",
+    "module_implementation": "0x0000000000000000000000000000000000000000",
+    "node_safe_migration": "0x0000000000000000000000000000000000000000",
+    "node_safe_registry": "0x0000000000000000000000000000000000000000",
+    "node_stake_factory": "0x0000000000000000000000000000000000000000",
+    "ticket_price_oracle": "0x0000000000000000000000000000000000000000",
+    "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
+    "winning_probability_oracle": "0x0000000000000000000000000000000000000000",
+    "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
+  },
+  "chain_id": 100,
+  "environment_type": "development",
+  "indexer_start_block_number": 0
+}
 ```
+
+Staging and production both target Gnosis chain. Load environment variables, then run the appropriate script:
+
+```sh
 source .env
 ```
 
-```
-// This verifies contract on sourcify
+```sh
+# Deploy to staging and verify on Sourcify
 FOUNDRY_PROFILE=staging NETWORK=debug-staging forge script --broadcast --verify --verifier sourcify script/DeployAll.s.sol:DeployAllContractsScript
 
-// This deploys contract to staging environment and verifies contracts on Gnosisscan
+# Deploy to staging and verify on Gnosisscan
 FOUNDRY_PROFILE=staging NETWORK=jura forge script --broadcast --slow \
    --verify --verifier etherscan --verifier-url "https://api.etherscan.io/v2/api?chainid=100" \
    --delay 30 --chain 100 --etherscan-api-key "${ETHERSCAN_API_KEY}" \
@@ -132,53 +162,50 @@ FOUNDRY_PROFILE=staging NETWORK=jura forge script --broadcast --slow \
    script/DeployAll.s.sol:DeployAllContractsScript
 ```
 
-### Production
+### Manual contract verification
 
-use either of the command below
+If a contract is not automatically verified, use `forge verify-contract` directly:
 
-```
-FOUNDRY_PROFILE=staging NETWORK=debug-staging forge script --broadcast --verify --verifier sourcify script/DeployAll.s.sol:DeployAllContractsScript
-```
-
-If contracts are not properly verified on explorers, please try with the manual verification. E.g.
-
-```
-# Verify HoprStakingProxyForNetworkRegistry contract on goerli
+```sh
 export ETHERSCAN_API_KEY=<gnosisscan_api_key>
-forge verify-contract --verifier etherscan --verifier-url "https://api.gnosisscan.io/api" --chain gnosis --constructor-args $(cast abi-encode "constructor(address,address,uint256)" 0xA02Af160a280957A8881879Ee9239A614Ab47F0D 0x4fF4e61052a4DFb1bE72866aB711AE08DD861976 1000000000000000000000) 0xcA9B1bC189F977B2A9217598D0300d956b6a719f src/proxy/HoprStakingProxyForNetworkRegistry.sol:HoprStakingProxyForNetworkRegistry
+forge verify-contract \
+   --verifier etherscan \
+   --verifier-url "https://api.gnosisscan.io/api" \
+   --chain gnosis \
+   --constructor-args $(cast abi-encode "constructor(address,address,uint256)" \
+      0xA02Af160a280957A8881879Ee9239A614Ab47F0D \
+      0x4fF4e61052a4DFb1bE72866aB711AE08DD861976 \
+      1000000000000000000000) \
+   0xcA9B1bC189F977B2A9217598D0300d956b6a719f \
+   src/proxy/HoprStakingProxyForNetworkRegistry.sol:HoprStakingProxyForNetworkRegistry
 ```
 
-To check the verification result, use
+Check the verification status with:
 
-```
+```sh
 forge verify-check --chain-id <number> <GUID>
 ```
 
-## Deployment
+### Contract addresses
 
-### Deploy legacy contracts
+`contracts-addresses.json` is the authoritative reference for deployed contract addresses across all networks (local, staging, production). For each network it records contract addresses, chain ID, environment type, and the indexer start block. It is updated automatically on each deployment.
 
-The following diagram illustrates the deployment order and dependencies among contracts in the `static/` folder.
-Contracts at the bottom depend on those above them:
+### Legacy contract deployment order
+
+The diagram below shows the deployment dependencies for contracts in `static/`. Contracts at the bottom depend on those above them. `HoprDistributor` and `HoprWrapper` are skipped in local deployments.
 
 ```
               +-----------------+
               | ERC1820Registry |
               +--------^--------+
                        |
-                       |
-                       |
                 +------+------+       +------------+        +-----------+
                 |  HoprToken  |       | xHoprToken |        | HoprBoost |
                 +^---^--^---^-+       +-^----^-----+        +-----^-----+
                  |   |  |   |           |    |                    |
-                 |   |  |   |           |    |                    |
-                 |   |  |   |           |    |                    |
-                 |   |  |   |           |    |                    |
 +----------------++  |  | +-+-----------+-+  |                    |
 | HoprDistributor |  |  | |  HoprWrapper  |  |                    |
 +-----------------+  |  | +---------------+  |                    |
-                     |  |                    |                    |
                      |  |                    |                    |
                      |  +-----------------+  |   +----------------+
                      |                    |  |   |
@@ -186,44 +213,38 @@ Contracts at the bottom depend on those above them:
                      |                 | HoprStake |
                      |                 +-----^-----+
                      |                       |
-                     |                       |
-                     |                       |
              +-------+------+    +-----------+----------+
              | HoprChannels |    | NetworkRegistryProxy |
              +--------------+    +-----------^----------+
-                                             |
-                                             |
                                              |
                                   +----------+----------+
                                   | HoprNetworkRegistry |
                                   +---------------------+
 ```
 
-Note that in local deployment, the deployment for `HoprDistributor` and `HoprWrapper` are skipped.
+## Notes
 
-### Deployed contracts
+### Compiler versions
 
-The `./contracts/contracts-address.json` file defines contract deployments across multiple networks, including local, staging, and production environments.
-For each network, it specifies deployed contract addresses, the chain ID, the environment type, and the starting block number for indexers.
-It serves as a centralized reference for frontend, indexer, and integration scripts to locate on-chain components.
+Some contracts use updated Solidity compiler versions compared to their original on-chain deployments. This is a workaround for Foundry's lack of multi-version compiler support.
 
-This file is automatically populated with the latest deployment addresses.
+| Version | Usage |
+| ------- | ----- |
+| v0.4 | `PermittableToken` — base implementation of the deployed xHOPR token. Source was extracted from the deployed contract; only the `pragma solidity` directive was relaxed to allow compilation. |
+| v0.6 | Deployed `HoprToken`. |
+| v0.8 | All current contracts. |
 
-## Note
+### Pinned library dependencies
 
-1. Compared to the versions used in actual deployments (see list below), some contracts in this repository have updated solc versions. This is due to the limitation of Foundry's lack of multi-version Solidity compiler support.
+Dependencies are locked to audited commits:
 
-- Solc v0.4: Used for the PermittableToken, which is the base implementation of the deployed xHOPR token. The source code has been extracted from the deployed contract, with the only modification being the loosening of the pragma solidity directive to support compilation.
-- Solc v0.6: Used for the deployed HoprToken.
-- Solc v0.8: Used for all newer contracts.
+- **Safe contracts** — commit [`eb93dbb`](https://github.com/safe-global/safe-contracts/blob/main/docs/audit_1_4_0.md)
+- **Zodiac Modifier Roles v1** — commit [`454be9d`](https://github.com/gnosis/zodiac-modifier-roles-v1/tree/main). After importing, adjust the `pragma` for two contracts and manually add their Gnosis Safe imports (e.g. `Enum.sol`).
+- **Zodiac Base** — commit [`8a77e7b`](https://github.com/gnosis/zodiac/tree/8a77e7b224af8004bd9f2ff4e2919642e93ffd85)
 
-2. Most of the libraries are locked to specific commit or version
+To install:
 
-- Audited Safe contracts at commit [eb93dbb0f62e2dc1b308ac4c110038062df0a8c9](https://github.com/safe-global/safe-contracts/blob/main/docs/audit_1_4_0.md)
-- Audited Zodiac Modifier Roles v1 contracts at commit [454be9d3c26f90221ca717518df002d1eca1845f](https://github.com/gnosis/zodiac-modifier-roles-v1/tree/main) After importing the contracts, adjust the pragma for two contracts; and manually imported their imports from Gnosis Safe, e.g. Enum.sol
-- Audited Zodiac Base contract at commit [8a77e7b224af8004bd9f2ff4e2919642e93ffd85](https://github.com/gnosis/zodiac/tree/8a77e7b224af8004bd9f2ff4e2919642e93ffd85)
-
-```
+```sh
 forge install safe-global/safe-contracts@eb93dbb0f62e2dc1b308ac4c110038062df0a8c9 \
    gnosis/zodiac-modifier-roles-v1@454be9d3c26f90221ca717518df002d1eca1845f \
    gnosis/zodiac@8a77e7b224af8004bd9f2ff4e2919642e93ffd85 \
@@ -231,7 +252,9 @@ forge install safe-global/safe-contracts@eb93dbb0f62e2dc1b308ac4c110038062df0a8c
    --no-git --no-commit
 ```
 
-3. `SafeSuiteSetupScript` deploys basic Safe suites. We deploy all the contracts with `main-suite` tag, in a deterministic way
+### Safe suite deployment
+
+`SafeSuiteSetupScript` deploys Safe suite contracts deterministically using the `main-suite` tag:
 
 |                              | l2  | l2-suite | main-suite | accessors | factory | handlers | libraries | singleton |
 | ---------------------------- | --- | -------- | ---------- | --------- | ------- | -------- | --------- | --------- |
@@ -246,33 +269,23 @@ forge install safe-global/safe-contracts@eb93dbb0f62e2dc1b308ac4c110038062df0a8c
 | SafeL2                       | x   | x        |            |           |         |          |           |           |
 | Safe                         |     |          | x          |           |         |          |           | x         |
 
-4. Deployment starts with a singleton contract. Singleton's deployment details are saved under https://github.com/safe-global/safe-singleton-factory/tree/main/artifacts
-   Specifically, for "anvil-deploy-safe-singleton" target, it follows instruction from [safe-global/safe-singleton-factory/artifacts/31337/deployment.json](https://github.com/safe-global/safe-singleton-factory/blob/6700a7c90ececc8cb9e1a4d97fd70fea1ee4670d/artifacts/31337/deployment.json)
+Deployment begins with a singleton contract whose details are stored in the [safe-singleton-factory artifacts](https://github.com/safe-global/safe-singleton-factory/tree/main/artifacts). The `anvil-deploy-safe-singleton` target follows the [chain 31337 deployment spec](https://github.com/safe-global/safe-singleton-factory/blob/6700a7c90ececc8cb9e1a4d97fd70fea1ee4670d/artifacts/31337/deployment.json). Running `make run-anvil` also deploys the SafeSingleton, which acts as the factory for deterministic deployments.
 
-   When running `make run-anvil`, it also deploys the SafeSingleton which is used as a deployer factory in deterministic deployment.
+### Dufour network migration
 
-5. In the "Dufour" network, node-staking safes use the implementation of `Safe.sol` v1.3 and node-staking modules use an undeclared version of the `NodeManagementModule.sol`.
-   As the module proxies were created with a minimal proxy, where the implementation address was supplied at the deployment, and due to the fact that the module contract does not allow delegatecalls, it is not possible to migrate existing NodeManagementModules to a different implementation.
-   The desired workflow should be that the owner of a module (i.e. the Safe contract to which the module is attached) MAY call a `migrate` function at its own will to change the implementation contract address to a different one.
-   As a result, the `NodeSafeMigration` contract is created as a supporting contract to facilitate the process of:
-   - creating a new NodeManagementModule proxy instance that uses `NodeManagementModule.sol` v2.0.0
-   - initiate the basic targets on the module instance (e.g. for Channels, Token, Announcement, Send). Channels, Tokens, and Announcement contracts should be already deployed and supplied in the `NodeSafeMigration` contract.
-   - include nodes into the new module.
-   - set the owner back to the creator (caller) address.
-     Optionally, the `NodeSafeMigration` contract also contains a function to migrate Safe implementation to a different one.
-     Node runners should ensure that all the tickets are redeemed and all the channels are closed before the migration. Then turn off the node.
-     Execute the migration process using multicall:
-   - migrate module
-   - optionally remove the previous module from the Safe
-   - optionally upgrade the Safe implementation
+In the Dufour network, node-staking Safes use `Safe.sol` v1.3 and node-staking modules use an undeclared version of `NodeManagementModule.sol`. Because module proxies were created with a minimal proxy (implementation address fixed at deployment) and the module does not allow delegatecalls, existing `NodeManagementModule` instances cannot be upgraded in place.
 
-## Change log
+Instead, module owners (i.e. the Safe attached to the module) may call `migrate` to point to a new implementation. `NodeSafeMigration` supports this process by:
 
-### HoprNodeManagementModule
+- Deploying a new `NodeManagementModule` proxy using `NodeManagementModule.sol` v2.0.0.
+- Initialising basic targets on the new module (Channels, Token, Announcements, Send — all must already be deployed and supplied to `NodeSafeMigration`).
+- Registering node(s) with the new module.
+- Returning ownership to the caller.
 
-1. `isHoprNodeManagementModule` variable is removed.
-2. Added `VERSION` ("2.0.0") for the implementation of node management module. This function is also included in the interface.
+Optionally, `NodeSafeMigration` can also upgrade the Safe implementation itself.
 
-### HoprChannels
+Before migrating, node runners must redeem all tickets, close all channels, and shut down the node. The migration is then executed as a multicall:
 
-1. Include the indexed `channelId` topic in the `ChannelOpened` event.
+1. Migrate the module.
+2. (Optional) Remove the old module from the Safe.
+3. (Optional) Upgrade the Safe implementation.
