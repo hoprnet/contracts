@@ -38,8 +38,6 @@ contract DeployAllContractsScript is
     uint56 public constant DEV_WINNING_PROBABILITY = 9_007_199_254_735; // 0.00012500 in WinProb unit
     uint56 public constant STAGING_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
 
-    bool internal isHoprChannelsDeployed;
-    bool internal isHoprNetworkRegistryDeployed;
     address private owner;
 
     function setUp() public override(ERC1820RegistryFixtureTest, SafeSingletonFixtureTest) {
@@ -116,9 +114,8 @@ contract DeployAllContractsScript is
         _deployXHoprTokenAndMintToAddress(deployerAddress);
 
         // 4. update indexerStartBlockNumber
-        // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
-        // indexer
-        if (isHoprChannelsDeployed && isHoprNetworkRegistryDeployed) {
+        // if the indexerStartBlockNumber is not set (i.e. 0)
+        if (currentNetworkDetail.indexerStartBlockNumber == 0) {
             currentNetworkDetail.indexerStartBlockNumber = block.number;
         }
 
@@ -227,7 +224,6 @@ contract DeployAllContractsScript is
                     currentNetworkDetail.addresses.nodeSafeRegistryAddress
                 )
             );
-            isHoprChannelsDeployed = true;
         }
     }
 
@@ -239,7 +235,7 @@ contract DeployAllContractsScript is
         uint256 price;
         if (currentEnvironmentType == EnvironmentType.LOCAL) {
             price = LOCAL_TICKET_PRICE;
-        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
+        } else if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
             price = STAGING_TICKET_PRICE;
         } else {
             price = DEV_TICKET_PRICE;
@@ -261,7 +257,7 @@ contract DeployAllContractsScript is
         WinProb winProb;
         if (currentEnvironmentType == EnvironmentType.LOCAL) {
             winProb = WinProb.wrap(LOCAL_WINNING_PROBABILITY);
-        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
+        } else if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
             winProb = WinProb.wrap(STAGING_WINNING_PROBABILITY);
         } else {
             winProb = WinProb.wrap(DEV_WINNING_PROBABILITY);
@@ -287,7 +283,7 @@ contract DeployAllContractsScript is
                 || !isValidAddress(currentNetworkDetail.addresses.announcements)
         ) {
             uint256 keyBindingFee;
-            if (currentEnvironmentType == EnvironmentType.STAGING) {
+            if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
                 keyBindingFee = STAGING_INIT_KEY_BINDING_FEE;
             } else {
                 keyBindingFee = DEV_INIT_KEY_BINDING_FEE;
