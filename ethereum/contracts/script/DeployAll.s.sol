@@ -25,18 +25,22 @@ contract DeployAllContractsScript is
     PermittableTokenFixtureTest
 {
     using BoostUtilsLib for address;
+    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
     // starting key binding fee at deployment time
     uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
+    uint256 public constant LOCAL_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
     uint256 public constant STAGING_INIT_KEY_BINDING_FEE = 1 ether; // 1 HOPR in gwei unit
-    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
+    uint256 public constant PRODUCTION_INIT_KEY_BINDING_FEE = 1 ether; // 1 HOPR in gwei unit
     // ticket price oracle
     uint256 public constant LOCAL_TICKET_PRICE = 10_000_000 gwei; // 0.001 HOPR in gwei unit
     uint256 public constant DEV_TICKET_PRICE = 100; // 0.0000000000000001 HOPR in gwei unit
     uint256 public constant STAGING_TICKET_PRICE = 10_000 gwei; // 0.00001 HOPR in gwei unit
+    uint256 public constant PRODUCTION_TICKET_PRICE = 10_000 gwei; // 0.00001 HOPR in gwei unit
     // winnning probability
     uint56 public constant LOCAL_WINNING_PROBABILITY = 72_057_594_037_927_935; // 0.0005 in WinProb unit
     uint56 public constant DEV_WINNING_PROBABILITY = 9_007_199_254_735; // 0.00012500 in WinProb unit
     uint56 public constant STAGING_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
+    uint56 public constant PRODUCTION_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
 
     address private owner;
 
@@ -235,8 +239,10 @@ contract DeployAllContractsScript is
         uint256 price;
         if (currentEnvironmentType == EnvironmentType.LOCAL) {
             price = LOCAL_TICKET_PRICE;
-        } else if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
+        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             price = STAGING_TICKET_PRICE;
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            price = PRODUCTION_TICKET_PRICE;
         } else {
             price = DEV_TICKET_PRICE;
         }
@@ -257,8 +263,10 @@ contract DeployAllContractsScript is
         WinProb winProb;
         if (currentEnvironmentType == EnvironmentType.LOCAL) {
             winProb = WinProb.wrap(LOCAL_WINNING_PROBABILITY);
-        } else if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
+        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             winProb = WinProb.wrap(STAGING_WINNING_PROBABILITY);
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            winProb = WinProb.wrap(PRODUCTION_WINNING_PROBABILITY);
         } else {
             winProb = WinProb.wrap(DEV_WINNING_PROBABILITY);
         }
@@ -283,8 +291,12 @@ contract DeployAllContractsScript is
                 || !isValidAddress(currentNetworkDetail.addresses.announcements)
         ) {
             uint256 keyBindingFee;
-            if (currentEnvironmentType == EnvironmentType.STAGING || currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            if (currentEnvironmentType == EnvironmentType.LOCAL) {
+                keyBindingFee = LOCAL_INIT_KEY_BINDING_FEE;
+            } else if (currentEnvironmentType == EnvironmentType.STAGING) {
                 keyBindingFee = STAGING_INIT_KEY_BINDING_FEE;
+            } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+                keyBindingFee = PRODUCTION_INIT_KEY_BINDING_FEE;
             } else {
                 keyBindingFee = DEV_INIT_KEY_BINDING_FEE;
             }

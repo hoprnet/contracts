@@ -80,6 +80,7 @@ Without Nix, create a `foundry.toml` from `foundry.in.toml` and set the `solc` v
 Set up environment variables:
 
 ```sh
+cd contracts
 cp ./contracts/.env.example ./contracts/.env
 ```
 
@@ -104,8 +105,10 @@ cd contracts && make sc-coverage
 ### Local (Anvil)
 
 ```sh
-# Start Anvil and deploy all contracts
-anvil & make anvil-deploy-all
+# Start Anvil, wait until its RPC is ready, then deploy all contracts
+anvil &
+until cast chain-id >/dev/null 2>&1; do sleep 0.2; done
+make anvil-deploy-all
 ```
 
 ```sh
@@ -119,7 +122,7 @@ Before deploying to a new network, update `contracts-addresses.json`:
 
 1. Add a new entry with the network name.
 2. Set all addresses to `0x0000000000000000000000000000000000000000`, except for `token` and `xhopr_token`.
-3. Set `environment_type` to `development`, `staging`, or `production`. This affects the default winning probability and ticket price.
+3. Set `environment_type` to `development`, `staging`, or `production`. This affects the default winning probability, ticket price, and key-binding fees.
 4. Set `indexer_start_block_number` to `0`. The deployment script will update it to the first deployment block automatically.
 
 A sample entry:
@@ -154,8 +157,8 @@ source .env
 # Deploy to staging and verify on Sourcify
 FOUNDRY_PROFILE=staging NETWORK=debug-staging forge script --broadcast --verify --verifier sourcify script/DeployAll.s.sol:DeployAllContractsScript
 
-# Deploy to staging and verify on Gnosisscan
-FOUNDRY_PROFILE=staging NETWORK=jura forge script --broadcast --slow \
+# Deploy to development and verify on Gnosisscan
+FOUNDRY_PROFILE=staging NETWORK=juradev forge script --broadcast --slow \
    --verify --verifier etherscan --verifier-url "https://api.etherscan.io/v2/api?chainid=100" \
    --delay 30 --chain 100 --etherscan-api-key "${ETHERSCAN_API_KEY}" \
    --priority-gas-price 0.001gwei --with-gas-price 0.002gwei \
@@ -228,11 +231,11 @@ The diagram below shows the deployment dependencies for contracts in `static/`. 
 
 Some contracts use updated Solidity compiler versions compared to their original on-chain deployments. This is a workaround for Foundry's lack of multi-version compiler support.
 
-| Version | Usage |
-| ------- | ----- |
-| v0.4 | `PermittableToken` — base implementation of the deployed xHOPR token. Source was extracted from the deployed contract; only the `pragma solidity` directive was relaxed to allow compilation. |
-| v0.6 | Deployed `HoprToken`. |
-| v0.8 | All current contracts. |
+| Version | Usage                                                                                                                                                                                         |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v0.4    | `PermittableToken` — base implementation of the deployed xHOPR token. Source was extracted from the deployed contract; only the `pragma solidity` directive was relaxed to allow compilation. |
+| v0.6    | Deployed `HoprToken`.                                                                                                                                                                         |
+| v0.8    | All current contracts.                                                                                                                                                                        |
 
 ### Pinned library dependencies
 

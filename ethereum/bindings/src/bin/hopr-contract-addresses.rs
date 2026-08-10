@@ -7,7 +7,7 @@
 //! ➜   hopr-contract-addresses
 //! {
 //!   "networks": {
-//!     "rotsee": {
+//!     "jura-dev": {
 //!      "addresses": {
 //!        "announcements": "0xe45A8DBDADafd86AB7e2368b4749864083331cFC",
 //!        "channels": "0x9680F21d4583ad27F2e6bc3005EDF120FFf057B7",
