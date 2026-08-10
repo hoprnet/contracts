@@ -91,12 +91,14 @@ contract HoprBoostTest is Test {
     function testRevert_WhenNonAdminSetBaseURI(address account) public {
         vm.assume(account != admin);
         vm.prank(account);
-        vm.expectRevert(abi.encodePacked(
-            "AccessControl: account ",
-            Strings.toHexString(uint160(account), 20),
-            " is missing role ",
-            Strings.toHexString(uint256(0), 32)
-        ));
+        vm.expectRevert(
+            abi.encodePacked(
+                "AccessControl: account ",
+                Strings.toHexString(uint160(account), 20),
+                " is missing role ",
+                Strings.toHexString(uint256(0), 32)
+            )
+        );
         hoprBoost.updateBaseURI(NEW_BASE_URI);
     }
 

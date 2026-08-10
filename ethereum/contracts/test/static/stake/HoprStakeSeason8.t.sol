@@ -124,9 +124,11 @@ contract HoprStakeSeason8Test is Test, ERC1820RegistryFixtureTest, PermittableTo
         vm.store(
             address(LOCK_TOKEN_ADDRESS),
             bytes32(
-                stdstore.target(address(LOCK_TOKEN_ADDRESS)).sig("allowance(address,address)").with_key(OWNER).with_key(
-                    address(hoprStakeSeason8)
-                ).find()
+                stdstore.target(address(LOCK_TOKEN_ADDRESS))
+                    .sig("allowance(address,address)")
+                    .with_key(OWNER)
+                    .with_key(address(hoprStakeSeason8))
+                    .find()
             ),
             bytes32(abi.encode(amount))
         );
