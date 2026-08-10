@@ -28,13 +28,13 @@ contract HoprStakingProxyForNetworkRegistryTest is Test {
      * Manually import the errors and events
      */
     event NftTypeAndRankAdded(uint256 indexed nftType, string nftRank); // emit when a new NFT type and rank gets
-    // included in the eligibility list
+        // included in the eligibility list
     event NftTypeAndRankRemoved(uint256 indexed nftType, string nftRank); // emit when a NFT type and rank gets removed
-    // from the eligibility list
+        // from the eligibility list
     event SpecialNftTypeAndRankAdded(uint256 indexed nftType, string nftRank, uint256 indexed maxRegistration); // emit
-    // when a new special type and rank of NFT gets included in the eligibility list
+        // when a new special type and rank of NFT gets included in the eligibility list
     event SpecialNftTypeAndRankRemoved(uint256 indexed nftType, string nftRank); // emit when a special type and rank of
-    // NFT gets removed from the eligibility list
+        // NFT gets removed from the eligibility list
     event ThresholdUpdated(uint256 indexed threshold); // emit when the staking threshold gets updated.
     event StakeContractUpdated(address indexed stakeContract); // emit when the staking threshold gets updated.
 

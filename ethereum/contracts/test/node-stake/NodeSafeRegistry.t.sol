@@ -116,9 +116,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     {
         vm.assume(safe != nodeAddress);
 
-        stdstore.target(address(nodeSafeRegistry))
-            .sig(nodeSafeRegistry.nodeToSafe.selector)
-            .with_key(nodeAddress)
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
             .checked_write(safe);
 
         vm.prank(nodeAddress);
@@ -136,9 +134,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     {
         address safeAddress = address(0);
 
-        stdstore.target(address(nodeSafeRegistry))
-            .sig(nodeSafeRegistry.nodeToSafe.selector)
-            .with_key(nodeAddress)
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
             .checked_write(address(1));
 
         vm.prank(nodeAddress);
@@ -156,9 +152,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     {
         address nodeAddress = address(0);
 
-        stdstore.target(address(nodeSafeRegistry))
-            .sig(nodeSafeRegistry.nodeToSafe.selector)
-            .with_key(nodeAddress)
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
             .checked_write(address(1));
 
         vm.prank(nodeAddress);
@@ -196,9 +190,7 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
     {
         vm.assume(safe != nodeAddress);
 
-        stdstore.target(address(nodeSafeRegistry))
-            .sig(nodeSafeRegistry.nodeToSafe.selector)
-            .with_key(nodeAddress)
+        stdstore.target(address(nodeSafeRegistry)).sig(nodeSafeRegistry.nodeToSafe.selector).with_key(nodeAddress)
             .checked_write(address(0));
 
         vm.prank(nodeAddress);

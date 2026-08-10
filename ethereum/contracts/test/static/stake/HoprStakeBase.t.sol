@@ -233,7 +233,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         vm.prank(nftAddress);
         vm.expectEmit(true, true, true, false, address(hoprStakeBase));
         emit Redeemed(accounts[0], tokenId, tokenId == 1 ? false : true); // token of id 1 has the sanme type and rank
-        // as token 0
+            // as token 0
         hoprStakeBase.onERC721Received(accounts[0], accounts[0], tokenId, hex"00");
         vm.clearMockedCalls();
     }
@@ -445,9 +445,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         vm.prank(nftAddress);
         vm.mockCall(
             accounts[1],
-            abi.encodeWithSignature(
-                "safeTransferFrom(address,address,uint256)", accounts[0], address(hoprStakeBase), 1
-            ),
+            abi.encodeWithSignature("safeTransferFrom(address,address,uint256)", accounts[0], address(hoprStakeBase), 1),
             abi.encode(true)
         );
         vm.expectRevert("HoprStake: Program ended, cannot redeem boosts.");
@@ -493,9 +491,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         // mock the redeemed NFT transfers (of token id 0)
         vm.mockCall(
             address(hoprStakeBase),
-            abi.encodeWithSignature(
-                "safeTransferFrom(address,address,uint256)", address(hoprStakeBase), accounts[0], 0
-            ),
+            abi.encodeWithSignature("safeTransferFrom(address,address,uint256)", address(hoprStakeBase), accounts[0], 0),
             abi.encode(true)
         );
         // perform actual unlock
@@ -534,9 +530,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         // mock the redeemed NFT transfers (of token id 0)
         vm.mockCall(
             address(hoprStakeBase),
-            abi.encodeWithSignature(
-                "safeTransferFrom(address,address,uint256)", address(hoprStakeBase), accounts[0], 0
-            ),
+            abi.encodeWithSignature("safeTransferFrom(address,address,uint256)", address(hoprStakeBase), accounts[0], 0),
             abi.encode(true)
         );
 
@@ -747,9 +741,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         // accounts[0] stakes NFT of id 0
         vm.mockCall(
             accounts[0],
-            abi.encodeWithSignature(
-                "safeTransferFrom(address,address,uint256)", accounts[0], address(hoprStakeBase), 0
-            ),
+            abi.encodeWithSignature("safeTransferFrom(address,address,uint256)", accounts[0], address(hoprStakeBase), 0),
             abi.encode(true)
         );
         vm.prank(nftAddress);
@@ -758,9 +750,7 @@ contract HoprStakeBaseTest is Test, ERC1820RegistryFixtureTest {
         // accounts[2] stakes NFT of id 4
         vm.mockCall(
             accounts[2],
-            abi.encodeWithSignature(
-                "safeTransferFrom(address,address,uint256)", accounts[2], address(hoprStakeBase), 4
-            ),
+            abi.encodeWithSignature("safeTransferFrom(address,address,uint256)", accounts[2], address(hoprStakeBase), 4),
             abi.encode(true)
         );
         vm.prank(nftAddress);

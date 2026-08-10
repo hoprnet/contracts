@@ -2,9 +2,7 @@
 pragma solidity >=0.6.0 <0.9.0;
 
 import {
-    IHoprNetworkRegistryRequirement,
-    HoprNetworkRegistry,
-    HoprNetworkRegistryEvents
+    IHoprNetworkRegistryRequirement, HoprNetworkRegistry, HoprNetworkRegistryEvents
 } from "../../src/static/NetworkRegistry.sol";
 import { Test, stdStorage, StdStorage } from "forge-std/Test.sol";
 
@@ -65,11 +63,8 @@ contract HoprNetworkRegistryTest is Test, HoprNetworkRegistryEvents {
             abi.encodeWithSelector(IHoprNetworkRegistryRequirement.maxAllowedRegistrations.selector, account),
             abi.encode(allowance)
         );
-        stdstore.target(address(hoprNetworkRegistry))
-            .sig("countRegisterdNodesPerAccount(address)")
-            .with_key(account)
-            .depth(0)
-            .checked_write(registered);
+        stdstore.target(address(hoprNetworkRegistry)).sig("countRegisterdNodesPerAccount(address)").with_key(account)
+            .depth(0).checked_write(registered);
 
         if (allowance > registered) {
             assertEq(hoprNetworkRegistry.maxAdditionalRegistrations(account), allowance - registered);
@@ -82,7 +77,12 @@ contract HoprNetworkRegistryTest is Test, HoprNetworkRegistryEvents {
      * @dev verify that return value of canOperateFor is correct
      */
 
-    function testFuzz_MockCanOperateFor(uint256[STAKING_ACCOUNTS_SIZE] memory allowances, uint256 accountIndex) public {
+    function testFuzz_MockCanOperateFor(
+        uint256[STAKING_ACCOUNTS_SIZE] memory allowances,
+        uint256 accountIndex
+    )
+        public
+    {
         accountIndex = bound(accountIndex, 0, STAKING_ACCOUNTS_SIZE - 1);
         _helperMockProxyReturns(allowances);
 
@@ -377,11 +377,9 @@ contract HoprNetworkRegistryTest is Test, HoprNetworkRegistryEvents {
 
         // mock the number of curent registered nodes
         for (uint256 i = 0; i < STAKING_ACCOUNTS_SIZE; i++) {
-            stdstore.target(address(hoprNetworkRegistry))
-                .sig("countRegisterdNodesPerAccount(address)")
-                .with_key(stakingAccounts[i])
-                .depth(0)
-                .checked_write(2);
+            stdstore.target(address(hoprNetworkRegistry)).sig("countRegisterdNodesPerAccount(address)").with_key(
+                stakingAccounts[i]
+            ).depth(0).checked_write(2);
         }
 
         vm.prank(owner);
@@ -403,11 +401,9 @@ contract HoprNetworkRegistryTest is Test, HoprNetworkRegistryEvents {
 
         // mock the number of curent registered nodes
         for (uint256 i = 0; i < STAKING_ACCOUNTS_SIZE; i++) {
-            stdstore.target(address(hoprNetworkRegistry))
-                .sig("countRegisterdNodesPerAccount(address)")
-                .with_key(stakingAccounts[i])
-                .depth(0)
-                .checked_write(2);
+            stdstore.target(address(hoprNetworkRegistry)).sig("countRegisterdNodesPerAccount(address)").with_key(
+                stakingAccounts[i]
+            ).depth(0).checked_write(2);
         }
 
         for (uint256 j = 0; j < STAKING_ACCOUNTS_SIZE; j++) {
