@@ -289,6 +289,26 @@ else
 environment-type != jq '.networks."$(network)".environment_type // empty' ../bindings/contracts-addresses.json
 endif
 
+# Claim a service type in HoprServiceRegistry, as an owner of the given Safe.
+# The Safe pays the type-registration fee and becomes the type owner. Type ids go to the first
+# payer, so claim every canonical id before the registry address is announced.
+# E.g. make register-service-type network=rotsee environment-type=development safe_address=0x3A0A80BD107A4E029154286293296e62d235a4ce service_type=gvpn:exit
+.PHONY: register-service-type
+register-service-type: ensure-environment-and-network-are-set ensure-privatekey-is-set
+register-service-type: ## claim a service type, with the given Safe as the type owner
+ifeq ($(safe_address),)
+	echo "parameter <safe_address> missing" >&2 && exit 1
+endif
+ifeq ($(service_type),)
+	echo "parameter <service_type> missing, e.g. gvpn:exit" >&2 && exit 1
+endif
+	service_type_id=$$(cast format-bytes32-string "$(service_type)") && \
+	$(forge-script) script/SingleAction.s.sol:SingleActionFromPrivateKeyScript \
+		--broadcast --sig "registerServiceType(address,bytes32,address,uint256,uint256)" \
+		$(safe_address) $$service_type_id \
+		$(or $(requirement),0x0000000000000000000000000000000000000000) \
+		$(or $(registration_burn),1000000000000000000000) $(or $(update_burn),100000000000000000000)
+
 .PHONY: ensure-etherscan-api-key-is-set
 ensure-etherscan-api-key-is-set:
 ifeq ($(origin ETHERSCAN_API_KEY),undefined)

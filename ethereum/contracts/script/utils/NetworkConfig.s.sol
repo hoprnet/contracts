@@ -24,6 +24,11 @@ contract NetworkConfig is Script {
         address nodeSafeMigrationAddress;
         address nodeSafeRegistryAddress;
         address nodeStakeFactoryAddress;
+        // `parseRaw` encodes the members of a JSON object in alphabetical key order, and
+        // `abi.decode` fills this struct by position. The key `service_registry` sorts between
+        // `node_stake_factory` and `ticket_price_oracle`, so this field must stay here. A field at
+        // the end of the struct would shift every later address by one.
+        address serviceRegistryAddress;
         address ticketPriceOracleContractAddress;
         address tokenContractAddress;
         address winningProbabilityContractAddress;
@@ -111,6 +116,7 @@ contract NetworkConfig is Script {
         addresses.serialize("node_safe_migration", networkDetail.addresses.nodeSafeMigrationAddress);
         addresses.serialize("node_safe_registry", networkDetail.addresses.nodeSafeRegistryAddress);
         addresses.serialize("node_stake_factory", networkDetail.addresses.nodeStakeFactoryAddress);
+        addresses.serialize("service_registry", networkDetail.addresses.serviceRegistryAddress);
         addresses.serialize("ticket_price_oracle", networkDetail.addresses.ticketPriceOracleContractAddress);
         addresses.serialize("token", networkDetail.addresses.tokenContractAddress);
         addresses.serialize("winning_probability_oracle", networkDetail.addresses.winningProbabilityContractAddress);
