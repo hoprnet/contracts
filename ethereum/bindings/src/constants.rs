@@ -6,7 +6,7 @@
 //! development environment such as the one spun up by [`crate::config::create_anvil`].
 
 use alloy::{
-    primitives::{Address, FixedBytes, U256, address, b256},
+    primitives::{Address, FixedBytes, U256, address, aliases::U48, b256},
     uint,
 };
 use hex_literal::hex;
@@ -16,6 +16,17 @@ pub const INIT_KEY_BINDING_FEE: U256 = uint!(10_000_000_000_000_000_U256); // 0.
 
 /// Minted token amount for the mock xHOPR token contract and wxHOPR token contract in the local development environment
 pub const MINTED_TOKEN_AMOUNT: U256 = uint!(1_000_000_000_000_000_000_000_U256); // 1000 ether
+
+/// Initial admin delay of the service registry contract
+///
+/// The delay guards the transfer of the admin role only. It mirrors `INIT_ADMIN_DELAY` of
+/// `script/DeployAll.s.sol`.
+pub const INIT_ADMIN_DELAY: U48 = uint!(172_800_U48); // 2 days
+
+/// Initial type registration fee of the service registry contract in the local development environment
+///
+/// Mirrors `LOCAL_TYPE_REGISTRATION_FEE` of `script/DeployAll.s.sol`.
+pub const INIT_TYPE_REGISTRATION_FEE: U256 = uint!(1_000_000_000_000_000_000_U256); // 1 ether
 
 /// ERC1820 deployer wallet
 pub const ERC_1820_DEPLOYER: Address = address!("a990077c3205cbDf861e17Fa532eeB069cE9fF96");
