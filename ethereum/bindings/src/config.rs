@@ -66,6 +66,14 @@ pub struct ContractAddresses {
     /// Stake factory contract
     #[serde_as(as = "DisplayFromStr")]
     pub node_stake_factory: Address,
+    /// Service registry contract.
+    ///
+    /// NOTE: `ContractInstances` does not hold an instance of this contract yet, and
+    /// `deploy_for_testing` does not deploy one. The pinned `forge` generates bindings without
+    /// creation bytecode, so the generated module exposes no `deploy` function. A network that
+    /// has no deployment yet carries the zero address here.
+    #[serde_as(as = "DisplayFromStr")]
+    pub service_registry: Address,
     /// Price oracle contract
     #[serde_as(as = "DisplayFromStr")]
     pub ticket_price_oracle: Address,
@@ -96,6 +104,7 @@ impl IntoIterator for &ContractAddresses {
             self.node_stake_factory,
             self.module_implementation,
             self.xhopr_token,
+            self.service_registry,
         ]
         .into_iter()
     }
@@ -570,6 +579,10 @@ where
             module_implementation: *self.module_implementation.address(),
             node_safe_migration: *self.node_safe_migration.address(),
             xhopr_token: *self.xhopr_token.address(),
+            // `ContractInstances` holds no service registry instance yet, so a set of instances
+            // reports the zero address for it. The zero address is the "not deployed" sentinel of
+            // this repository. See the note on `ContractAddresses::service_registry`.
+            service_registry: Address::ZERO,
         }
     }
 }
@@ -590,6 +603,8 @@ where
             node_stake_factory: *instances.stake_factory.address(),
             module_implementation: *instances.module_implementation.address(),
             xhopr_token: *instances.xhopr_token.address(),
+            // see the note in `ContractInstances::get_contract_addresses`
+            service_registry: Address::ZERO,
         }
     }
 }
@@ -663,7 +678,9 @@ pub fn create_provider(
 mod tests {
     use tracing::{debug, info};
 
-    use super::{ContractInstances, NetworksWithContractAddresses};
+    use alloy::primitives::Address;
+
+    use super::{ContractAddresses, ContractInstances, NetworksWithContractAddresses};
     use crate::config::{create_anvil, create_provider};
 
     #[test]
@@ -710,10 +727,25 @@ mod tests {
         info!("  node_safe_migration:        {}", addresses.node_safe_migration);
         info!("  xhopr_token:                {}", addresses.xhopr_token);
 
-        // Check that the addresses are the same as the ones in the contracts-addresses.json file
+        // Check that the addresses are the same as the ones in the contracts-addresses.json file.
+        //
+        // The service registry is excluded. `DeployAll.s.sol` deploys it and records its address
+        // in the JSON file, while `deploy_for_testing` cannot deploy it: the pinned `forge`
+        // generates bindings without creation bytecode, so the generated module exposes no
+        // `deploy` function. Once that is fixed, deploy it directly after the xHOPR mint, which
+        // is where the Solidity script deploys it, and drop this normalisation.
         let expected_addresses = NetworksWithContractAddresses::default().networks["anvil-localhost"].addresses;
+        assert_ne!(
+            expected_addresses.service_registry,
+            Address::ZERO,
+            "the JSON file must record a service registry address for anvil-localhost"
+        );
         assert_eq!(
-            addresses, expected_addresses,
+            addresses,
+            ContractAddresses {
+                service_registry: Address::ZERO,
+                ..expected_addresses
+            },
             "contract addresses should match the ones in contracts-addresses.json"
         );
 

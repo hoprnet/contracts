@@ -11,6 +11,7 @@ Main contracts are
 ├── Crypto.sol                   # Cryptographic utility functions and primitives
 ├── MultiSig.sol                 # Multisig modifiers to enforce Safe-based node operations
 ├── Ledger.sol                   # Snapshot-based index for HOPR Channels
+├── ServiceRegistry.sol          # Permissionless registry of services that HOPR nodes offer
 ├── TicketPriceOracle.sol        # Oracle to update HOPR ticket price across the network
 ├── WinningProbabilityOracle.sol # Oracle to update HOPR minimum winning probability across the network
 
@@ -18,7 +19,8 @@ Main contracts are
 │   ├── IAvatar.sol
 │   ├── INetworkRegistryRequirement.sol
 │   ├── INodeManagementModule.sol
-│   └── INodeSafeRegistry.sol
+│   ├── INodeSafeRegistry.sol
+│   └── IServiceRequirement.sol       # Per-type policy contract of the service registry
 ├── node-stake                           # Node staking system built on Safe's Account-Abstraction design
 │   ├── NodeSafeRegistry.sol             # Registry mapping nodes to their Safe wallets
 │   ├── NodeStakeFactory.sol             # Factory contract to deploy and initialize node Safes

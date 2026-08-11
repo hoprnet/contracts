@@ -38,6 +38,18 @@ hopr-bindings = "4"
 - [`constants`] — well-known addresses and deployment bytecode for infrastructure the HOPR contracts depend on
   (ERC-1820 registry, [Safe](https://safe.global/) suite, Multicall3).
 - [`error`] — the [`Error`](crate::error::Error) type returned by this crate's helpers.
+
+## The service registry
+
+[`crate::hopr_service_registry`] and [`crate::hopr_service_registry_events`] hold the bindings of
+`HoprServiceRegistry`, the permissionless registry of services that HOPR nodes offer.
+
+CAUTION: The pinned `forge` generates bindings without creation bytecode, so these modules expose
+no `deploy` function. [`ContractInstances`](crate::config::ContractInstances) therefore holds no
+instance of this contract, and `deploy_for_testing` does not deploy one. Read the address of a
+deployed registry from
+[`ContractAddresses::service_registry`](crate::config::ContractAddresses::service_registry) and
+bind it yourself.
 - the `hopr-contract-addresses` binary — dumps the bundled `contracts-addresses.json` (see below) to stdout.
 
 ## Getting started
