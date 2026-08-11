@@ -8,6 +8,7 @@ mod codegen;
 
 pub mod config;
 pub mod constants;
+pub mod curvy;
 pub mod error;
 
 // Generated bindings for every HOPR Solidity contract, re-exported at the crate root, one module
