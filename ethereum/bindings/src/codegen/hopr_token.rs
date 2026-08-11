@@ -7727,7 +7727,7 @@ function transferFrom(address holder, address recipient, uint256 amount) externa
     ///Container for all the [`HoprToken`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprTokenCalls {
         #[allow(missing_docs)]
         DEFAULT_ADMIN_ROLE(DEFAULT_ADMIN_ROLECall),
@@ -9344,6 +9344,189 @@ function transferFrom(address holder, address recipient, uint256 amount) externa
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprTokenEvents {
+        /**Creates a [`Approval`] event.
+
+```solidity
+event Approval(address,address,uint256)
+```*/
+        #[inline]
+        pub fn approval(
+            owner: alloy::sol_types::private::Address,
+            spender: alloy::sol_types::private::Address,
+            value: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Approval(Approval {
+                owner: owner,
+                spender: spender,
+                value: value,
+            })
+        }
+        /**Creates a [`AuthorizedOperator`] event.
+
+```solidity
+event AuthorizedOperator(address,address)
+```*/
+        #[inline]
+        pub fn authorized_operator(
+            operator: alloy::sol_types::private::Address,
+            token_holder: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::AuthorizedOperator(AuthorizedOperator {
+                operator: operator,
+                tokenHolder: token_holder,
+            })
+        }
+        /**Creates a [`Burned`] event.
+
+```solidity
+event Burned(address,address,uint256,bytes,bytes)
+```*/
+        #[inline]
+        pub fn burned(
+            operator: alloy::sol_types::private::Address,
+            from: alloy::sol_types::private::Address,
+            amount: alloy::sol_types::private::primitives::aliases::U256,
+            data: alloy::sol_types::private::Bytes,
+            operator_data: alloy::sol_types::private::Bytes,
+        ) -> Self {
+            Self::Burned(Burned {
+                operator: operator,
+                from: from,
+                amount: amount,
+                data: data,
+                operatorData: operator_data,
+            })
+        }
+        /**Creates a [`Minted`] event.
+
+```solidity
+event Minted(address,address,uint256,bytes,bytes)
+```*/
+        #[inline]
+        pub fn minted(
+            operator: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            amount: alloy::sol_types::private::primitives::aliases::U256,
+            data: alloy::sol_types::private::Bytes,
+            operator_data: alloy::sol_types::private::Bytes,
+        ) -> Self {
+            Self::Minted(Minted {
+                operator: operator,
+                to: to,
+                amount: amount,
+                data: data,
+                operatorData: operator_data,
+            })
+        }
+        /**Creates a [`RevokedOperator`] event.
+
+```solidity
+event RevokedOperator(address,address)
+```*/
+        #[inline]
+        pub fn revoked_operator(
+            operator: alloy::sol_types::private::Address,
+            token_holder: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RevokedOperator(RevokedOperator {
+                operator: operator,
+                tokenHolder: token_holder,
+            })
+        }
+        /**Creates a [`RoleAdminChanged`] event.
+
+```solidity
+event RoleAdminChanged(bytes32,bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn role_admin_changed(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            previous_admin_role: alloy::sol_types::private::FixedBytes<32>,
+            new_admin_role: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::RoleAdminChanged(RoleAdminChanged {
+                role: role,
+                previousAdminRole: previous_admin_role,
+                newAdminRole: new_admin_role,
+            })
+        }
+        /**Creates a [`RoleGranted`] event.
+
+```solidity
+event RoleGranted(bytes32,address,address)
+```*/
+        #[inline]
+        pub fn role_granted(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            account: alloy::sol_types::private::Address,
+            sender: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RoleGranted(RoleGranted {
+                role: role,
+                account: account,
+                sender: sender,
+            })
+        }
+        /**Creates a [`RoleRevoked`] event.
+
+```solidity
+event RoleRevoked(bytes32,address,address)
+```*/
+        #[inline]
+        pub fn role_revoked(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            account: alloy::sol_types::private::Address,
+            sender: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RoleRevoked(RoleRevoked {
+                role: role,
+                account: account,
+                sender: sender,
+            })
+        }
+        /**Creates a [`Sent`] event.
+
+```solidity
+event Sent(address,address,address,uint256,bytes,bytes)
+```*/
+        #[inline]
+        pub fn sent(
+            operator: alloy::sol_types::private::Address,
+            from: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            amount: alloy::sol_types::private::primitives::aliases::U256,
+            data: alloy::sol_types::private::Bytes,
+            operator_data: alloy::sol_types::private::Bytes,
+        ) -> Self {
+            Self::Sent(Sent {
+                operator: operator,
+                from: from,
+                to: to,
+                amount: amount,
+                data: data,
+                operatorData: operator_data,
+            })
+        }
+        /**Creates a [`Transfer`] event.
+
+```solidity
+event Transfer(address,address,uint256)
+```*/
+        #[inline]
+        pub fn transfer(
+            from: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            value: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Transfer(Transfer {
+                from: from,
+                to: to,
+                value: value,
+            })
         }
     }
     use alloy::contract as alloy_contract;

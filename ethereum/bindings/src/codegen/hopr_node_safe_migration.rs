@@ -3024,7 +3024,7 @@ function migrateWithFallbackHandler() external;
     ///Container for all the [`HoprNodeSafeMigration`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprNodeSafeMigrationCalls {
         #[allow(missing_docs)]
         FACTORY_ADDRESS(FACTORY_ADDRESSCall),
@@ -3868,6 +3868,31 @@ function migrateWithFallbackHandler() external;
             }
         }
     }
+    #[automatically_derived]
+    impl HoprNodeSafeMigrationErrors {
+        /**Creates a [`ModuleNotEnabledInSafe`] error.
+
+```solidity
+error ModuleNotEnabledInSafe()
+```*/
+        #[inline]
+        pub fn module_not_enabled_in_safe() -> Self {
+            Self::ModuleNotEnabledInSafe(ModuleNotEnabledInSafe)
+        }
+        /**Creates a [`UndeployedContract`] error.
+
+```solidity
+error UndeployedContract(string)
+```*/
+        #[inline]
+        pub fn undeployed_contract(
+            contract_name: alloy::sol_types::private::String,
+        ) -> Self {
+            Self::UndeployedContract(UndeployedContract {
+                contractName: contract_name,
+            })
+        }
+    }
     ///Container for all the [`HoprNodeSafeMigration`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -4038,6 +4063,65 @@ function migrateWithFallbackHandler() external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprNodeSafeMigrationEvents {
+        /**Creates a [`ChangedMasterCopy`] event.
+
+```solidity
+event ChangedMasterCopy(address)
+```*/
+        #[inline]
+        pub fn changed_master_copy(
+            singleton: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::ChangedMasterCopy(ChangedMasterCopy {
+                singleton: singleton,
+            })
+        }
+        /**Creates a [`ChangedModuleImplementation`] event.
+
+```solidity
+event ChangedModuleImplementation(address)
+```*/
+        #[inline]
+        pub fn changed_module_implementation(
+            module_proxy: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::ChangedModuleImplementation(ChangedModuleImplementation {
+                moduleProxy: module_proxy,
+            })
+        }
+        /**Creates a [`DeployedNewV4Module`] event.
+
+```solidity
+event DeployedNewV4Module(address)
+```*/
+        #[inline]
+        pub fn deployed_new_v_4_module(
+            new_module_proxy: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::DeployedNewV4Module(DeployedNewV4Module {
+                newModuleProxy: new_module_proxy,
+            })
+        }
+        /**Creates a [`SafeAndModuleMigrationCompleted`] event.
+
+```solidity
+event SafeAndModuleMigrationCompleted(address,address,address)
+```*/
+        #[inline]
+        pub fn safe_and_module_migration_completed(
+            safe_proxy: alloy::sol_types::private::Address,
+            old_module_proxy: alloy::sol_types::private::Address,
+            new_module_proxy: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::SafeAndModuleMigrationCompleted(SafeAndModuleMigrationCompleted {
+                safeProxy: safe_proxy,
+                oldModuleProxy: old_module_proxy,
+                newModuleProxy: new_module_proxy,
+            })
         }
     }
     use alloy::contract as alloy_contract;

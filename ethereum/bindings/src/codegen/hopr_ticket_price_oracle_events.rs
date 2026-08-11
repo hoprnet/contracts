@@ -274,6 +274,24 @@ event TicketPriceUpdated(uint256, uint256);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprTicketPriceOracleEventsEvents {
+        /**Creates a [`TicketPriceUpdated`] event.
+
+```solidity
+event TicketPriceUpdated(uint256,uint256)
+```*/
+        #[inline]
+        pub fn ticket_price_updated(
+            _0: alloy::sol_types::private::primitives::aliases::U256,
+            _1: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::TicketPriceUpdated(TicketPriceUpdated {
+                _0: _0,
+                _1: _1,
+            })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprTicketPriceOracleEvents`](self) contract instance.
 

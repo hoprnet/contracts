@@ -8160,7 +8160,7 @@ function updateSafeLibAddress(SafeLibAddress memory _newSafeLibAddresses) extern
     ///Container for all the [`HoprNodeStakeFactory`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprNodeStakeFactoryCalls {
         #[allow(missing_docs)]
         DEPLOYSAFEANDMODULEANDINCLUDENODES_IDENTIFIER(
@@ -10007,6 +10007,133 @@ function updateSafeLibAddress(SafeLibAddress memory _newSafeLibAddresses) extern
             }
         }
     }
+    #[automatically_derived]
+    impl HoprNodeStakeFactoryErrors {
+        /**Creates a [`Create2EmptyBytecode`] error.
+
+```solidity
+error Create2EmptyBytecode()
+```*/
+        #[inline]
+        pub fn create_2_empty_bytecode() -> Self {
+            Self::Create2EmptyBytecode(Create2EmptyBytecode)
+        }
+        /**Creates a [`ExistingSafeModule`] error.
+
+```solidity
+error ExistingSafeModule()
+```*/
+        #[inline]
+        pub fn existing_safe_module() -> Self {
+            Self::ExistingSafeModule(ExistingSafeModule)
+        }
+        /**Creates a [`FailedDeployment`] error.
+
+```solidity
+error FailedDeployment()
+```*/
+        #[inline]
+        pub fn failed_deployment() -> Self {
+            Self::FailedDeployment(FailedDeployment)
+        }
+        /**Creates a [`InsufficientBalance`] error.
+
+```solidity
+error InsufficientBalance(uint256,uint256)
+```*/
+        #[inline]
+        pub fn insufficient_balance(
+            balance: alloy::sol_types::private::primitives::aliases::U256,
+            needed: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::InsufficientBalance(InsufficientBalance {
+                balance: balance,
+                needed: needed,
+            })
+        }
+        /**Creates a [`InvalidFunctionSelector`] error.
+
+```solidity
+error InvalidFunctionSelector()
+```*/
+        #[inline]
+        pub fn invalid_function_selector() -> Self {
+            Self::InvalidFunctionSelector(InvalidFunctionSelector)
+        }
+        /**Creates a [`InvalidOwner`] error.
+
+```solidity
+error InvalidOwner()
+```*/
+        #[inline]
+        pub fn invalid_owner() -> Self {
+            Self::InvalidOwner(InvalidOwner)
+        }
+        /**Creates a [`NotTokenRecipient`] error.
+
+```solidity
+error NotTokenRecipient()
+```*/
+        #[inline]
+        pub fn not_token_recipient() -> Self {
+            Self::NotTokenRecipient(NotTokenRecipient)
+        }
+        /**Creates a [`OwnableInvalidOwner`] error.
+
+```solidity
+error OwnableInvalidOwner(address)
+```*/
+        #[inline]
+        pub fn ownable_invalid_owner(owner: alloy::sol_types::private::Address) -> Self {
+            Self::OwnableInvalidOwner(OwnableInvalidOwner {
+                owner: owner,
+            })
+        }
+        /**Creates a [`OwnableUnauthorizedAccount`] error.
+
+```solidity
+error OwnableUnauthorizedAccount(address)
+```*/
+        #[inline]
+        pub fn ownable_unauthorized_account(
+            account: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnableUnauthorizedAccount(OwnableUnauthorizedAccount {
+                account: account,
+            })
+        }
+        /**Creates a [`SafeERC20FailedOperation`] error.
+
+```solidity
+error SafeERC20FailedOperation(address)
+```*/
+        #[inline]
+        pub fn safe_erc_20_failed_operation(
+            token: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::SafeERC20FailedOperation(SafeERC20FailedOperation {
+                token: token,
+            })
+        }
+        /**Creates a [`TooFewOwners`] error.
+
+```solidity
+error TooFewOwners()
+```*/
+        #[inline]
+        pub fn too_few_owners() -> Self {
+            Self::TooFewOwners(TooFewOwners)
+        }
+        /**Creates a [`UnauthorizedToken`] error.
+
+```solidity
+error UnauthorizedToken()
+```*/
+        #[inline]
+        pub fn unauthorized_token() -> Self {
+            Self::UnauthorizedToken(UnauthorizedToken)
+        }
+    }
     ///Container for all the [`HoprNodeStakeFactory`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -10274,6 +10401,119 @@ function updateSafeLibAddress(SafeLibAddress memory _newSafeLibAddresses) extern
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprNodeStakeFactoryEvents {
+        /**Creates a [`HoprNodeStakeHoprNetworkUpdated`] event.
+
+```solidity
+event HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32))
+```*/
+        #[inline]
+        pub fn hopr_node_stake_hopr_network_updated(
+            hopr_network: <HoprNetwork as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::HoprNodeStakeHoprNetworkUpdated(HoprNodeStakeHoprNetworkUpdated {
+                hoprNetwork: hopr_network,
+            })
+        }
+        /**Creates a [`HoprNodeStakeModuleUpdated`] event.
+
+```solidity
+event HoprNodeStakeModuleUpdated(address)
+```*/
+        #[inline]
+        pub fn hopr_node_stake_module_updated(
+            module_implementation: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::HoprNodeStakeModuleUpdated(HoprNodeStakeModuleUpdated {
+                moduleImplementation: module_implementation,
+            })
+        }
+        /**Creates a [`HoprNodeStakeSafeLibUpdated`] event.
+
+```solidity
+event HoprNodeStakeSafeLibUpdated((address,address,address,address))
+```*/
+        #[inline]
+        pub fn hopr_node_stake_safe_lib_updated(
+            safe_lib_addresses: <SafeLibAddress as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::HoprNodeStakeSafeLibUpdated(HoprNodeStakeSafeLibUpdated {
+                safeLibAddresses: safe_lib_addresses,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeModule`] event.
+
+```solidity
+event NewHoprNodeStakeModule(address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_module(
+            instance: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeModule(NewHoprNodeStakeModule {
+                instance: instance,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeModuleForSafe`] event.
+
+```solidity
+event NewHoprNodeStakeModuleForSafe(address,address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_module_for_safe(
+            module: alloy::sol_types::private::Address,
+            safe: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeModuleForSafe(NewHoprNodeStakeModuleForSafe {
+                module: module,
+                safe: safe,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeSafe`] event.
+
+```solidity
+event NewHoprNodeStakeSafe(address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_safe(
+            instance: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeSafe(NewHoprNodeStakeSafe {
+                instance: instance,
+            })
+        }
+        /**Creates a [`OwnershipTransferStarted`] event.
+
+```solidity
+event OwnershipTransferStarted(address,address)
+```*/
+        #[inline]
+        pub fn ownership_transfer_started(
+            previous_owner: alloy::sol_types::private::Address,
+            new_owner: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnershipTransferStarted(OwnershipTransferStarted {
+                previousOwner: previous_owner,
+                newOwner: new_owner,
+            })
+        }
+        /**Creates a [`OwnershipTransferred`] event.
+
+```solidity
+event OwnershipTransferred(address,address)
+```*/
+        #[inline]
+        pub fn ownership_transferred(
+            previous_owner: alloy::sol_types::private::Address,
+            new_owner: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnershipTransferred(OwnershipTransferred {
+                previousOwner: previous_owner,
+                newOwner: new_owner,
+            })
         }
     }
     use alloy::contract as alloy_contract;

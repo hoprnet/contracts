@@ -590,6 +590,52 @@ event RegisteredNodeSafe(address indexed safeAddress, address indexed nodeAddres
             }
         }
     }
+    #[automatically_derived]
+    impl HoprNodeSafeRegistryEventsEvents {
+        /**Creates a [`DeregisteredNodeSafe`] event.
+
+```solidity
+event DeregisteredNodeSafe(address,address)
+```*/
+        #[inline]
+        pub fn deregistered_node_safe(
+            safe_address: alloy::sol_types::private::Address,
+            node_address: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::DeregisteredNodeSafe(DeregisteredNodeSafe {
+                safeAddress: safe_address,
+                nodeAddress: node_address,
+            })
+        }
+        /**Creates a [`DomainSeparatorUpdated`] event.
+
+```solidity
+event DomainSeparatorUpdated(bytes32)
+```*/
+        #[inline]
+        pub fn domain_separator_updated(
+            domain_separator: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::DomainSeparatorUpdated(DomainSeparatorUpdated {
+                domainSeparator: domain_separator,
+            })
+        }
+        /**Creates a [`RegisteredNodeSafe`] event.
+
+```solidity
+event RegisteredNodeSafe(address,address)
+```*/
+        #[inline]
+        pub fn registered_node_safe(
+            safe_address: alloy::sol_types::private::Address,
+            node_address: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RegisteredNodeSafe(RegisteredNodeSafe {
+                safeAddress: safe_address,
+                nodeAddress: node_address,
+            })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprNodeSafeRegistryEvents`](self) contract instance.
 

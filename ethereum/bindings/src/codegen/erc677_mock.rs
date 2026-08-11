@@ -2967,7 +2967,7 @@ function transferFrom(address _from, address _to, uint256 _value) external retur
     ///Container for all the [`ERC677Mock`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum ERC677MockCalls {
         #[allow(missing_docs)]
         allowance(allowanceCall),
@@ -3683,6 +3683,62 @@ function transferFrom(address _from, address _to, uint256 _value) external retur
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl ERC677MockEvents {
+        /**Creates a [`Approval`] event.
+
+```solidity
+event Approval(address,address,uint256)
+```*/
+        #[inline]
+        pub fn approval(
+            owner: alloy::sol_types::private::Address,
+            spender: alloy::sol_types::private::Address,
+            value: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Approval(Approval {
+                owner: owner,
+                spender: spender,
+                value: value,
+            })
+        }
+        /**Creates a [`Transfer`] event.
+
+```solidity
+event Transfer(address,address,uint256)
+```*/
+        #[inline]
+        pub fn transfer(
+            from: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            value: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Transfer(Transfer {
+                from: from,
+                to: to,
+                value: value,
+            })
+        }
+        /**Creates a [`TransferAndCall`] event.
+
+```solidity
+event TransferAndCall(address,address,uint256,bytes)
+```*/
+        #[inline]
+        pub fn transfer_and_call(
+            from: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            value: alloy::sol_types::private::primitives::aliases::U256,
+            data: alloy::sol_types::private::Bytes,
+        ) -> Self {
+            Self::TransferAndCall(TransferAndCall {
+                from: from,
+                to: to,
+                value: value,
+                data: data,
+            })
         }
     }
     use alloy::contract as alloy_contract;

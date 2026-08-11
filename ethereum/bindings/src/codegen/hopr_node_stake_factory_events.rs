@@ -1722,6 +1722,89 @@ event NewHoprNodeStakeSafe(address instance);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprNodeStakeFactoryEventsEvents {
+        /**Creates a [`HoprNodeStakeHoprNetworkUpdated`] event.
+
+```solidity
+event HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32))
+```*/
+        #[inline]
+        pub fn hopr_node_stake_hopr_network_updated(
+            hopr_network: <HoprNodeStakeFactory::HoprNetwork as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::HoprNodeStakeHoprNetworkUpdated(HoprNodeStakeHoprNetworkUpdated {
+                hoprNetwork: hopr_network,
+            })
+        }
+        /**Creates a [`HoprNodeStakeModuleUpdated`] event.
+
+```solidity
+event HoprNodeStakeModuleUpdated(address)
+```*/
+        #[inline]
+        pub fn hopr_node_stake_module_updated(
+            module_implementation: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::HoprNodeStakeModuleUpdated(HoprNodeStakeModuleUpdated {
+                moduleImplementation: module_implementation,
+            })
+        }
+        /**Creates a [`HoprNodeStakeSafeLibUpdated`] event.
+
+```solidity
+event HoprNodeStakeSafeLibUpdated((address,address,address,address))
+```*/
+        #[inline]
+        pub fn hopr_node_stake_safe_lib_updated(
+            safe_lib_addresses: <HoprNodeStakeFactory::SafeLibAddress as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::HoprNodeStakeSafeLibUpdated(HoprNodeStakeSafeLibUpdated {
+                safeLibAddresses: safe_lib_addresses,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeModule`] event.
+
+```solidity
+event NewHoprNodeStakeModule(address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_module(
+            instance: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeModule(NewHoprNodeStakeModule {
+                instance: instance,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeModuleForSafe`] event.
+
+```solidity
+event NewHoprNodeStakeModuleForSafe(address,address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_module_for_safe(
+            module: alloy::sol_types::private::Address,
+            safe: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeModuleForSafe(NewHoprNodeStakeModuleForSafe {
+                module: module,
+                safe: safe,
+            })
+        }
+        /**Creates a [`NewHoprNodeStakeSafe`] event.
+
+```solidity
+event NewHoprNodeStakeSafe(address)
+```*/
+        #[inline]
+        pub fn new_hopr_node_stake_safe(
+            instance: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NewHoprNodeStakeSafe(NewHoprNodeStakeSafe {
+                instance: instance,
+            })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprNodeStakeFactoryEvents`](self) contract instance.
 

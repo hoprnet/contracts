@@ -399,22 +399,22 @@ pub mod HoprCapabilityPermissions {
     /// The creation / init bytecode of the contract.
     ///
     /// ```text
-    ///0x61012e610034600b8282823980515f1a607314602857634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea264697066735822122024f69c23138ed0b62bd8bd7274003ea3fee9b09c68e61c30f598fa897d5aecfb64736f6c634300081e0033
+    ///0x61012e610034600b8282823980515f1a607314602857634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea2646970667358221220447c040fa198591b8b72469bf454ecb91de77c8a8b45ccbeadabb0383f68af4a64736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"a\x01.a\x004`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`(WcNH{q`\xE0\x1B_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 $\xF6\x9C#\x13\x8E\xD0\xB6+\xD8\xBDrt\0>\xA3\xFE\xE9\xB0\x9Ch\xE6\x1C0\xF5\x98\xFA\x89}Z\xEC\xFBdsolcC\0\x08\x1E\x003",
+        b"a\x01.a\x004`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`(WcNH{q`\xE0\x1B_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 D|\x04\x0F\xA1\x98Y\x1B\x8BrF\x9B\xF4T\xEC\xB9\x1D\xE7|\x8A\x8BE\xCC\xBE\xAD\xAB\xB08?h\xAFJdsolcC\0\x08\x1E\x003",
     );
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea264697066735822122024f69c23138ed0b62bd8bd7274003ea3fee9b09c68e61c30f598fa897d5aecfb64736f6c634300081e0033
+    ///0x7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea2646970667358221220447c040fa198591b8b72469bf454ecb91de77c8a8b45ccbeadabb0383f68af4a64736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 $\xF6\x9C#\x13\x8E\xD0\xB6+\xD8\xBDrt\0>\xA3\xFE\xE9\xB0\x9Ch\xE6\x1C0\xF5\x98\xFA\x89}Z\xEC\xFBdsolcC\0\x08\x1E\x003",
+        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 D|\x04\x0F\xA1\x98Y\x1B\x8BrF\x9B\xF4T\xEC\xB9\x1D\xE7|\x8A\x8BE\xCC\xBE\xAD\xAB\xB08?h\xAFJdsolcC\0\x08\x1E\x003",
     );
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
@@ -460,7 +460,7 @@ pub mod HoprCapabilityPermissions {
         }
         impl GranularPermission {
             /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
+            pub const NAME: &'static str = stringify!(GranularPermission);
             /// Convert from the underlying value type.
             #[inline]
             pub const fn from_underlying(value: u8) -> Self {
@@ -598,7 +598,7 @@ pub mod HoprCapabilityPermissions {
         }
         impl Target {
             /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
+            pub const NAME: &'static str = stringify!(Target);
             /// Convert from the underlying value type.
             #[inline]
             pub const fn from_underlying(
@@ -3872,7 +3872,7 @@ function SEND_SELECTOR() external view returns (bytes4);
     ///Container for all the [`HoprCapabilityPermissions`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprCapabilityPermissionsCalls {
         #[allow(missing_docs)]
         APPROVE_SELECTOR(APPROVE_SELECTORCall),
@@ -5105,6 +5105,162 @@ function SEND_SELECTOR() external view returns (bytes4);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprCapabilityPermissionsErrors {
+        /**Creates a [`AddressIsZero`] error.
+
+```solidity
+error AddressIsZero()
+```*/
+        #[inline]
+        pub fn address_is_zero() -> Self {
+            Self::AddressIsZero(AddressIsZero)
+        }
+        /**Creates a [`ArrayTooLong`] error.
+
+```solidity
+error ArrayTooLong()
+```*/
+        #[inline]
+        pub fn array_too_long() -> Self {
+            Self::ArrayTooLong(ArrayTooLong)
+        }
+        /**Creates a [`ArraysDifferentLength`] error.
+
+```solidity
+error ArraysDifferentLength()
+```*/
+        #[inline]
+        pub fn arrays_different_length() -> Self {
+            Self::ArraysDifferentLength(ArraysDifferentLength)
+        }
+        /**Creates a [`CalldataOutOfBounds`] error.
+
+```solidity
+error CalldataOutOfBounds()
+```*/
+        #[inline]
+        pub fn calldata_out_of_bounds() -> Self {
+            Self::CalldataOutOfBounds(CalldataOutOfBounds)
+        }
+        /**Creates a [`DefaultPermissionRejected`] error.
+
+```solidity
+error DefaultPermissionRejected()
+```*/
+        #[inline]
+        pub fn default_permission_rejected() -> Self {
+            Self::DefaultPermissionRejected(DefaultPermissionRejected)
+        }
+        /**Creates a [`DelegateCallNotAllowed`] error.
+
+```solidity
+error DelegateCallNotAllowed()
+```*/
+        #[inline]
+        pub fn delegate_call_not_allowed() -> Self {
+            Self::DelegateCallNotAllowed(DelegateCallNotAllowed)
+        }
+        /**Creates a [`FunctionSignatureTooShort`] error.
+
+```solidity
+error FunctionSignatureTooShort()
+```*/
+        #[inline]
+        pub fn function_signature_too_short() -> Self {
+            Self::FunctionSignatureTooShort(FunctionSignatureTooShort)
+        }
+        /**Creates a [`GranularPermissionRejected`] error.
+
+```solidity
+error GranularPermissionRejected()
+```*/
+        #[inline]
+        pub fn granular_permission_rejected() -> Self {
+            Self::GranularPermissionRejected(GranularPermissionRejected)
+        }
+        /**Creates a [`NoMembership`] error.
+
+```solidity
+error NoMembership()
+```*/
+        #[inline]
+        pub fn no_membership() -> Self {
+            Self::NoMembership(NoMembership)
+        }
+        /**Creates a [`NodePermissionRejected`] error.
+
+```solidity
+error NodePermissionRejected()
+```*/
+        #[inline]
+        pub fn node_permission_rejected() -> Self {
+            Self::NodePermissionRejected(NodePermissionRejected)
+        }
+        /**Creates a [`ParameterNotAllowed`] error.
+
+```solidity
+error ParameterNotAllowed()
+```*/
+        #[inline]
+        pub fn parameter_not_allowed() -> Self {
+            Self::ParameterNotAllowed(ParameterNotAllowed)
+        }
+        /**Creates a [`PermissionNotConfigured`] error.
+
+```solidity
+error PermissionNotConfigured()
+```*/
+        #[inline]
+        pub fn permission_not_configured() -> Self {
+            Self::PermissionNotConfigured(PermissionNotConfigured)
+        }
+        /**Creates a [`SendNotAllowed`] error.
+
+```solidity
+error SendNotAllowed()
+```*/
+        #[inline]
+        pub fn send_not_allowed() -> Self {
+            Self::SendNotAllowed(SendNotAllowed)
+        }
+        /**Creates a [`TargetAddressNotAllowed`] error.
+
+```solidity
+error TargetAddressNotAllowed()
+```*/
+        #[inline]
+        pub fn target_address_not_allowed() -> Self {
+            Self::TargetAddressNotAllowed(TargetAddressNotAllowed)
+        }
+        /**Creates a [`TargetIsNotScoped`] error.
+
+```solidity
+error TargetIsNotScoped()
+```*/
+        #[inline]
+        pub fn target_is_not_scoped() -> Self {
+            Self::TargetIsNotScoped(TargetIsNotScoped)
+        }
+        /**Creates a [`TargetIsScoped`] error.
+
+```solidity
+error TargetIsScoped()
+```*/
+        #[inline]
+        pub fn target_is_scoped() -> Self {
+            Self::TargetIsScoped(TargetIsScoped)
+        }
+        /**Creates a [`UnacceptableMultiSendOffset`] error.
+
+```solidity
+error UnacceptableMultiSendOffset()
+```*/
+        #[inline]
+        pub fn unacceptable_multi_send_offset() -> Self {
+            Self::UnacceptableMultiSendOffset(UnacceptableMultiSendOffset)
+        }
+    }
     ///Container for all the [`HoprCapabilityPermissions`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -5343,6 +5499,124 @@ function SEND_SELECTOR() external view returns (bytes4);
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprCapabilityPermissionsEvents {
+        /**Creates a [`RevokedTarget`] event.
+
+```solidity
+event RevokedTarget(address)
+```*/
+        #[inline]
+        pub fn revoked_target(
+            target_address: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RevokedTarget(RevokedTarget {
+                targetAddress: target_address,
+            })
+        }
+        /**Creates a [`ScopedGranularChannelCapability`] event.
+
+```solidity
+event ScopedGranularChannelCapability(address,bytes32,bytes4,uint8)
+```*/
+        #[inline]
+        pub fn scoped_granular_channel_capability(
+            target_address: alloy::sol_types::private::Address,
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            selector: alloy::sol_types::private::FixedBytes<4>,
+            permission: <GranularPermission as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedGranularChannelCapability(ScopedGranularChannelCapability {
+                targetAddress: target_address,
+                channelId: channel_id,
+                selector: selector,
+                permission: permission,
+            })
+        }
+        /**Creates a [`ScopedGranularSendCapability`] event.
+
+```solidity
+event ScopedGranularSendCapability(address,address,uint8)
+```*/
+        #[inline]
+        pub fn scoped_granular_send_capability(
+            node_address: alloy::sol_types::private::Address,
+            recipient_address: alloy::sol_types::private::Address,
+            permission: <GranularPermission as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedGranularSendCapability(ScopedGranularSendCapability {
+                nodeAddress: node_address,
+                recipientAddress: recipient_address,
+                permission: permission,
+            })
+        }
+        /**Creates a [`ScopedGranularTokenCapability`] event.
+
+```solidity
+event ScopedGranularTokenCapability(address,address,address,bytes4,uint8)
+```*/
+        #[inline]
+        pub fn scoped_granular_token_capability(
+            node_address: alloy::sol_types::private::Address,
+            target_address: alloy::sol_types::private::Address,
+            recipient_address: alloy::sol_types::private::Address,
+            selector: alloy::sol_types::private::FixedBytes<4>,
+            permission: <GranularPermission as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedGranularTokenCapability(ScopedGranularTokenCapability {
+                nodeAddress: node_address,
+                targetAddress: target_address,
+                recipientAddress: recipient_address,
+                selector: selector,
+                permission: permission,
+            })
+        }
+        /**Creates a [`ScopedTargetChannels`] event.
+
+```solidity
+event ScopedTargetChannels(address,uint256)
+```*/
+        #[inline]
+        pub fn scoped_target_channels(
+            target_address: alloy::sol_types::private::Address,
+            target: <Target as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedTargetChannels(ScopedTargetChannels {
+                targetAddress: target_address,
+                target: target,
+            })
+        }
+        /**Creates a [`ScopedTargetSend`] event.
+
+```solidity
+event ScopedTargetSend(address,uint256)
+```*/
+        #[inline]
+        pub fn scoped_target_send(
+            target_address: alloy::sol_types::private::Address,
+            target: <Target as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedTargetSend(ScopedTargetSend {
+                targetAddress: target_address,
+                target: target,
+            })
+        }
+        /**Creates a [`ScopedTargetToken`] event.
+
+```solidity
+event ScopedTargetToken(address,uint256)
+```*/
+        #[inline]
+        pub fn scoped_target_token(
+            target_address: alloy::sol_types::private::Address,
+            target: <Target as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedTargetToken(ScopedTargetToken {
+                targetAddress: target_address,
+                target: target,
+            })
         }
     }
     use alloy::contract as alloy_contract;

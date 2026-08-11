@@ -268,6 +268,22 @@ event LedgerDomainSeparatorUpdated(bytes32 indexed ledgerDomainSeparator);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprLedgerEventsEvents {
+        /**Creates a [`LedgerDomainSeparatorUpdated`] event.
+
+```solidity
+event LedgerDomainSeparatorUpdated(bytes32)
+```*/
+        #[inline]
+        pub fn ledger_domain_separator_updated(
+            ledger_domain_separator: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::LedgerDomainSeparatorUpdated(LedgerDomainSeparatorUpdated {
+                ledgerDomainSeparator: ledger_domain_separator,
+            })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprLedgerEvents`](self) contract instance.
 

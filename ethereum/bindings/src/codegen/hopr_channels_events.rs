@@ -1254,6 +1254,116 @@ event TicketRedeemed(bytes32 indexed channelId, bytes32 channel);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprChannelsEventsEvents {
+        /**Creates a [`ChannelBalanceDecreased`] event.
+
+```solidity
+event ChannelBalanceDecreased(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn channel_balance_decreased(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::ChannelBalanceDecreased(ChannelBalanceDecreased {
+                channelId: channel_id,
+                channel: channel,
+            })
+        }
+        /**Creates a [`ChannelBalanceIncreased`] event.
+
+```solidity
+event ChannelBalanceIncreased(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn channel_balance_increased(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::ChannelBalanceIncreased(ChannelBalanceIncreased {
+                channelId: channel_id,
+                channel: channel,
+            })
+        }
+        /**Creates a [`ChannelClosed`] event.
+
+```solidity
+event ChannelClosed(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn channel_closed(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::ChannelClosed(ChannelClosed {
+                channelId: channel_id,
+                channel: channel,
+            })
+        }
+        /**Creates a [`ChannelOpened`] event.
+
+```solidity
+event ChannelOpened(bytes32,address,address,bytes32)
+```*/
+        #[inline]
+        pub fn channel_opened(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            source: alloy::sol_types::private::Address,
+            destination: alloy::sol_types::private::Address,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::ChannelOpened(ChannelOpened {
+                channelId: channel_id,
+                source: source,
+                destination: destination,
+                channel: channel,
+            })
+        }
+        /**Creates a [`DomainSeparatorUpdated`] event.
+
+```solidity
+event DomainSeparatorUpdated(bytes32)
+```*/
+        #[inline]
+        pub fn domain_separator_updated(
+            domain_separator: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::DomainSeparatorUpdated(DomainSeparatorUpdated {
+                domainSeparator: domain_separator,
+            })
+        }
+        /**Creates a [`OutgoingChannelClosureInitiated`] event.
+
+```solidity
+event OutgoingChannelClosureInitiated(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn outgoing_channel_closure_initiated(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::OutgoingChannelClosureInitiated(OutgoingChannelClosureInitiated {
+                channelId: channel_id,
+                channel: channel,
+            })
+        }
+        /**Creates a [`TicketRedeemed`] event.
+
+```solidity
+event TicketRedeemed(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn ticket_redeemed(
+            channel_id: alloy::sol_types::private::FixedBytes<32>,
+            channel: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::TicketRedeemed(TicketRedeemed {
+                channelId: channel_id,
+                channel: channel,
+            })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprChannelsEvents`](self) contract instance.
 

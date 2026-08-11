@@ -1662,7 +1662,7 @@ function transferOwnership(address newOwner) external;
     ///Container for all the [`HoprTicketPriceOracle`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprTicketPriceOracleCalls {
         #[allow(missing_docs)]
         currentTicketPrice(currentTicketPriceCall),
@@ -2278,6 +2278,60 @@ function transferOwnership(address newOwner) external;
             }
         }
     }
+    #[automatically_derived]
+    impl HoprTicketPriceOracleErrors {
+        /**Creates a [`OwnableInvalidOwner`] error.
+
+```solidity
+error OwnableInvalidOwner(address)
+```*/
+        #[inline]
+        pub fn ownable_invalid_owner(owner: alloy::sol_types::private::Address) -> Self {
+            Self::OwnableInvalidOwner(OwnableInvalidOwner {
+                owner: owner,
+            })
+        }
+        /**Creates a [`OwnableUnauthorizedAccount`] error.
+
+```solidity
+error OwnableUnauthorizedAccount(address)
+```*/
+        #[inline]
+        pub fn ownable_unauthorized_account(
+            account: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnableUnauthorizedAccount(OwnableUnauthorizedAccount {
+                account: account,
+            })
+        }
+        /**Creates a [`TicketPriceMustNotBeSame`] error.
+
+```solidity
+error TicketPriceMustNotBeSame()
+```*/
+        #[inline]
+        pub fn ticket_price_must_not_be_same() -> Self {
+            Self::TicketPriceMustNotBeSame(TicketPriceMustNotBeSame)
+        }
+        /**Creates a [`TicketPriceMustNotBeZero`] error.
+
+```solidity
+error TicketPriceMustNotBeZero()
+```*/
+        #[inline]
+        pub fn ticket_price_must_not_be_zero() -> Self {
+            Self::TicketPriceMustNotBeZero(TicketPriceMustNotBeZero)
+        }
+        /**Creates a [`ZeroAddress`] error.
+
+```solidity
+error ZeroAddress(string)
+```*/
+        #[inline]
+        pub fn zero_address(reason: alloy::sol_types::private::String) -> Self {
+            Self::ZeroAddress(ZeroAddress { reason: reason })
+        }
+    }
     ///Container for all the [`HoprTicketPriceOracle`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -2400,6 +2454,39 @@ function transferOwnership(address newOwner) external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprTicketPriceOracleEvents {
+        /**Creates a [`OwnershipTransferred`] event.
+
+```solidity
+event OwnershipTransferred(address,address)
+```*/
+        #[inline]
+        pub fn ownership_transferred(
+            previous_owner: alloy::sol_types::private::Address,
+            new_owner: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnershipTransferred(OwnershipTransferred {
+                previousOwner: previous_owner,
+                newOwner: new_owner,
+            })
+        }
+        /**Creates a [`TicketPriceUpdated`] event.
+
+```solidity
+event TicketPriceUpdated(uint256,uint256)
+```*/
+        #[inline]
+        pub fn ticket_price_updated(
+            _0: alloy::sol_types::private::primitives::aliases::U256,
+            _1: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::TicketPriceUpdated(TicketPriceUpdated {
+                _0: _0,
+                _1: _1,
+            })
         }
     }
     use alloy::contract as alloy_contract;

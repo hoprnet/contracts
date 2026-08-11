@@ -777,6 +777,69 @@ event RevokeAnnouncement(address node);
             }
         }
     }
+    #[automatically_derived]
+    impl HoprAnnouncementsEventsEvents {
+        /**Creates a [`AddressAnnouncement`] event.
+
+```solidity
+event AddressAnnouncement(address,string)
+```*/
+        #[inline]
+        pub fn address_announcement(
+            node: alloy::sol_types::private::Address,
+            base_multiaddr: alloy::sol_types::private::String,
+        ) -> Self {
+            Self::AddressAnnouncement(AddressAnnouncement {
+                node: node,
+                baseMultiaddr: base_multiaddr,
+            })
+        }
+        /**Creates a [`KeyBinding`] event.
+
+```solidity
+event KeyBinding(bytes32,bytes32,bytes32,address,uint256)
+```*/
+        #[inline]
+        pub fn key_binding(
+            ed_25519_sig_0: alloy::sol_types::private::FixedBytes<32>,
+            ed_25519_sig_1: alloy::sol_types::private::FixedBytes<32>,
+            ed_25519_pub_key: alloy::sol_types::private::FixedBytes<32>,
+            chain_key: alloy::sol_types::private::Address,
+            key_id: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::KeyBinding(KeyBinding {
+                ed25519_sig_0: ed_25519_sig_0,
+                ed25519_sig_1: ed_25519_sig_1,
+                ed25519_pub_key: ed_25519_pub_key,
+                chain_key: chain_key,
+                key_id: key_id,
+            })
+        }
+        /**Creates a [`KeyBindingFeeUpdate`] event.
+
+```solidity
+event KeyBindingFeeUpdate(uint256,uint256)
+```*/
+        #[inline]
+        pub fn key_binding_fee_update(
+            new_fee: alloy::sol_types::private::primitives::aliases::U256,
+            old_fee: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::KeyBindingFeeUpdate(KeyBindingFeeUpdate {
+                newFee: new_fee,
+                oldFee: old_fee,
+            })
+        }
+        /**Creates a [`RevokeAnnouncement`] event.
+
+```solidity
+event RevokeAnnouncement(address)
+```*/
+        #[inline]
+        pub fn revoke_announcement(node: alloy::sol_types::private::Address) -> Self {
+            Self::RevokeAnnouncement(RevokeAnnouncement { node: node })
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprAnnouncementsEvents`](self) contract instance.
 

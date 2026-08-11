@@ -2699,7 +2699,7 @@ function updateDomainSeparator() external;
     ///Container for all the [`HoprNodeSafeRegistry`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprNodeSafeRegistryCalls {
         #[allow(missing_docs)]
         NODE_SAFE_TYPEHASH(NODE_SAFE_TYPEHASHCall),
@@ -3555,6 +3555,63 @@ function updateDomainSeparator() external;
             }
         }
     }
+    #[automatically_derived]
+    impl HoprNodeSafeRegistryErrors {
+        /**Creates a [`NodeAddressZero`] error.
+
+```solidity
+error NodeAddressZero()
+```*/
+        #[inline]
+        pub fn node_address_zero() -> Self {
+            Self::NodeAddressZero(NodeAddressZero)
+        }
+        /**Creates a [`NodeHasSafe`] error.
+
+```solidity
+error NodeHasSafe()
+```*/
+        #[inline]
+        pub fn node_has_safe() -> Self {
+            Self::NodeHasSafe(NodeHasSafe)
+        }
+        /**Creates a [`NodeIsContract`] error.
+
+```solidity
+error NodeIsContract()
+```*/
+        #[inline]
+        pub fn node_is_contract() -> Self {
+            Self::NodeIsContract(NodeIsContract)
+        }
+        /**Creates a [`NotValidSafe`] error.
+
+```solidity
+error NotValidSafe()
+```*/
+        #[inline]
+        pub fn not_valid_safe() -> Self {
+            Self::NotValidSafe(NotValidSafe)
+        }
+        /**Creates a [`NotValidSignatureFromNode`] error.
+
+```solidity
+error NotValidSignatureFromNode()
+```*/
+        #[inline]
+        pub fn not_valid_signature_from_node() -> Self {
+            Self::NotValidSignatureFromNode(NotValidSignatureFromNode)
+        }
+        /**Creates a [`SafeAddressZero`] error.
+
+```solidity
+error SafeAddressZero()
+```*/
+        #[inline]
+        pub fn safe_address_zero() -> Self {
+            Self::SafeAddressZero(SafeAddressZero)
+        }
+    }
     ///Container for all the [`HoprNodeSafeRegistry`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -3701,6 +3758,52 @@ function updateDomainSeparator() external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprNodeSafeRegistryEvents {
+        /**Creates a [`DeregisteredNodeSafe`] event.
+
+```solidity
+event DeregisteredNodeSafe(address,address)
+```*/
+        #[inline]
+        pub fn deregistered_node_safe(
+            safe_address: alloy::sol_types::private::Address,
+            node_address: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::DeregisteredNodeSafe(DeregisteredNodeSafe {
+                safeAddress: safe_address,
+                nodeAddress: node_address,
+            })
+        }
+        /**Creates a [`DomainSeparatorUpdated`] event.
+
+```solidity
+event DomainSeparatorUpdated(bytes32)
+```*/
+        #[inline]
+        pub fn domain_separator_updated(
+            domain_separator: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::DomainSeparatorUpdated(DomainSeparatorUpdated {
+                domainSeparator: domain_separator,
+            })
+        }
+        /**Creates a [`RegisteredNodeSafe`] event.
+
+```solidity
+event RegisteredNodeSafe(address,address)
+```*/
+        #[inline]
+        pub fn registered_node_safe(
+            safe_address: alloy::sol_types::private::Address,
+            node_address: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RegisteredNodeSafe(RegisteredNodeSafe {
+                safeAddress: safe_address,
+                nodeAddress: node_address,
+            })
         }
     }
     use alloy::contract as alloy_contract;
