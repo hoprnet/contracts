@@ -431,6 +431,11 @@ contract DeployAllContractsScript is
      * of the caller: a fee that rises at the same time reverts on the allowance instead of an
      * overpayment.
      *
+     * A claim that cannot be made reverts the whole batch. `forge script` simulates before it
+     * broadcasts, so a revert here broadcasts nothing and leaves `contracts-addresses.json`
+     * untouched. Logging the failure and continuing would instead publish the address of a registry
+     * whose canonical id is still free, which is the squatting exposure of section 11.
+     *
      * @param typeRegistrationFee the fee that the registry burns for this claim
      */
     function _claimGvpnExitServiceType(uint256 typeRegistrationFee) internal {
@@ -442,10 +447,7 @@ contract DeployAllContractsScript is
                     typeRegistrationFee
                 )
             );
-        if (!successApprove) {
-            emit log_string("Cannot approve the type registration fee");
-            return;
-        }
+        require(successApprove, "Cannot approve the type registration fee");
 
         (bool successRegister,) = currentNetworkDetail.addresses.serviceRegistryAddress
             .call(
@@ -457,9 +459,7 @@ contract DeployAllContractsScript is
                     GVPN_EXIT_UPDATE_BURN
                 )
             );
-        if (!successRegister) {
-            emit log_string("Cannot claim the gvpn:exit service type");
-        }
+        require(successRegister, "Cannot claim the gvpn:exit service type");
     }
 
     /**
