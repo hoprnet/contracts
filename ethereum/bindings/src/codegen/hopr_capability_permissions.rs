@@ -30,6 +30,7 @@ interface HoprCapabilityPermissions {
     event ScopedGranularTokenCapability(address indexed nodeAddress, address indexed targetAddress, address indexed recipientAddress, bytes4 selector, GranularPermission permission);
     event ScopedTargetChannels(address indexed targetAddress, Target target);
     event ScopedTargetSend(address indexed targetAddress, Target target);
+    event ScopedTargetServiceRegistry(address indexed targetAddress, Target target);
     event ScopedTargetToken(address indexed targetAddress, Target target);
 
     function APPROVE_SELECTOR() external view returns (bytes4);
@@ -38,6 +39,9 @@ interface HoprCapabilityPermissions {
     function FUND_CHANNEL_SELECTOR() external view returns (bytes4);
     function INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR() external view returns (bytes4);
     function REDEEM_TICKET_SELECTOR() external view returns (bytes4);
+    function SELF_DEREGISTER_SELECTOR() external view returns (bytes4);
+    function SELF_REGISTER_SELECTOR() external view returns (bytes4);
+    function SELF_UPDATE_SELECTOR() external view returns (bytes4);
     function SEND_SELECTOR() external view returns (bytes4);
 }
 ```
@@ -113,6 +117,45 @@ interface HoprCapabilityPermissions {
   {
     "type": "function",
     "name": "REDEEM_TICKET_SELECTOR",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "SELF_DEREGISTER_SELECTOR",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "SELF_REGISTER_SELECTOR",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "SELF_UPDATE_SELECTOR",
     "inputs": [],
     "outputs": [
       {
@@ -282,6 +325,25 @@ interface HoprCapabilityPermissions {
   },
   {
     "type": "event",
+    "name": "ScopedTargetServiceRegistry",
+    "inputs": [
+      {
+        "name": "targetAddress",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "target",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "Target"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "ScopedTargetToken",
     "inputs": [
       {
@@ -399,22 +461,22 @@ pub mod HoprCapabilityPermissions {
     /// The creation / init bytecode of the contract.
     ///
     /// ```text
-    ///0x61012e610034600b8282823980515f1a607314602857634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea2646970667358221220447c040fa198591b8b72469bf454ecb91de77c8a8b45ccbeadabb0383f68af4a64736f6c634300081e0033
+    ///0x610189610034600b8282823980515f1a607314602857634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100a6575f3560e01c80637a7571151161006e5780637a7571151461010d5780638167b67e1461011b578063a086583914610129578063b677a40f14610137578063d73003aa14610145575f5ffd5b806339987daa146100aa57806351d2614b146100d5578063550717c7146100e35780635daa9e24146100f1578063678a5efb146100ff575b5f5ffd5b6100b863326005af60e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b6100b863ab9b6ba760e01b81565b6100b8630421865360e31b81565b6100b863bda65f4560e01b81565b6100b86354a2edf560e01b81565b6100b8634decdde360e11b81565b6100b863651514bf60e01b81565b6100b863095ea7b360e01b81565b6100b8630abec58f60e01b81565b6100b8631e46f90760e01b8156fea26469706673582212209a495d2396258c62874ef0b796f945afd24b3cabcd251abc7764cb3cbff6e66264736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"a\x01.a\x004`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`(WcNH{q`\xE0\x1B_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 D|\x04\x0F\xA1\x98Y\x1B\x8BrF\x9B\xF4T\xEC\xB9\x1D\xE7|\x8A\x8BE\xCC\xBE\xAD\xAB\xB08?h\xAFJdsolcC\0\x08\x1E\x003",
+        b"a\x01\x89a\x004`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`(WcNH{q`\xE0\x1B_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10a\0\xA6W_5`\xE0\x1C\x80czuq\x15\x11a\0nW\x80czuq\x15\x14a\x01\rW\x80c\x81g\xB6~\x14a\x01\x1BW\x80c\xA0\x86X9\x14a\x01)W\x80c\xB6w\xA4\x0F\x14a\x017W\x80c\xD70\x03\xAA\x14a\x01EW__\xFD[\x80c9\x98}\xAA\x14a\0\xAAW\x80cQ\xD2aK\x14a\0\xD5W\x80cU\x07\x17\xC7\x14a\0\xE3W\x80c]\xAA\x9E$\x14a\0\xF1W\x80cg\x8A^\xFB\x14a\0\xFFW[__\xFD[a\0\xB8c2`\x05\xAF`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[a\0\xB8c\xAB\x9Bk\xA7`\xE0\x1B\x81V[a\0\xB8c\x04!\x86S`\xE3\x1B\x81V[a\0\xB8c\xBD\xA6_E`\xE0\x1B\x81V[a\0\xB8cT\xA2\xED\xF5`\xE0\x1B\x81V[a\0\xB8cM\xEC\xDD\xE3`\xE1\x1B\x81V[a\0\xB8ce\x15\x14\xBF`\xE0\x1B\x81V[a\0\xB8c\t^\xA7\xB3`\xE0\x1B\x81V[a\0\xB8c\n\xBE\xC5\x8F`\xE0\x1B\x81V[a\0\xB8c\x1EF\xF9\x07`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 \x9AI]#\x96%\x8Cb\x87N\xF0\xB7\x96\xF9E\xAF\xD2K<\xAB\xCD%\x1A\xBCwd\xCB<\xBF\xF6\xE6bdsolcC\0\x08\x1E\x003",
     );
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x7300000000000000000000000000000000000000003014608060405260043610607c575f3560e01c80637a75711511605d5780637a7571151460c45780638167b67e1460d1578063a08658391460de578063b677a40f1460eb575f5ffd5b806351d2614b1460805780635daa9e241460aa578063678a5efb1460b7575b5f5ffd5b608d63ab9b6ba760e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b608d63bda65f4560e01b81565b608d6354a2edf560e01b81565b608d634decdde360e11b81565b608d63651514bf60e01b81565b608d63095ea7b360e01b81565b608d630abec58f60e01b8156fea2646970667358221220447c040fa198591b8b72469bf454ecb91de77c8a8b45ccbeadabb0383f68af4a64736f6c634300081e0033
+    ///0x73000000000000000000000000000000000000000030146080604052600436106100a6575f3560e01c80637a7571151161006e5780637a7571151461010d5780638167b67e1461011b578063a086583914610129578063b677a40f14610137578063d73003aa14610145575f5ffd5b806339987daa146100aa57806351d2614b146100d5578063550717c7146100e35780635daa9e24146100f1578063678a5efb146100ff575b5f5ffd5b6100b863326005af60e01b81565b6040516001600160e01b0319909116815260200160405180910390f35b6100b863ab9b6ba760e01b81565b6100b8630421865360e31b81565b6100b863bda65f4560e01b81565b6100b86354a2edf560e01b81565b6100b8634decdde360e11b81565b6100b863651514bf60e01b81565b6100b863095ea7b360e01b81565b6100b8630abec58f60e01b81565b6100b8631e46f90760e01b8156fea26469706673582212209a495d2396258c62874ef0b796f945afd24b3cabcd251abc7764cb3cbff6e66264736f6c634300081e0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10`|W_5`\xE0\x1C\x80czuq\x15\x11`]W\x80czuq\x15\x14`\xC4W\x80c\x81g\xB6~\x14`\xD1W\x80c\xA0\x86X9\x14`\xDEW\x80c\xB6w\xA4\x0F\x14`\xEBW__\xFD[\x80cQ\xD2aK\x14`\x80W\x80c]\xAA\x9E$\x14`\xAAW\x80cg\x8A^\xFB\x14`\xB7W[__\xFD[`\x8Dc\xAB\x9Bk\xA7`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[`\x8Dc\xBD\xA6_E`\xE0\x1B\x81V[`\x8DcT\xA2\xED\xF5`\xE0\x1B\x81V[`\x8DcM\xEC\xDD\xE3`\xE1\x1B\x81V[`\x8Dce\x15\x14\xBF`\xE0\x1B\x81V[`\x8Dc\t^\xA7\xB3`\xE0\x1B\x81V[`\x8Dc\n\xBE\xC5\x8F`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 D|\x04\x0F\xA1\x98Y\x1B\x8BrF\x9B\xF4T\xEC\xB9\x1D\xE7|\x8A\x8BE\xCC\xBE\xAD\xAB\xB08?h\xAFJdsolcC\0\x08\x1E\x003",
+        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\x046\x10a\0\xA6W_5`\xE0\x1C\x80czuq\x15\x11a\0nW\x80czuq\x15\x14a\x01\rW\x80c\x81g\xB6~\x14a\x01\x1BW\x80c\xA0\x86X9\x14a\x01)W\x80c\xB6w\xA4\x0F\x14a\x017W\x80c\xD70\x03\xAA\x14a\x01EW__\xFD[\x80c9\x98}\xAA\x14a\0\xAAW\x80cQ\xD2aK\x14a\0\xD5W\x80cU\x07\x17\xC7\x14a\0\xE3W\x80c]\xAA\x9E$\x14a\0\xF1W\x80cg\x8A^\xFB\x14a\0\xFFW[__\xFD[a\0\xB8c2`\x05\xAF`\xE0\x1B\x81V[`@Q`\x01`\x01`\xE0\x1B\x03\x19\x90\x91\x16\x81R` \x01`@Q\x80\x91\x03\x90\xF3[a\0\xB8c\xAB\x9Bk\xA7`\xE0\x1B\x81V[a\0\xB8c\x04!\x86S`\xE3\x1B\x81V[a\0\xB8c\xBD\xA6_E`\xE0\x1B\x81V[a\0\xB8cT\xA2\xED\xF5`\xE0\x1B\x81V[a\0\xB8cM\xEC\xDD\xE3`\xE1\x1B\x81V[a\0\xB8ce\x15\x14\xBF`\xE0\x1B\x81V[a\0\xB8c\t^\xA7\xB3`\xE0\x1B\x81V[a\0\xB8c\n\xBE\xC5\x8F`\xE0\x1B\x81V[a\0\xB8c\x1EF\xF9\x07`\xE0\x1B\x81V\xFE\xA2dipfsX\"\x12 \x9AI]#\x96%\x8Cb\x87N\xF0\xB7\x96\xF9E\xAF\xD2K<\xAB\xCD%\x1A\xBCwd\xCB<\xBF\xF6\xE6bdsolcC\0\x08\x1E\x003",
     );
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
@@ -2710,6 +2772,120 @@ event ScopedTargetSend(address indexed targetAddress, Target target);
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    /**Event with signature `ScopedTargetServiceRegistry(address,uint256)` and selector `0xafa04a8681fafd7a6100794377dc53d13a9538dc9be14f53e20d90d51231cf4f`.
+```solidity
+event ScopedTargetServiceRegistry(address indexed targetAddress, Target target);
+```*/
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    #[derive(Clone)]
+    pub struct ScopedTargetServiceRegistry {
+        #[allow(missing_docs)]
+        pub targetAddress: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub target: <Target as alloy::sol_types::SolType>::RustType,
+    }
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[automatically_derived]
+        impl alloy_sol_types::SolEvent for ScopedTargetServiceRegistry {
+            type DataTuple<'a> = (Target,);
+            type DataToken<'a> = <Self::DataTuple<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            type TopicList = (
+                alloy_sol_types::sol_data::FixedBytes<32>,
+                alloy::sol_types::sol_data::Address,
+            );
+            const SIGNATURE: &'static str = "ScopedTargetServiceRegistry(address,uint256)";
+            const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
+                175u8, 160u8, 74u8, 134u8, 129u8, 250u8, 253u8, 122u8, 97u8, 0u8, 121u8,
+                67u8, 119u8, 220u8, 83u8, 209u8, 58u8, 149u8, 56u8, 220u8, 155u8, 225u8,
+                79u8, 83u8, 226u8, 13u8, 144u8, 213u8, 18u8, 49u8, 207u8, 79u8,
+            ]);
+            const ANONYMOUS: bool = false;
+            #[allow(unused_variables)]
+            #[inline]
+            fn new(
+                topics: <Self::TopicList as alloy_sol_types::SolType>::RustType,
+                data: <Self::DataTuple<'_> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                Self {
+                    targetAddress: topics.1,
+                    target: data.0,
+                }
+            }
+            #[inline]
+            fn check_signature(
+                topics: &<Self::TopicList as alloy_sol_types::SolType>::RustType,
+            ) -> alloy_sol_types::Result<()> {
+                if topics.0 != Self::SIGNATURE_HASH {
+                    return Err(
+                        alloy_sol_types::Error::invalid_event_signature_hash(
+                            Self::SIGNATURE,
+                            topics.0,
+                            Self::SIGNATURE_HASH,
+                        ),
+                    );
+                }
+                Ok(())
+            }
+            #[inline]
+            fn tokenize_body(&self) -> Self::DataToken<'_> {
+                (<Target as alloy_sol_types::SolType>::tokenize(&self.target),)
+            }
+            #[inline]
+            fn topics(&self) -> <Self::TopicList as alloy_sol_types::SolType>::RustType {
+                (Self::SIGNATURE_HASH.into(), self.targetAddress.clone())
+            }
+            #[inline]
+            fn encode_topics_raw(
+                &self,
+                out: &mut [alloy_sol_types::abi::token::WordToken],
+            ) -> alloy_sol_types::Result<()> {
+                if out.len() < <Self::TopicList as alloy_sol_types::TopicList>::COUNT {
+                    return Err(alloy_sol_types::Error::Overrun);
+                }
+                out[0usize] = alloy_sol_types::abi::token::WordToken(
+                    Self::SIGNATURE_HASH,
+                );
+                out[1usize] = <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic(
+                    &self.targetAddress,
+                );
+                Ok(())
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::private::IntoLogData for ScopedTargetServiceRegistry {
+            fn to_log_data(&self) -> alloy_sol_types::private::LogData {
+                From::from(self)
+            }
+            fn into_log_data(self) -> alloy_sol_types::private::LogData {
+                From::from(&self)
+            }
+        }
+        #[automatically_derived]
+        impl From<&ScopedTargetServiceRegistry> for alloy_sol_types::private::LogData {
+            #[inline]
+            fn from(
+                this: &ScopedTargetServiceRegistry,
+            ) -> alloy_sol_types::private::LogData {
+                alloy_sol_types::SolEvent::encode_log_data(this)
+            }
+        }
+    };
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
     /**Event with signature `ScopedTargetToken(address,uint256)` and selector `0xaaf26bb12aa89ee96bbe19667a6a055727b75d3f6ed7b8b611ef6519180209d6`.
 ```solidity
 event ScopedTargetToken(address indexed targetAddress, Target target);
@@ -3726,6 +3902,453 @@ function REDEEM_TICKET_SELECTOR() external view returns (bytes4);
     };
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    /**Function with signature `SELF_DEREGISTER_SELECTOR()` and selector `0xd73003aa`.
+```solidity
+function SELF_DEREGISTER_SELECTOR() external view returns (bytes4);
+```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_DEREGISTER_SELECTORCall;
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    ///Container type for the return parameters of the [`SELF_DEREGISTER_SELECTOR()`](SELF_DEREGISTER_SELECTORCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_DEREGISTER_SELECTORReturn {
+        #[allow(missing_docs)]
+        pub _0: alloy::sol_types::private::FixedBytes<4>,
+    }
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_DEREGISTER_SELECTORCall>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_DEREGISTER_SELECTORCall) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_DEREGISTER_SELECTORCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_DEREGISTER_SELECTORReturn>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_DEREGISTER_SELECTORReturn) -> Self {
+                    (value._0,)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_DEREGISTER_SELECTORReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self { _0: tuple.0 }
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for SELF_DEREGISTER_SELECTORCall {
+            type Parameters<'a> = ();
+            type Token<'a> = <Self::Parameters<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            type Return = alloy::sol_types::private::FixedBytes<4>;
+            type ReturnTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            type ReturnToken<'a> = <Self::ReturnTuple<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "SELF_DEREGISTER_SELECTOR()";
+            const SELECTOR: [u8; 4] = [215u8, 48u8, 3u8, 170u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+            #[inline]
+            fn tokenize_returns(ret: &Self::Return) -> Self::ReturnToken<'_> {
+                (
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        4,
+                    > as alloy_sol_types::SolType>::tokenize(ret),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(data: &[u8]) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence(data)
+                    .map(|r| {
+                        let r: SELF_DEREGISTER_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                    .map(|r| {
+                        let r: SELF_DEREGISTER_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+        }
+    };
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    /**Function with signature `SELF_REGISTER_SELECTOR()` and selector `0x39987daa`.
+```solidity
+function SELF_REGISTER_SELECTOR() external view returns (bytes4);
+```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_REGISTER_SELECTORCall;
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    ///Container type for the return parameters of the [`SELF_REGISTER_SELECTOR()`](SELF_REGISTER_SELECTORCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_REGISTER_SELECTORReturn {
+        #[allow(missing_docs)]
+        pub _0: alloy::sol_types::private::FixedBytes<4>,
+    }
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_REGISTER_SELECTORCall>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_REGISTER_SELECTORCall) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_REGISTER_SELECTORCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_REGISTER_SELECTORReturn>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_REGISTER_SELECTORReturn) -> Self {
+                    (value._0,)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_REGISTER_SELECTORReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self { _0: tuple.0 }
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for SELF_REGISTER_SELECTORCall {
+            type Parameters<'a> = ();
+            type Token<'a> = <Self::Parameters<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            type Return = alloy::sol_types::private::FixedBytes<4>;
+            type ReturnTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            type ReturnToken<'a> = <Self::ReturnTuple<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "SELF_REGISTER_SELECTOR()";
+            const SELECTOR: [u8; 4] = [57u8, 152u8, 125u8, 170u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+            #[inline]
+            fn tokenize_returns(ret: &Self::Return) -> Self::ReturnToken<'_> {
+                (
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        4,
+                    > as alloy_sol_types::SolType>::tokenize(ret),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(data: &[u8]) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence(data)
+                    .map(|r| {
+                        let r: SELF_REGISTER_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                    .map(|r| {
+                        let r: SELF_REGISTER_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+        }
+    };
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    /**Function with signature `SELF_UPDATE_SELECTOR()` and selector `0x550717c7`.
+```solidity
+function SELF_UPDATE_SELECTOR() external view returns (bytes4);
+```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_UPDATE_SELECTORCall;
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
+    ///Container type for the return parameters of the [`SELF_UPDATE_SELECTOR()`](SELF_UPDATE_SELECTORCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct SELF_UPDATE_SELECTORReturn {
+        #[allow(missing_docs)]
+        pub _0: alloy::sol_types::private::FixedBytes<4>,
+    }
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_UPDATE_SELECTORCall>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_UPDATE_SELECTORCall) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_UPDATE_SELECTORCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            #[allow(dead_code)]
+            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::FixedBytes<4>,);
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(
+                _t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>,
+            ) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<SELF_UPDATE_SELECTORReturn>
+            for UnderlyingRustTuple<'_> {
+                fn from(value: SELF_UPDATE_SELECTORReturn) -> Self {
+                    (value._0,)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+            for SELF_UPDATE_SELECTORReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self { _0: tuple.0 }
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for SELF_UPDATE_SELECTORCall {
+            type Parameters<'a> = ();
+            type Token<'a> = <Self::Parameters<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            type Return = alloy::sol_types::private::FixedBytes<4>;
+            type ReturnTuple<'a> = (alloy::sol_types::sol_data::FixedBytes<4>,);
+            type ReturnToken<'a> = <Self::ReturnTuple<
+                'a,
+            > as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "SELF_UPDATE_SELECTOR()";
+            const SELECTOR: [u8; 4] = [85u8, 7u8, 23u8, 199u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+            #[inline]
+            fn tokenize_returns(ret: &Self::Return) -> Self::ReturnToken<'_> {
+                (
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        4,
+                    > as alloy_sol_types::SolType>::tokenize(ret),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(data: &[u8]) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence(data)
+                    .map(|r| {
+                        let r: SELF_UPDATE_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<
+                    '_,
+                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                    .map(|r| {
+                        let r: SELF_UPDATE_SELECTORReturn = r.into();
+                        r._0
+                    })
+            }
+        }
+    };
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Default, Debug, PartialEq, Eq, Hash)]
     /**Function with signature `SEND_SELECTOR()` and selector `0x7a757115`.
 ```solidity
 function SEND_SELECTOR() external view returns (bytes4);
@@ -3891,6 +4514,12 @@ function SEND_SELECTOR() external view returns (bytes4);
         #[allow(missing_docs)]
         REDEEM_TICKET_SELECTOR(REDEEM_TICKET_SELECTORCall),
         #[allow(missing_docs)]
+        SELF_DEREGISTER_SELECTOR(SELF_DEREGISTER_SELECTORCall),
+        #[allow(missing_docs)]
+        SELF_REGISTER_SELECTOR(SELF_REGISTER_SELECTORCall),
+        #[allow(missing_docs)]
+        SELF_UPDATE_SELECTOR(SELF_UPDATE_SELECTORCall),
+        #[allow(missing_docs)]
         SEND_SELECTOR(SEND_SELECTORCall),
     }
     impl HoprCapabilityPermissionsCalls {
@@ -3901,33 +4530,42 @@ function SEND_SELECTOR() external view returns (bytes4);
         ///
         /// Prefer using `SolInterface` methods instead.
         pub const SELECTORS: &'static [[u8; 4usize]] = &[
+            [57u8, 152u8, 125u8, 170u8],
             [81u8, 210u8, 97u8, 75u8],
+            [85u8, 7u8, 23u8, 199u8],
             [93u8, 170u8, 158u8, 36u8],
             [103u8, 138u8, 94u8, 251u8],
             [122u8, 117u8, 113u8, 21u8],
             [129u8, 103u8, 182u8, 126u8],
             [160u8, 134u8, 88u8, 57u8],
             [182u8, 119u8, 164u8, 15u8],
+            [215u8, 48u8, 3u8, 170u8],
         ];
         /// The names of the variants in the same order as `SELECTORS`.
         pub const VARIANT_NAMES: &'static [&'static str] = &[
+            ::core::stringify!(SELF_REGISTER_SELECTOR),
             ::core::stringify!(REDEEM_TICKET_SELECTOR),
+            ::core::stringify!(SELF_UPDATE_SELECTOR),
             ::core::stringify!(INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR),
             ::core::stringify!(CLOSE_INCOMING_CHANNEL_SELECTOR),
             ::core::stringify!(SEND_SELECTOR),
             ::core::stringify!(FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTOR),
             ::core::stringify!(APPROVE_SELECTOR),
             ::core::stringify!(FUND_CHANNEL_SELECTOR),
+            ::core::stringify!(SELF_DEREGISTER_SELECTOR),
         ];
         /// The signatures in the same order as `SELECTORS`.
         pub const SIGNATURES: &'static [&'static str] = &[
+            <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <REDEEM_TICKET_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <CLOSE_INCOMING_CHANNEL_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <SEND_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <FINALIZE_OUTGOING_CHANNEL_CLOSURE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <APPROVE_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
             <FUND_CHANNEL_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
+            <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::SIGNATURE,
         ];
         /// Returns the signature for the given selector, if known.
         #[inline]
@@ -3954,7 +4592,7 @@ function SEND_SELECTOR() external view returns (bytes4);
     impl alloy_sol_types::SolInterface for HoprCapabilityPermissionsCalls {
         const NAME: &'static str = "HoprCapabilityPermissionsCalls";
         const MIN_DATA_LENGTH: usize = 0usize;
-        const COUNT: usize = 7usize;
+        const COUNT: usize = 10usize;
         #[inline]
         fn selector(&self) -> [u8; 4] {
             match self {
@@ -3975,6 +4613,15 @@ function SEND_SELECTOR() external view returns (bytes4);
                 }
                 Self::REDEEM_TICKET_SELECTOR(_) => {
                     <REDEEM_TICKET_SELECTORCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::SELF_DEREGISTER_SELECTOR(_) => {
+                    <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::SELF_REGISTER_SELECTOR(_) => {
+                    <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::SELF_UPDATE_SELECTOR(_) => {
+                    <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::SEND_SELECTOR(_) => {
                     <SEND_SELECTORCall as alloy_sol_types::SolCall>::SELECTOR
@@ -3999,6 +4646,17 @@ function SEND_SELECTOR() external view returns (bytes4);
                 &[u8],
             ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls>] = &[
                 {
+                    fn SELF_REGISTER_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                                data,
+                            )
+                            .map(HoprCapabilityPermissionsCalls::SELF_REGISTER_SELECTOR)
+                    }
+                    SELF_REGISTER_SELECTOR
+                },
+                {
                     fn REDEEM_TICKET_SELECTOR(
                         data: &[u8],
                     ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
@@ -4008,6 +4666,17 @@ function SEND_SELECTOR() external view returns (bytes4);
                             .map(HoprCapabilityPermissionsCalls::REDEEM_TICKET_SELECTOR)
                     }
                     REDEEM_TICKET_SELECTOR
+                },
+                {
+                    fn SELF_UPDATE_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                                data,
+                            )
+                            .map(HoprCapabilityPermissionsCalls::SELF_UPDATE_SELECTOR)
+                    }
+                    SELF_UPDATE_SELECTOR
                 },
                 {
                     fn INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR(
@@ -4081,6 +4750,19 @@ function SEND_SELECTOR() external view returns (bytes4);
                     }
                     FUND_CHANNEL_SELECTOR
                 },
+                {
+                    fn SELF_DEREGISTER_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                                data,
+                            )
+                            .map(
+                                HoprCapabilityPermissionsCalls::SELF_DEREGISTER_SELECTOR,
+                            )
+                    }
+                    SELF_DEREGISTER_SELECTOR
+                },
             ];
             let Ok(idx) = Self::SELECTORS.binary_search(&selector) else {
                 return Err(
@@ -4102,6 +4784,17 @@ function SEND_SELECTOR() external view returns (bytes4);
                 &[u8],
             ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls>] = &[
                 {
+                    fn SELF_REGISTER_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
+                                data,
+                            )
+                            .map(HoprCapabilityPermissionsCalls::SELF_REGISTER_SELECTOR)
+                    }
+                    SELF_REGISTER_SELECTOR
+                },
+                {
                     fn REDEEM_TICKET_SELECTOR(
                         data: &[u8],
                     ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
@@ -4111,6 +4804,17 @@ function SEND_SELECTOR() external view returns (bytes4);
                             .map(HoprCapabilityPermissionsCalls::REDEEM_TICKET_SELECTOR)
                     }
                     REDEEM_TICKET_SELECTOR
+                },
+                {
+                    fn SELF_UPDATE_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
+                                data,
+                            )
+                            .map(HoprCapabilityPermissionsCalls::SELF_UPDATE_SELECTOR)
+                    }
+                    SELF_UPDATE_SELECTOR
                 },
                 {
                     fn INITIATE_OUTGOING_CHANNEL_CLOSURE_SELECTOR(
@@ -4184,6 +4888,19 @@ function SEND_SELECTOR() external view returns (bytes4);
                     }
                     FUND_CHANNEL_SELECTOR
                 },
+                {
+                    fn SELF_DEREGISTER_SELECTOR(
+                        data: &[u8],
+                    ) -> alloy_sol_types::Result<HoprCapabilityPermissionsCalls> {
+                        <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
+                                data,
+                            )
+                            .map(
+                                HoprCapabilityPermissionsCalls::SELF_DEREGISTER_SELECTOR,
+                            )
+                    }
+                    SELF_DEREGISTER_SELECTOR
+                },
             ];
             let Ok(idx) = Self::SELECTORS.binary_search(&selector) else {
                 return Err(
@@ -4225,6 +4942,21 @@ function SEND_SELECTOR() external view returns (bytes4);
                 }
                 Self::REDEEM_TICKET_SELECTOR(inner) => {
                     <REDEEM_TICKET_SELECTORCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::SELF_DEREGISTER_SELECTOR(inner) => {
+                    <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::SELF_REGISTER_SELECTOR(inner) => {
+                    <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::SELF_UPDATE_SELECTOR(inner) => {
+                    <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
@@ -4270,6 +5002,24 @@ function SEND_SELECTOR() external view returns (bytes4);
                 }
                 Self::REDEEM_TICKET_SELECTOR(inner) => {
                     <REDEEM_TICKET_SELECTORCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::SELF_DEREGISTER_SELECTOR(inner) => {
+                    <SELF_DEREGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::SELF_REGISTER_SELECTOR(inner) => {
+                    <SELF_REGISTER_SELECTORCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::SELF_UPDATE_SELECTOR(inner) => {
+                    <SELF_UPDATE_SELECTORCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -5279,6 +6029,8 @@ error UnacceptableMultiSendOffset()
         #[allow(missing_docs)]
         ScopedTargetSend(ScopedTargetSend),
         #[allow(missing_docs)]
+        ScopedTargetServiceRegistry(ScopedTargetServiceRegistry),
+        #[allow(missing_docs)]
         ScopedTargetToken(ScopedTargetToken),
     }
     impl HoprCapabilityPermissionsEvents {
@@ -5320,6 +6072,11 @@ error UnacceptableMultiSendOffset()
                 215u8, 184u8, 182u8, 17u8, 239u8, 101u8, 25u8, 24u8, 2u8, 9u8, 214u8,
             ],
             [
+                175u8, 160u8, 74u8, 134u8, 129u8, 250u8, 253u8, 122u8, 97u8, 0u8, 121u8,
+                67u8, 119u8, 220u8, 83u8, 209u8, 58u8, 149u8, 56u8, 220u8, 155u8, 225u8,
+                79u8, 83u8, 226u8, 13u8, 144u8, 213u8, 18u8, 49u8, 207u8, 79u8,
+            ],
+            [
                 242u8, 255u8, 212u8, 240u8, 157u8, 88u8, 208u8, 104u8, 36u8, 24u8, 128u8,
                 51u8, 211u8, 49u8, 141u8, 6u8, 235u8, 149u8, 123u8, 251u8, 26u8, 143u8,
                 254u8, 217u8, 175u8, 120u8, 225u8, 241u8, 145u8, 104u8, 185u8, 4u8,
@@ -5333,6 +6090,7 @@ error UnacceptableMultiSendOffset()
             ::core::stringify!(ScopedGranularSendCapability),
             ::core::stringify!(ScopedGranularTokenCapability),
             ::core::stringify!(ScopedTargetToken),
+            ::core::stringify!(ScopedTargetServiceRegistry),
             ::core::stringify!(ScopedGranularChannelCapability),
         ];
         /// The signatures in the same order as `SELECTORS`.
@@ -5343,6 +6101,7 @@ error UnacceptableMultiSendOffset()
             <ScopedGranularSendCapability as alloy_sol_types::SolEvent>::SIGNATURE,
             <ScopedGranularTokenCapability as alloy_sol_types::SolEvent>::SIGNATURE,
             <ScopedTargetToken as alloy_sol_types::SolEvent>::SIGNATURE,
+            <ScopedTargetServiceRegistry as alloy_sol_types::SolEvent>::SIGNATURE,
             <ScopedGranularChannelCapability as alloy_sol_types::SolEvent>::SIGNATURE,
         ];
         /// Returns the signature for the given selector, if known.
@@ -5369,7 +6128,7 @@ error UnacceptableMultiSendOffset()
     #[automatically_derived]
     impl alloy_sol_types::SolEventInterface for HoprCapabilityPermissionsEvents {
         const NAME: &'static str = "HoprCapabilityPermissionsEvents";
-        const COUNT: usize = 7usize;
+        const COUNT: usize = 8usize;
         fn decode_raw_log(
             topics: &[alloy_sol_types::Word],
             data: &[u8],
@@ -5426,6 +6185,15 @@ error UnacceptableMultiSendOffset()
                         .map(Self::ScopedTargetSend)
                 }
                 Some(
+                    <ScopedTargetServiceRegistry as alloy_sol_types::SolEvent>::SIGNATURE_HASH,
+                ) => {
+                    <ScopedTargetServiceRegistry as alloy_sol_types::SolEvent>::decode_raw_log(
+                            topics,
+                            data,
+                        )
+                        .map(Self::ScopedTargetServiceRegistry)
+                }
+                Some(
                     <ScopedTargetToken as alloy_sol_types::SolEvent>::SIGNATURE_HASH,
                 ) => {
                     <ScopedTargetToken as alloy_sol_types::SolEvent>::decode_raw_log(
@@ -5470,6 +6238,9 @@ error UnacceptableMultiSendOffset()
                 Self::ScopedTargetSend(inner) => {
                     alloy_sol_types::private::IntoLogData::to_log_data(inner)
                 }
+                Self::ScopedTargetServiceRegistry(inner) => {
+                    alloy_sol_types::private::IntoLogData::to_log_data(inner)
+                }
                 Self::ScopedTargetToken(inner) => {
                     alloy_sol_types::private::IntoLogData::to_log_data(inner)
                 }
@@ -5493,6 +6264,9 @@ error UnacceptableMultiSendOffset()
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
                 Self::ScopedTargetSend(inner) => {
+                    alloy_sol_types::private::IntoLogData::into_log_data(inner)
+                }
+                Self::ScopedTargetServiceRegistry(inner) => {
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
                 Self::ScopedTargetToken(inner) => {
@@ -5599,6 +6373,21 @@ event ScopedTargetSend(address,uint256)
             target: <Target as alloy::sol_types::SolType>::RustType,
         ) -> Self {
             Self::ScopedTargetSend(ScopedTargetSend {
+                targetAddress: target_address,
+                target: target,
+            })
+        }
+        /**Creates a [`ScopedTargetServiceRegistry`] event.
+
+```solidity
+event ScopedTargetServiceRegistry(address,uint256)
+```*/
+        #[inline]
+        pub fn scoped_target_service_registry(
+            target_address: alloy::sol_types::private::Address,
+            target: <Target as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::ScopedTargetServiceRegistry(ScopedTargetServiceRegistry {
                 targetAddress: target_address,
                 target: target,
             })
@@ -5825,6 +6614,24 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
         ) -> alloy_contract::SolCallBuilder<&P, REDEEM_TICKET_SELECTORCall, N> {
             self.call_builder(&REDEEM_TICKET_SELECTORCall)
         }
+        ///Creates a new call builder for the [`SELF_DEREGISTER_SELECTOR`] function.
+        pub fn SELF_DEREGISTER_SELECTOR(
+            &self,
+        ) -> alloy_contract::SolCallBuilder<&P, SELF_DEREGISTER_SELECTORCall, N> {
+            self.call_builder(&SELF_DEREGISTER_SELECTORCall)
+        }
+        ///Creates a new call builder for the [`SELF_REGISTER_SELECTOR`] function.
+        pub fn SELF_REGISTER_SELECTOR(
+            &self,
+        ) -> alloy_contract::SolCallBuilder<&P, SELF_REGISTER_SELECTORCall, N> {
+            self.call_builder(&SELF_REGISTER_SELECTORCall)
+        }
+        ///Creates a new call builder for the [`SELF_UPDATE_SELECTOR`] function.
+        pub fn SELF_UPDATE_SELECTOR(
+            &self,
+        ) -> alloy_contract::SolCallBuilder<&P, SELF_UPDATE_SELECTORCall, N> {
+            self.call_builder(&SELF_UPDATE_SELECTORCall)
+        }
         ///Creates a new call builder for the [`SEND_SELECTOR`] function.
         pub fn SEND_SELECTOR(
             &self,
@@ -5881,6 +6688,12 @@ the bytecode concatenated with the constructor's ABI-encoded arguments.*/
             &self,
         ) -> alloy_contract::Event<&P, ScopedTargetSend, N> {
             self.event_filter::<ScopedTargetSend>()
+        }
+        ///Creates a new event filter for the [`ScopedTargetServiceRegistry`] event.
+        pub fn ScopedTargetServiceRegistry_filter(
+            &self,
+        ) -> alloy_contract::Event<&P, ScopedTargetServiceRegistry, N> {
+            self.event_filter::<ScopedTargetServiceRegistry>()
         }
         ///Creates a new event filter for the [`ScopedTargetToken`] event.
         pub fn ScopedTargetToken_filter(

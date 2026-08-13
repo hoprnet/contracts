@@ -635,6 +635,29 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
     }
 
     /**
+     * Scope the current network's service registry on an already-deployed node module.
+     * The module itself restricts this target to selfRegister, selfUpdate and selfDeregister,
+     * with the node argument required to match the calling module member.
+     */
+    function addNetworkServiceRegistryTargetToModuleBySafe(address safe, address module) public {
+        if (msgSender == address(0)) {
+            getNetworkAndMsgSender();
+        }
+
+        address targetAddress = currentNetworkDetail.addresses.serviceRegistryAddress;
+        try IModule(module).tryGetTarget(targetAddress) returns (bool successReadTryGetTarget, Target) {
+            if (successReadTryGetTarget) {
+                return;
+            }
+
+            bytes memory scopeTargetData = abi.encodeWithSignature("scopeTargetServiceRegistry(address)", targetAddress);
+            _helperSignSafeTxAsOwner(IAvatar(payable(safe)), module, IAvatar(payable(safe)).nonce(), scopeTargetData);
+        } catch {
+            emit log_string("Cannot read tryGetTarget from module contract. Upgrade the module before scoping the service registry");
+        }
+    }
+
+    /**
      * @dev get the deployer key
      * Set to default when it's in development environment
      * (uint for 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80)

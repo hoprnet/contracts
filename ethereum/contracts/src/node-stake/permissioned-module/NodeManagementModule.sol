@@ -41,6 +41,7 @@ import { EnumerableTargetSet, TargetSet, TargetUtils, Target } from "../../utils
  * Module can only execute DELEGATECALL to the Multisend contract
  * Module can execute CALLs to HoprChannels contracts
  * Module can execute CALLs to HoprToken contracts
+ * Module can execute node-bound self-service CALLs to HoprServiceRegistry
  */
 contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule {
     using TargetUtils for Target;
@@ -82,8 +83,13 @@ contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule
     }
 
     function initialize(bytes memory initParams) public initializer {
-        (address _safe, address _multisend, bytes32 _defaultAnnouncementTarget, bytes32 _defaultTokenChannelsTarget) =
-            abi.decode(initParams, (address, address, bytes32, bytes32));
+        (
+            address _safe,
+            address _multisend,
+            bytes32 _defaultAnnouncementTarget,
+            bytes32 _defaultTokenChannelsTarget,
+            address _serviceRegistry
+        ) = abi.decode(initParams, (address, address, bytes32, bytes32, address));
 
         // cannot accept a zero address as Safe or multisend contract
         if (_safe == address(0) || _multisend == address(0)) {
@@ -103,6 +109,9 @@ contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule
             HoprCapabilityPermissions.scopeTargetToken(role, Target.wrap(uint256(_defaultAnnouncementTarget)));
         }
         _addChannelsAndTokenTarget(Target.wrap(uint256(_defaultTokenChannelsTarget)));
+        if (_serviceRegistry != address(0)) {
+            HoprCapabilityPermissions.scopeTargetServiceRegistry(role, _serviceRegistry);
+        }
 
         // transfer ownership
         // @notice OwnableUpgradeable's transferOwnership/renounceOwnership are intentionally left
@@ -284,6 +293,11 @@ contract HoprNodeManagementModule is SimplifiedModule, IHoprNodeManagementModule
             revert HoprCapabilityPermissions.NoMembership();
         }
         HoprCapabilityPermissions.scopeTargetSend(role, defaultTarget);
+    }
+
+    /// Allows node members to register, update, and deregister only their own service entries.
+    function scopeTargetServiceRegistry(address serviceRegistry) external onlyOwner {
+        HoprCapabilityPermissions.scopeTargetServiceRegistry(role, serviceRegistry);
     }
 
     /**

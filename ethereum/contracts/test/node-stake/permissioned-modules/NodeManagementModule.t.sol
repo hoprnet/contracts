@@ -19,6 +19,7 @@ import { CapabilityPermissionsLibFixtureTest } from "../../utils/CapabilityLibra
 import { SafeSingletonFixtureTest } from "../../utils/SafeSingleton.sol";
 import { IAvatar } from "../../../src/interfaces/IAvatar.sol";
 import { HoprCrypto } from "../../../src/Crypto.sol";
+import { HoprServiceRegistry } from "../../../src/ServiceRegistry.sol";
 import { SimplifiedModuleEvents } from "../../../src/node-stake/permissioned-module/SimplifiedModule.sol";
 import { Initializable } from "openzeppelin-contracts-upgradeable-5.4.0/proxy/utils/Initializable.sol";
 import { Create2 } from "openzeppelin-contracts-5.4.0/utils/Create2.sol";
@@ -89,7 +90,7 @@ contract HoprNodeManagementModuleTest is
     modifier initializeModuleProxy(address owner) {
         vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
         emit SetMultisendAddress(multiaddr);
-        moduleProxy.initialize(abi.encode(owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET));
+        moduleProxy.initialize(abi.encode(owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET, address(0)));
         _;
     }
 
@@ -110,6 +111,60 @@ contract HoprNodeManagementModuleTest is
     function test_CanInitializeProxy() public initializeModuleProxy(address(1)) {
         assertEq(moduleProxy.owner(), address(1));
         vm.clearMockedCalls();
+    }
+
+    function test_NodeCanExecuteOwnServiceRegistryWrites() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+        vm.mockCall(safe, abi.encodeWithSelector(IAvatar.execTransactionFromModule.selector), abi.encode(true));
+
+        bytes32 serviceType = bytes32("gvpn:exit");
+        bytes[] memory calls = new bytes[](3);
+        calls[0] = abi.encodeCall(HoprServiceRegistry.selfRegister, (serviceType, node, bytes("register")));
+        calls[1] = abi.encodeCall(HoprServiceRegistry.selfUpdate, (serviceType, node, bytes("update")));
+        calls[2] = abi.encodeCall(HoprServiceRegistry.selfDeregister, (serviceType, node));
+        vm.startPrank(node);
+        for (uint256 i = 0; i < calls.length; i++) {
+            assertTrue(moduleProxy.execTransactionFromModule(registry, 0, calls[i], Enum.Operation.Call));
+        }
+        vm.stopPrank();
+    }
+
+    function testRevert_NodeCannotWriteAnotherServiceEntry() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+
+        vm.prank(node);
+        vm.expectRevert(HoprCapabilityPermissions.NodePermissionRejected.selector);
+        moduleProxy.execTransactionFromModule(
+            registry,
+            0,
+            abi.encodeCall(HoprServiceRegistry.selfDeregister, (bytes32("gvpn:exit"), makeAddr("other node"))),
+            Enum.Operation.Call
+        );
+    }
+
+    function testRevert_NodeCannotCallArbitraryServiceRegistryFunction() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+
+        vm.prank(node);
+        vm.expectRevert(HoprCapabilityPermissions.ParameterNotAllowed.selector);
+        moduleProxy.execTransactionFromModule(
+            registry, 0, abi.encodeWithSignature("transferOwnership(address)", node), Enum.Operation.Call
+        );
     }
 
     /**

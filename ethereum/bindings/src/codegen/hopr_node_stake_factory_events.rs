@@ -3,7 +3,7 @@
 
 ```solidity
 library HoprNodeStakeFactory {
-    struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes32 defaultAnnouncementTarget; }
+    struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes32 defaultAnnouncementTarget; address serviceRegistryAddress; }
     struct SafeLibAddress { address safeAddress; address safeProxyFactoryAddress; address fallbackHandlerAddress; address multiSendAddress; }
 }
 ```*/
@@ -20,7 +20,7 @@ pub mod HoprNodeStakeFactory {
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
     /**```solidity
-struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes32 defaultAnnouncementTarget; }
+struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes32 defaultAnnouncementTarget; address serviceRegistryAddress; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
@@ -31,6 +31,8 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
         pub defaultTokenAllowance: alloy::sol_types::private::primitives::aliases::U256,
         #[allow(missing_docs)]
         pub defaultAnnouncementTarget: alloy::sol_types::private::FixedBytes<32>,
+        #[allow(missing_docs)]
+        pub serviceRegistryAddress: alloy::sol_types::private::Address,
     }
     #[allow(
         non_camel_case_types,
@@ -46,12 +48,14 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
             alloy::sol_types::sol_data::Address,
             alloy::sol_types::sol_data::Uint<256>,
             alloy::sol_types::sol_data::FixedBytes<32>,
+            alloy::sol_types::sol_data::Address,
         );
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = (
             alloy::sol_types::private::Address,
             alloy::sol_types::private::primitives::aliases::U256,
             alloy::sol_types::private::FixedBytes<32>,
+            alloy::sol_types::private::Address,
         );
         #[cfg(test)]
         #[allow(dead_code, unreachable_patterns)]
@@ -72,6 +76,7 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                     value.tokenAddress,
                     value.defaultTokenAllowance,
                     value.defaultAnnouncementTarget,
+                    value.serviceRegistryAddress,
                 )
             }
         }
@@ -83,6 +88,7 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                     tokenAddress: tuple.0,
                     defaultTokenAllowance: tuple.1,
                     defaultAnnouncementTarget: tuple.2,
+                    serviceRegistryAddress: tuple.3,
                 }
             }
         }
@@ -107,6 +113,9 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                         32,
                     > as alloy_sol_types::SolType>::tokenize(
                         &self.defaultAnnouncementTarget,
+                    ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.serviceRegistryAddress,
                     ),
                 )
             }
@@ -182,7 +191,7 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
             #[inline]
             fn eip712_root_type() -> alloy_sol_types::private::Cow<'static, str> {
                 alloy_sol_types::private::Cow::Borrowed(
-                    "HoprNetwork(address tokenAddress,uint256 defaultTokenAllowance,bytes32 defaultAnnouncementTarget)",
+                    "HoprNetwork(address tokenAddress,uint256 defaultTokenAllowance,bytes32 defaultAnnouncementTarget,address serviceRegistryAddress)",
                 )
             }
             #[inline]
@@ -214,6 +223,10 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                             &self.defaultAnnouncementTarget,
                         )
                         .0,
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.serviceRegistryAddress,
+                        )
+                        .0,
                 ]
                     .concat()
             }
@@ -235,6 +248,9 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                         32,
                     > as alloy_sol_types::EventTopic>::topic_preimage_length(
                         &rust.defaultAnnouncementTarget,
+                    )
+                    + <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.serviceRegistryAddress,
                     )
             }
             #[inline]
@@ -259,6 +275,10 @@ struct HoprNetwork { address tokenAddress; uint256 defaultTokenAllowance; bytes3
                     32,
                 > as alloy_sol_types::EventTopic>::encode_topic_preimage(
                     &rust.defaultAnnouncementTarget,
+                    out,
+                );
+                <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.serviceRegistryAddress,
                     out,
                 );
             }
@@ -671,6 +691,7 @@ library HoprNodeStakeFactory {
         address tokenAddress;
         uint256 defaultTokenAllowance;
         bytes32 defaultAnnouncementTarget;
+        address serviceRegistryAddress;
     }
     struct SafeLibAddress {
         address safeAddress;
@@ -717,6 +738,11 @@ interface HoprNodeStakeFactoryEvents {
             "name": "defaultAnnouncementTarget",
             "type": "bytes32",
             "internalType": "bytes32"
+          },
+          {
+            "name": "serviceRegistryAddress",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       }
@@ -850,7 +876,7 @@ pub mod HoprNodeStakeFactoryEvents {
     );
     #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
-    /**Event with signature `HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32))` and selector `0x54cfcf4bdb6f20632ba544cd684130fc9db4dc2fe6360926d6b7866297f0315e`.
+    /**Event with signature `HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32,address))` and selector `0x83d99586d37f954421088e92a480e5bd594a8d79e907faff59d5bdd730f4998a`.
 ```solidity
 event HoprNodeStakeHoprNetworkUpdated(HoprNodeStakeFactory.HoprNetwork hoprNetwork);
 ```*/
@@ -880,11 +906,11 @@ event HoprNodeStakeHoprNetworkUpdated(HoprNodeStakeFactory.HoprNetwork hoprNetwo
                 'a,
             > as alloy_sol_types::SolType>::Token<'a>;
             type TopicList = (alloy_sol_types::sol_data::FixedBytes<32>,);
-            const SIGNATURE: &'static str = "HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32))";
+            const SIGNATURE: &'static str = "HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32,address))";
             const SIGNATURE_HASH: alloy_sol_types::private::B256 = alloy_sol_types::private::B256::new([
-                84u8, 207u8, 207u8, 75u8, 219u8, 111u8, 32u8, 99u8, 43u8, 165u8, 68u8,
-                205u8, 104u8, 65u8, 48u8, 252u8, 157u8, 180u8, 220u8, 47u8, 230u8, 54u8,
-                9u8, 38u8, 214u8, 183u8, 134u8, 98u8, 151u8, 240u8, 49u8, 94u8,
+                131u8, 217u8, 149u8, 134u8, 211u8, 127u8, 149u8, 68u8, 33u8, 8u8, 142u8,
+                146u8, 164u8, 128u8, 229u8, 189u8, 89u8, 74u8, 141u8, 121u8, 233u8, 7u8,
+                250u8, 255u8, 89u8, 213u8, 189u8, 215u8, 48u8, 244u8, 153u8, 138u8,
             ]);
             const ANONYMOUS: bool = false;
             #[allow(unused_variables)]
@@ -1528,11 +1554,6 @@ event NewHoprNodeStakeSafe(address instance);
         /// Prefer using `SolInterface` methods instead.
         pub const SELECTORS: &'static [[u8; 32usize]] = &[
             [
-                84u8, 207u8, 207u8, 75u8, 219u8, 111u8, 32u8, 99u8, 43u8, 165u8, 68u8,
-                205u8, 104u8, 65u8, 48u8, 252u8, 157u8, 180u8, 220u8, 47u8, 230u8, 54u8,
-                9u8, 38u8, 214u8, 183u8, 134u8, 98u8, 151u8, 240u8, 49u8, 94u8,
-            ],
-            [
                 130u8, 49u8, 209u8, 105u8, 244u8, 22u8, 182u8, 102u8, 174u8, 127u8,
                 164u8, 63u8, 170u8, 36u8, 161u8, 136u8, 153u8, 115u8, 128u8, 117u8,
                 165u8, 63u8, 50u8, 201u8, 118u8, 23u8, 209u8, 115u8, 177u8, 137u8, 227u8,
@@ -1542,6 +1563,11 @@ event NewHoprNodeStakeSafe(address instance);
                 131u8, 165u8, 195u8, 27u8, 254u8, 228u8, 157u8, 37u8, 77u8, 149u8, 227u8,
                 148u8, 109u8, 142u8, 132u8, 52u8, 229u8, 151u8, 83u8, 130u8, 250u8,
                 139u8, 132u8, 145u8, 130u8, 219u8, 158u8, 37u8, 26u8, 170u8, 170u8, 38u8,
+            ],
+            [
+                131u8, 217u8, 149u8, 134u8, 211u8, 127u8, 149u8, 68u8, 33u8, 8u8, 142u8,
+                146u8, 164u8, 128u8, 229u8, 189u8, 89u8, 74u8, 141u8, 121u8, 233u8, 7u8,
+                250u8, 255u8, 89u8, 213u8, 189u8, 215u8, 48u8, 244u8, 153u8, 138u8,
             ],
             [
                 135u8, 235u8, 80u8, 123u8, 43u8, 66u8, 235u8, 101u8, 152u8, 7u8, 215u8,
@@ -1561,18 +1587,18 @@ event NewHoprNodeStakeSafe(address instance);
         ];
         /// The names of the variants in the same order as `SELECTORS`.
         pub const VARIANT_NAMES: &'static [&'static str] = &[
-            ::core::stringify!(HoprNodeStakeHoprNetworkUpdated),
             ::core::stringify!(NewHoprNodeStakeSafe),
             ::core::stringify!(NewHoprNodeStakeModuleForSafe),
+            ::core::stringify!(HoprNodeStakeHoprNetworkUpdated),
             ::core::stringify!(HoprNodeStakeSafeLibUpdated),
             ::core::stringify!(HoprNodeStakeModuleUpdated),
             ::core::stringify!(NewHoprNodeStakeModule),
         ];
         /// The signatures in the same order as `SELECTORS`.
         pub const SIGNATURES: &'static [&'static str] = &[
-            <HoprNodeStakeHoprNetworkUpdated as alloy_sol_types::SolEvent>::SIGNATURE,
             <NewHoprNodeStakeSafe as alloy_sol_types::SolEvent>::SIGNATURE,
             <NewHoprNodeStakeModuleForSafe as alloy_sol_types::SolEvent>::SIGNATURE,
+            <HoprNodeStakeHoprNetworkUpdated as alloy_sol_types::SolEvent>::SIGNATURE,
             <HoprNodeStakeSafeLibUpdated as alloy_sol_types::SolEvent>::SIGNATURE,
             <HoprNodeStakeModuleUpdated as alloy_sol_types::SolEvent>::SIGNATURE,
             <NewHoprNodeStakeModule as alloy_sol_types::SolEvent>::SIGNATURE,
@@ -1727,7 +1753,7 @@ event NewHoprNodeStakeSafe(address instance);
         /**Creates a [`HoprNodeStakeHoprNetworkUpdated`] event.
 
 ```solidity
-event HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32))
+event HoprNodeStakeHoprNetworkUpdated((address,uint256,bytes32,address))
 ```*/
         #[inline]
         pub fn hopr_node_stake_hopr_network_updated(

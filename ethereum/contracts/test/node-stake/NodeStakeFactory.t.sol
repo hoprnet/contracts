@@ -83,13 +83,15 @@ contract HoprNodeStakeFactoryTest is
     modifier mockTokenChannel() {
         vm.mockCall(CHANNELS, abi.encodeWithSignature("TOKEN()"), abi.encode(address(hoprToken)));
 
-        (, uint256 defaultAllowance, bytes32 defaultAnnouncement) = factory.defaultHoprNetwork();
+        (, uint256 defaultAllowance, bytes32 defaultAnnouncement, address serviceRegistry) =
+            factory.defaultHoprNetwork();
         vm.prank(admin);
         factory.updateHoprNetwork(
             HoprNodeStakeFactory.HoprNetwork({
                 tokenAddress: address(hoprToken),
                 defaultAnnouncementTarget: defaultAnnouncement,
-                defaultTokenAllowance: defaultAllowance
+                defaultTokenAllowance: defaultAllowance,
+                serviceRegistryAddress: serviceRegistry
             })
         );
         _;
@@ -141,7 +143,8 @@ contract HoprNodeStakeFactoryTest is
             tokenAddress: address(hoprToken),
             defaultTokenAllowance: 2000 ether,
             defaultAnnouncementTarget: bytes32(uint256(uint160(ANNOUNCEMENT))) << 96
-                | bytes32(uint256(0x010103030303030303030000))
+                | bytes32(uint256(0x010103030303030303030000)),
+            serviceRegistryAddress: address(0x5157)
         });
 
         vm.prank(admin);
@@ -149,10 +152,11 @@ contract HoprNodeStakeFactoryTest is
         emit HoprNodeStakeHoprNetworkUpdated(newHoprNetwork);
         factory.updateHoprNetwork(newHoprNetwork);
 
-        (address token, uint256 allowance, bytes32 announcement) = factory.defaultHoprNetwork();
+        (address token, uint256 allowance, bytes32 announcement, address serviceRegistry) = factory.defaultHoprNetwork();
         assertEq(token, address(hoprToken), "wrong token address");
         assertEq(allowance, newHoprNetwork.defaultTokenAllowance, "wrong allowance");
         assertEq(announcement, newHoprNetwork.defaultAnnouncementTarget, "wrong announcement");
+        assertEq(serviceRegistry, newHoprNetwork.serviceRegistryAddress, "wrong service registry");
         vm.clearMockedCalls();
     }
 
@@ -208,7 +212,7 @@ contract HoprNodeStakeFactoryTest is
 
         // compare token allowance
         assertEq(Target.wrap(uint256(DEFAULT_TARGET)).getTargetAddress(), CHANNELS, "wrong channels address");
-        (, uint256 defaultAllowance,) = factory.defaultHoprNetwork();
+        (, uint256 defaultAllowance,,) = factory.defaultHoprNetwork();
         assertEq(hoprToken.allowance(safe, CHANNELS), defaultAllowance, "wrong token allowance");
         vm.stopPrank();
         vm.clearMockedCalls();
@@ -251,7 +255,7 @@ contract HoprNodeStakeFactoryTest is
         assertEq(hoprToken.balanceOf(expectedSafeAddress), amount, "safe should receive all the tokens");
         assertEq(hoprToken.balanceOf(caller), 0, "caller should not have any tokens");
         // channel could transfer some tokens from the safe
-        (, uint256 defaultAllowance,) = factory.defaultHoprNetwork();
+        (, uint256 defaultAllowance,,) = factory.defaultHoprNetwork();
         assertEq(hoprToken.allowance(expectedSafeAddress, CHANNELS), defaultAllowance, "wrong token allowance");
         vm.stopPrank();
         vm.clearMockedCalls();
@@ -291,7 +295,7 @@ contract HoprNodeStakeFactoryTest is
         assertEq(hoprToken.balanceOf(expectedSafeAddress), amount, "safe should receive all the tokens");
         assertEq(hoprToken.balanceOf(caller), 0, "caller should not have any tokens");
         // channel could transfer some tokens from the safe
-        (, uint256 defaultAllowance,) = factory.defaultHoprNetwork();
+        (, uint256 defaultAllowance,,) = factory.defaultHoprNetwork();
         assertEq(hoprToken.allowance(expectedSafeAddress, CHANNELS), defaultAllowance, "wrong token allowance");
 
         // check admins are nodes being included in the module
@@ -399,7 +403,7 @@ contract HoprNodeStakeFactoryTest is
         address moduleProxy = address(moduleSingleton).cloneDeterministic(salt);
         // add Safe and multisend to the module
         bytes memory moduleInitializer = abi.encodeWithSignature(
-            "initialize(bytes)", abi.encode(safeAddr, multisendAddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET)
+            "initialize(bytes)", abi.encode(safeAddr, multisendAddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET, address(0))
         );
 
         vm.expectEmit(true, true, false, false, address(moduleProxy));
@@ -485,7 +489,7 @@ contract HoprNodeStakeFactoryTest is
 
         // initialize module proxy with valid variables
         bytes memory moduleInitializer = abi.encodeWithSignature(
-            "initialize(bytes)", abi.encode(address(1), address(2), ANNOUNCEMENT_TARGET, DEFAULT_TARGET)
+            "initialize(bytes)", abi.encode(address(1), address(2), ANNOUNCEMENT_TARGET, DEFAULT_TARGET, address(0))
         );
         (bool result,) = moduleProxy.call(moduleInitializer);
         // must not revert

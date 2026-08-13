@@ -12,7 +12,8 @@ enum Clearance {
 enum TargetType {
     TOKEN,
     CHANNELS,
-    SEND
+    SEND,
+    SERVICE_REGISTRY
 }
 
 enum TargetPermission {

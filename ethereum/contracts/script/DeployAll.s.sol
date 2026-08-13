@@ -10,6 +10,7 @@ import { PermittableTokenFixtureTest } from "../test/utils/PermittableToken.sol"
 import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
 import { BoostUtilsLib } from "./utils/BoostUtilsLib.sol";
 import { WinProb } from "../src/WinningProbabilityOracle.sol";
+import { HoprNodeStakeFactory } from "../src/node-stake/NodeStakeFactory.sol";
 
 /**
  * @title Deploy all the required contracts in development, staging and production environment
@@ -417,6 +418,18 @@ contract DeployAllContractsScript is
                 initialAdmin,
                 typeRegistrationFee
             )
+        );
+
+        // Safes deployed after the registry must scope it into their node-management module.
+        HoprNodeStakeFactory stakeFactory = HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress);
+        (address token, uint256 allowance, bytes32 announcement,) = stakeFactory.defaultHoprNetwork();
+        stakeFactory.updateHoprNetwork(
+            HoprNodeStakeFactory.HoprNetwork({
+                tokenAddress: token,
+                defaultTokenAllowance: allowance,
+                defaultAnnouncementTarget: announcement,
+                serviceRegistryAddress: currentNetworkDetail.addresses.serviceRegistryAddress
+            })
         );
 
         if (currentEnvironmentType == EnvironmentType.LOCAL) {

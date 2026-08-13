@@ -65,21 +65,25 @@ contract NodeSafeMigrationTest is
         vm.mockCall(NEW_CHANNELS, abi.encodeWithSignature("TOKEN()"), abi.encode(address(hoprToken)));
         vm.mockCall(address(hoprToken), abi.encodeWithSignature("approve(address,address)"), abi.encode(bool(true)));
 
-        (, uint256 oldDefaultAllowance, bytes32 oldDefaultAnnouncement) = oldFactory.defaultHoprNetwork();
+        (, uint256 oldDefaultAllowance, bytes32 oldDefaultAnnouncement, address oldServiceRegistry) =
+            oldFactory.defaultHoprNetwork();
         vm.startPrank(ADMIN);
         oldFactory.updateHoprNetwork(
             HoprNodeStakeFactory.HoprNetwork({
                 tokenAddress: address(hoprToken),
                 defaultAnnouncementTarget: oldDefaultAnnouncement,
-                defaultTokenAllowance: oldDefaultAllowance
+                defaultTokenAllowance: oldDefaultAllowance,
+                serviceRegistryAddress: oldServiceRegistry
             })
         );
-        (, uint256 newDefaultAllowance, bytes32 newDefaultAnnouncement) = newFactory.defaultHoprNetwork();
+        (, uint256 newDefaultAllowance, bytes32 newDefaultAnnouncement, address newServiceRegistry) =
+            newFactory.defaultHoprNetwork();
         newFactory.updateHoprNetwork(
             HoprNodeStakeFactory.HoprNetwork({
                 tokenAddress: address(hoprToken),
                 defaultAnnouncementTarget: newDefaultAnnouncement,
-                defaultTokenAllowance: newDefaultAllowance
+                defaultTokenAllowance: newDefaultAllowance,
+                serviceRegistryAddress: newServiceRegistry
             })
         );
         vm.stopPrank();
