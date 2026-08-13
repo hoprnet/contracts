@@ -26,18 +26,22 @@ contract DeployAllContractsScript is
     PermittableTokenFixtureTest
 {
     using BoostUtilsLib for address;
+    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
     // starting key binding fee at deployment time
     uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
+    uint256 public constant LOCAL_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
     uint256 public constant STAGING_INIT_KEY_BINDING_FEE = 1 ether; // 1 HOPR in gwei unit
-    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
+    uint256 public constant PRODUCTION_INIT_KEY_BINDING_FEE = 1 ether; // 1 HOPR in gwei unit
     // ticket price oracle
     uint256 public constant LOCAL_TICKET_PRICE = 10_000_000 gwei; // 0.001 HOPR in gwei unit
     uint256 public constant DEV_TICKET_PRICE = 100; // 0.0000000000000001 HOPR in gwei unit
     uint256 public constant STAGING_TICKET_PRICE = 10_000 gwei; // 0.00001 HOPR in gwei unit
+    uint256 public constant PRODUCTION_TICKET_PRICE = 10_000 gwei; // 0.00001 HOPR in gwei unit
     // winnning probability
     uint56 public constant LOCAL_WINNING_PROBABILITY = 72_057_594_037_927_935; // 0.0005 in WinProb unit
     uint56 public constant DEV_WINNING_PROBABILITY = 9_007_199_254_735; // 0.00012500 in WinProb unit
     uint56 public constant STAGING_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
+    uint56 public constant PRODUCTION_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
     // service registry
     // The delay of DefaultAdminRules guards the admin role transfer only. A units mistake here is
     // near-permanent, because a lower delay must itself wait out the old delay.
@@ -50,8 +54,6 @@ contract DeployAllContractsScript is
     uint256 public constant GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
     uint256 public constant GVPN_EXIT_UPDATE_BURN = 100 ether;
 
-    bool internal isHoprChannelsDeployed;
-    bool internal isHoprNetworkRegistryDeployed;
     address private owner;
 
     function setUp() public override(ERC1820RegistryFixtureTest, SafeSingletonFixtureTest) {
@@ -135,9 +137,8 @@ contract DeployAllContractsScript is
         _deployHoprServiceRegistry(deployerAddress);
 
         // 4. update indexerStartBlockNumber
-        // if both HoprChannels and HoprNetworkRegistry contracts are deployed, update the startup block number for
-        // indexer
-        if (isHoprChannelsDeployed && isHoprNetworkRegistryDeployed) {
+        // if the indexerStartBlockNumber is not set (i.e. 0)
+        if (currentNetworkDetail.indexerStartBlockNumber == 0) {
             currentNetworkDetail.indexerStartBlockNumber = block.number;
         }
 
@@ -246,7 +247,6 @@ contract DeployAllContractsScript is
                     currentNetworkDetail.addresses.nodeSafeRegistryAddress
                 )
             );
-            isHoprChannelsDeployed = true;
         }
     }
 
@@ -260,6 +260,8 @@ contract DeployAllContractsScript is
             price = LOCAL_TICKET_PRICE;
         } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             price = STAGING_TICKET_PRICE;
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            price = PRODUCTION_TICKET_PRICE;
         } else {
             price = DEV_TICKET_PRICE;
         }
@@ -282,6 +284,8 @@ contract DeployAllContractsScript is
             winProb = WinProb.wrap(LOCAL_WINNING_PROBABILITY);
         } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             winProb = WinProb.wrap(STAGING_WINNING_PROBABILITY);
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            winProb = WinProb.wrap(PRODUCTION_WINNING_PROBABILITY);
         } else {
             winProb = WinProb.wrap(DEV_WINNING_PROBABILITY);
         }
@@ -306,8 +310,12 @@ contract DeployAllContractsScript is
                 || !isValidAddress(currentNetworkDetail.addresses.announcements)
         ) {
             uint256 keyBindingFee;
-            if (currentEnvironmentType == EnvironmentType.STAGING) {
+            if (currentEnvironmentType == EnvironmentType.LOCAL) {
+                keyBindingFee = LOCAL_INIT_KEY_BINDING_FEE;
+            } else if (currentEnvironmentType == EnvironmentType.STAGING) {
                 keyBindingFee = STAGING_INIT_KEY_BINDING_FEE;
+            } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+                keyBindingFee = PRODUCTION_INIT_KEY_BINDING_FEE;
             } else {
                 keyBindingFee = DEV_INIT_KEY_BINDING_FEE;
             }
