@@ -548,6 +548,7 @@ where
             tokenAddress: *token.address(),
             defaultTokenAllowance: default_hopr_network.defaultTokenAllowance,
             defaultAnnouncementTarget: default_hopr_network.defaultAnnouncementTarget,
+            serviceRegistryAddress: *service_registry.address(),
         };
         // Update the `defaultHoprNetwork` in the factory contract, to update the token address
         stake_factory
