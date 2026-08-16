@@ -8,18 +8,7 @@ import { ReentrancyGuard } from "openzeppelin-contracts-5.4.0/utils/ReentrancyGu
 import { IERC20, SafeERC20 } from "openzeppelin-contracts-5.4.0/token/ERC20/utils/SafeERC20.sol";
 import { EnumerableSet } from "openzeppelin-contracts-5.4.0/utils/structs/EnumerableSet.sol";
 import { IServiceRequirement } from "./interfaces/IServiceRequirement.sol";
-
-/**
- * @dev Minimal compile target for wxHOPR. It holds the ERC-20 compatibility surface and the
- * ERC-777 holder burn.
- *
- * `burn` has no `from` parameter. It burns the balance of the caller. The registry therefore
- * pulls a fee into itself first, and burns it second.
- */
-interface IWxHoprToken {
-    function transferFrom(address holder, address recipient, uint256 amount) external returns (bool);
-    function burn(uint256 amount, bytes calldata data) external;
-}
+import { IERC777 } from "./static/openzeppelin-contracts/ERC777.sol";
 
 /**
  * @dev Minimal compile target for HoprNodeSafeRegistry. The registry reads the node-to-Safe
@@ -54,9 +43,7 @@ interface INodeSafeRegistry {
  */
 abstract contract HoprServiceRegistryEvents {
     /// @dev The constructor emits this event once. It carries every immutable value of the deployment.
-    event RegistryInitialized(
-        uint256 version, address admin, address manager, address wxHopr, uint48 initialAdminDelay
-    );
+    event RegistryInitialized(uint256 version, address admin, address manager, address token, uint48 initialAdminDelay);
 
     /// @dev The constructor also emits this event, with `oldNodeSafeRegistry` set to `address(0)`.
     event NodeSafeRegistryUpdated(address oldNodeSafeRegistry, address newNodeSafeRegistry);
@@ -131,7 +118,7 @@ abstract contract HoprServiceRegistryEvents {
  * The registry is permissionless at two levels:
  * - Anyone can register a service type. The registrant pays the global type-registration fee and
  *   becomes the owner of that type.
- * - Any bound node operator can register entries under any type. The policy of that type and the
+ * - Any bound node operator can register entries under any tye. The policy of that type and the
  *   burns of that type apply.
  *
  * Three functions write entries: `selfRegister`, `selfUpdate` and `selfDeregister`. They are the
@@ -161,6 +148,12 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
+
+    struct Entry {
+        uint48 registeredAt; // block timestamp of the registration \ these two pack
+        uint48 updatedAt; // block timestamp of the last update      / into one slot
+        bytes metadata; // opaque data, with a schema that belongs to the service type
+    } // registration sets updatedAt to registeredAt
 
     /// @dev The service type id must not be zero.
     error ZeroServiceType();
@@ -193,7 +186,7 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
     /// @dev The requirement of the type returned a clean `false` from `validateMetadata`.
     error MetadataRejected(bytes32 serviceType, address node);
     /// @dev The wxHOPR token must have code. This error also covers the zero address.
-    error WxHoprTokenNotContract(address wxHopr);
+    error WxHoprTokenNotContract(address token);
     /// @dev `initialManager` must not be zero. The OpenZeppelin base rejects a zero admin separately.
     error ZeroManager();
     /// @dev The initial admin delay must be non-zero and at most 30 days. A units mistake is near-permanent.
@@ -222,21 +215,10 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      */
     uint48 private constant _MAX_ADMIN_DELAY = 30 days;
 
-    struct Entry {
-        bytes metadata; // opaque data, with a schema that belongs to the service type
-        uint48 registeredAt; // block timestamp of the registration \ these two pack
-        uint48 updatedAt; // block timestamp of the last update      / into one slot
-    } // registration sets updatedAt to registeredAt
-
     /**
      * @dev The payment token. Every fee is wxHOPR, pulled by allowance and then burned.
-     *
-     * The lint rule for immutables asks for `WX_HOPR`. The name stays `wxHopr`, because section 4
-     * of the specification freezes the getter `wxHopr()`. The Rust bindings and every consumer
-     * read that exact name, and the contract is not upgradeable.
      */
-    /// forge-lint:disable-next-item(screaming-snake-case-immutable)
-    IWxHoprToken public immutable wxHopr;
+    address public immutable WXHOPR_TOKEN;
 
     /**
      * @dev The authority root of every entry write. This pointer is mutable on purpose, because
@@ -272,6 +254,63 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
     /// @dev Per-type entry records.
     mapping(bytes32 => mapping(address => Entry)) private _entries;
 
+    // ---------------------------------------------------------------------------------------
+    // Modifiers
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * @dev The live authority test behind every entry write.
+     *
+     * The registry reads the binding on every call and never caches it. A Safe rotation in
+     * HoprNodeSafeRegistry therefore carries the registry authority with it.
+     *
+     * This staticcall has no try/catch. A target that reverts, or that returns malformed data,
+     * surfaces raw.
+     */
+    modifier requireNodeSafe(address node) {
+        address boundSafe = nodeSafeRegistry.nodeToSafe(node);
+        if (boundSafe == address(0) || msg.sender != boundSafe) {
+            revert CallerNotNodeSafe(node, msg.sender, boundSafe);
+        }
+        _;
+    }
+
+    /// @dev A non-zero requirement must have code, because the registry staticcalls it.
+    modifier requireRequirementIsContract(address requirement) {
+        if (requirement != address(0) && requirement.code.length == 0) {
+            revert RequirementNotContract(requirement);
+        }
+        _;
+    }
+
+    /// @dev The permanent metadata cap. Every write path applies it.
+    modifier requireMetadataFits(bytes calldata metadata) {
+        if (metadata.length > MAX_METADATA_LENGTH) {
+            revert MetadataTooLong(metadata.length, MAX_METADATA_LENGTH);
+        }
+        _;
+    }
+
+    /**
+     * @dev The shared prefix of all four type owner functions.
+     *
+     * An abandoned type has an owner of 0. No caller can ever match that value, so every owner
+     * function is permanently dead for such a type.
+     */
+    modifier requireTypeOwner(bytes32 serviceType) {
+        if (!_types.contains(serviceType)) {
+            revert UnknownServiceType(serviceType);
+        }
+        address owner = typeOwner[serviceType];
+        if (msg.sender != owner) {
+            revert NotTypeOwner(serviceType, msg.sender, owner);
+        }
+        _;
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Constructor
+    // ---------------------------------------------------------------------------------------
     /**
      * @dev Validates the immutable configuration. Emits the three events that rebuild the
      * deployment from logs alone.
@@ -290,7 +329,7 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param initialTypeRegistrationFee the type-registration fee at launch, best kept non-zero
      */
     constructor(
-        IWxHoprToken wxHopr_,
+        address wxHopr_,
         INodeSafeRegistry nodeSafeRegistry_,
         uint48 initialAdminDelay_,
         address initialAdmin,
@@ -312,7 +351,7 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
             revert InvalidAdminDelay(initialAdminDelay_, _MAX_ADMIN_DELAY);
         }
 
-        wxHopr = wxHopr_;
+        WXHOPR_TOKEN = wxHopr_;
         nodeSafeRegistry = nodeSafeRegistry_;
         typeRegistrationFee = initialTypeRegistrationFee;
         _grantRole(MANAGER_ROLE, initialManager);
@@ -353,6 +392,7 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
     )
         external
         nonReentrant
+        requireRequirementIsContract(address(requirement))
     {
         if (serviceType == bytes32(0)) {
             revert ZeroServiceType();
@@ -360,7 +400,6 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
         if (_types.contains(serviceType)) {
             revert ServiceTypeExists(serviceType);
         }
-        _requireRequirementIsContract(requirement);
 
         uint256 fee = typeRegistrationFee;
 
@@ -390,10 +429,15 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param serviceType the type to reconfigure
      * @param requirement the new policy contract, or `address(0)` for none
      */
-    function setRequirement(bytes32 serviceType, IServiceRequirement requirement) external nonReentrant {
-        _requireTypeOwner(serviceType);
-        _requireRequirementIsContract(requirement);
-
+    function setRequirement(
+        bytes32 serviceType,
+        IServiceRequirement requirement
+    )
+        external
+        nonReentrant
+        requireRequirementIsContract(address(requirement))
+        requireTypeOwner(serviceType)
+    {
         requirements[serviceType] = requirement;
         emit RequirementUpdated(serviceType, address(requirement));
     }
@@ -403,9 +447,14 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param serviceType the type to reconfigure
      * @param amount the new burn in 18-decimal wxHOPR units, which can be zero
      */
-    function setSelfRegistrationBurn(bytes32 serviceType, uint256 amount) external nonReentrant {
-        _requireTypeOwner(serviceType);
-
+    function setSelfRegistrationBurn(
+        bytes32 serviceType,
+        uint256 amount
+    )
+        external
+        nonReentrant
+        requireTypeOwner(serviceType)
+    {
         selfRegistrationBurn[serviceType] = amount;
         emit SelfRegistrationBurnUpdated(serviceType, amount);
     }
@@ -420,9 +469,11 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param serviceType the type to reconfigure
      * @param amount the new burn in 18-decimal wxHOPR units, which can be zero
      */
-    function setSelfUpdateBurn(bytes32 serviceType, uint256 amount) external nonReentrant {
-        _requireTypeOwner(serviceType);
-
+    function setSelfUpdateBurn(bytes32 serviceType, uint256 amount)
+        external
+        nonReentrant
+        requireTypeOwner(serviceType)
+    {
         selfUpdateBurn[serviceType] = amount;
         emit SelfUpdateBurnUpdated(serviceType, amount);
     }
@@ -439,9 +490,14 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param serviceType the type to transfer
      * @param newOwner the new owner, or `address(0)` to abandon the type
      */
-    function transferTypeOwnership(bytes32 serviceType, address newOwner) external nonReentrant {
-        _requireTypeOwner(serviceType);
-
+    function transferTypeOwnership(
+        bytes32 serviceType,
+        address newOwner
+    )
+        external
+        nonReentrant
+        requireTypeOwner(serviceType)
+    {
         address oldOwner = typeOwner[serviceType];
         typeOwner[serviceType] = newOwner;
         emit TypeOwnershipTransferred(serviceType, oldOwner, newOwner);
@@ -472,15 +528,22 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param node the native chain address of the node
      * @param metadata opaque metadata of at most `MAX_METADATA_LENGTH` bytes
      */
-    function selfRegister(bytes32 serviceType, address node, bytes calldata metadata) external nonReentrant {
+    function selfRegister(
+        bytes32 serviceType,
+        address node,
+        bytes calldata metadata
+    )
+        external
+        nonReentrant
+        requireNodeSafe(node)
+        requireMetadataFits(metadata)
+    {
         if (!_types.contains(serviceType)) {
             revert UnknownServiceType(serviceType);
         }
         if (_nodes[serviceType].contains(node)) {
             revert AlreadyRegistered(serviceType, node);
         }
-        _requireNodeSafe(node);
-        _requireMetadataFits(metadata);
 
         IServiceRequirement requirement = requirements[serviceType];
         if (address(requirement) != address(0)) {
@@ -522,12 +585,19 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param node the native chain address of the node
      * @param metadata the replacement metadata, of at most `MAX_METADATA_LENGTH` bytes
      */
-    function selfUpdate(bytes32 serviceType, address node, bytes calldata metadata) external nonReentrant {
+    function selfUpdate(
+        bytes32 serviceType,
+        address node,
+        bytes calldata metadata
+    )
+        external
+        nonReentrant
+        requireNodeSafe(node)
+        requireMetadataFits(metadata)
+    {
         if (!_nodes[serviceType].contains(node)) {
             revert NotRegistered(serviceType, node);
         }
-        _requireNodeSafe(node);
-        _requireMetadataFits(metadata);
 
         IServiceRequirement requirement = requirements[serviceType];
         if (address(requirement) != address(0)) {
@@ -563,11 +633,10 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
      * @param serviceType the type that holds the entry
      * @param node the native chain address of the node
      */
-    function selfDeregister(bytes32 serviceType, address node) external nonReentrant {
+    function selfDeregister(bytes32 serviceType, address node) external nonReentrant requireNodeSafe(node) {
         if (!_nodes[serviceType].contains(node)) {
             revert NotRegistered(serviceType, node);
         }
-        _requireNodeSafe(node);
 
         _nodes[serviceType].remove(node);
         delete _entries[serviceType][node];
@@ -776,52 +845,6 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
     // ---------------------------------------------------------------------------------------
 
     /**
-     * @dev The shared prefix of all four type owner functions.
-     *
-     * An abandoned type has an owner of 0. No caller can ever match that value, so every owner
-     * function is permanently dead for such a type.
-     */
-    function _requireTypeOwner(bytes32 serviceType) private view {
-        if (!_types.contains(serviceType)) {
-            revert UnknownServiceType(serviceType);
-        }
-        address owner = typeOwner[serviceType];
-        if (msg.sender != owner) {
-            revert NotTypeOwner(serviceType, msg.sender, owner);
-        }
-    }
-
-    /**
-     * @dev The live authority test behind every entry write.
-     *
-     * The registry reads the binding on every call and never caches it. A Safe rotation in
-     * HoprNodeSafeRegistry therefore carries the registry authority with it.
-     *
-     * This staticcall has no try/catch. A target that reverts, or that returns malformed data,
-     * surfaces raw.
-     */
-    function _requireNodeSafe(address node) private view {
-        address boundSafe = nodeSafeRegistry.nodeToSafe(node);
-        if (boundSafe == address(0) || msg.sender != boundSafe) {
-            revert CallerNotNodeSafe(node, msg.sender, boundSafe);
-        }
-    }
-
-    /// @dev A non-zero requirement must have code, because the registry staticcalls it.
-    function _requireRequirementIsContract(IServiceRequirement requirement) private view {
-        if (address(requirement) != address(0) && address(requirement).code.length == 0) {
-            revert RequirementNotContract(address(requirement));
-        }
-    }
-
-    /// @dev The permanent metadata cap. Every write path applies it.
-    function _requireMetadataFits(bytes calldata metadata) private pure {
-        if (metadata.length > MAX_METADATA_LENGTH) {
-            revert MetadataTooLong(metadata.length, MAX_METADATA_LENGTH);
-        }
-    }
-
-    /**
      * @dev Fee collection. Every paid path shares it, and it is always the last step.
      *
      * This function pulls exactly `amount` from `msg.sender`. It then burns exactly that amount
@@ -842,8 +865,8 @@ contract HoprServiceRegistry is AccessControlDefaultAdminRules, ReentrancyGuard,
         if (amount == 0) {
             return;
         }
-        IERC20(address(wxHopr)).safeTransferFrom(msg.sender, address(this), amount);
-        wxHopr.burn(amount, "");
+        IERC20(address(WXHOPR_TOKEN)).safeTransferFrom(msg.sender, address(this), amount);
+        IERC777(address(WXHOPR_TOKEN)).burn(amount, "");
     }
 
     /**

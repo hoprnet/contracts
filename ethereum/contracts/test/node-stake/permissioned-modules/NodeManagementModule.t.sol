@@ -787,7 +787,7 @@ contract HoprNodeManagementModuleTest is
      * @dev encode function permissions but revert due to ArraysDifferentLength
      */
 
-    function test_EncodeFunctionSigsAndPermissionsMismatchedLengths() public {
+    function test_EncodeFunctionSigsAndPermissionsMismatchedLengths() public view {
         uint256 size = 6;
         bytes4[] memory functionSigs = new bytes4[](size);
         GranularPermission[] memory permissions = new GranularPermission[](size);

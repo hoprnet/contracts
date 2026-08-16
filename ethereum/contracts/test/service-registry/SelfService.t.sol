@@ -170,27 +170,27 @@ contract HoprServiceRegistrySelfServiceTest is ServiceRegistryFixtureTest {
     // selfRegister - error precedence
     // ---------------------------------------------------------------------------------------
 
-    /// @dev Step 1 beats step 3. An unknown type wins over a caller that is not the bound Safe.
-    function test_unknownServiceTypeBeatsCallerNotNodeSafe() public {
+    /**
+     * @dev `requireNodeSafe` is a modifier, so it runs before the function body reaches step 1.
+     * A caller that is not the bound Safe never learns whether the type exists.
+     */
+    function test_callerNotNodeSafeBeatsUnknownServiceType() public {
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.UnknownServiceType.selector, SERVICE_TYPE_GVPN));
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.CallerNotNodeSafe.selector, nodeA, stranger, safeA));
         registry.selfRegister(SERVICE_TYPE_GVPN, nodeA, hex"01");
     }
 
     /**
-     * @dev Step 2 beats step 3, and this ordering is deliberate.
-     *
-     * An existing entry surfaces as `AlreadyRegistered` even when the caller has no authority over
-     * the node at all.
+     * @dev `requireNodeSafe` is a modifier, so it runs before the function body reaches step 2.
+     * An existing entry never surfaces as `AlreadyRegistered` to a caller that is not the bound
+     * Safe; that caller sees `CallerNotNodeSafe` instead.
      */
-    function test_alreadyRegisteredBeatsCallerNotNodeSafe() public {
+    function test_callerNotNodeSafeBeatsAlreadyRegistered() public {
         _registerDefaultType();
         _registerEntry(safeA, SERVICE_TYPE_GVPN, nodeA, hex"01");
 
         vm.prank(stranger);
-        vm.expectRevert(
-            abi.encodeWithSelector(HoprServiceRegistry.AlreadyRegistered.selector, SERVICE_TYPE_GVPN, nodeA)
-        );
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.CallerNotNodeSafe.selector, nodeA, stranger, safeA));
         registry.selfRegister(SERVICE_TYPE_GVPN, nodeA, hex"02");
     }
 
@@ -348,12 +348,15 @@ contract HoprServiceRegistrySelfServiceTest is ServiceRegistryFixtureTest {
         registry.selfDeregister(SERVICE_TYPE_GVPN, nodeA);
     }
 
-    /// @dev Precedence: the entry test runs before the binding test.
-    function test_notRegisteredBeatsCallerNotNodeSafeOnDeregister() public {
+    /**
+     * @dev Precedence: `requireNodeSafe` is a modifier, so the binding test runs before the
+     * function body ever reaches the entry test.
+     */
+    function test_callerNotNodeSafeBeatsNotRegisteredOnDeregister() public {
         _registerDefaultType();
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.NotRegistered.selector, SERVICE_TYPE_GVPN, nodeA));
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.CallerNotNodeSafe.selector, nodeA, stranger, safeA));
         registry.selfDeregister(SERVICE_TYPE_GVPN, nodeA);
     }
 

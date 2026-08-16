@@ -28,7 +28,7 @@ contract TargetUtilsTest is Test {
         targetUtilsMock = new TargetUtilsMock();
     }
 
-    function test_GetNumDefaultFunctionPermissions() public {
+    function test_GetNumDefaultFunctionPermissions() public view {
         uint256 num = targetUtilsMock.getNumCapabilityPermissions();
         assertEq(num, 9);
     }
@@ -331,7 +331,7 @@ contract TargetUtilsTest is Test {
     }
 
     /// forge-config: default.allow_internal_expect_revert = true
-    function testFuzz_ConvertFunctionToTargetPermissions(uint8 functionPermissionVal) public {
+    function testFuzz_ConvertFunctionToTargetPermissions(uint8 functionPermissionVal) public view {
         functionPermissionVal = uint8(
             bound(
                 functionPermissionVal, uint256(type(CapabilityPermission).min), uint256(type(CapabilityPermission).max)

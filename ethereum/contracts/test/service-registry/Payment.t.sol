@@ -46,7 +46,8 @@ contract HoprServiceRegistryPaymentTest is ServiceRegistryFixtureTest {
         address funder = vm.addr(99_002);
         hoprToken.mint(funder, FUNDING, hex"00", hex"00");
         vm.prank(funder);
-        hoprToken.transfer(address(attacker), FUNDING);
+        bool success = hoprToken.transfer(address(attacker), FUNDING);
+        require(success, "Token transfer failed");
 
         attacker.approveRegistry(type(uint256).max);
         _bind(attackerNode, address(attacker));
@@ -244,7 +245,8 @@ contract HoprServiceRegistryPaymentTest is ServiceRegistryFixtureTest {
         hoprToken.approve(stranger, 1 ether);
 
         vm.prank(stranger);
-        hoprToken.transferFrom(safeA, address(registry), 1 ether);
+        bool success = hoprToken.transferFrom(safeA, address(registry), 1 ether);
+        require(success, "Token transferFrom failed");
         assertEq(hoprToken.balanceOf(address(registry)), 1 ether, "transferFrom must reach the registry");
 
         vm.prank(safeA);
@@ -297,7 +299,8 @@ contract HoprServiceRegistryPaymentTest is ServiceRegistryFixtureTest {
      */
     function test_aDonationIsNeitherBurnedNorReflectedInTheEvent() public {
         vm.prank(safeB);
-        hoprToken.transfer(address(registry), 777 ether);
+        bool success = hoprToken.transfer(address(registry), 777 ether);
+        require(success, "Token transfer failed");
         assertEq(hoprToken.balanceOf(address(registry)), 777 ether, "the donation must land");
 
         uint256 supplyBefore = hoprToken.totalSupply();

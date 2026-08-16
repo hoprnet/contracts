@@ -121,7 +121,7 @@ contract HoprNodeStakeFactoryTest is
     /**
      * @dev preflight check if all the safe contracts are well set
      */
-    function test_SafeSuiteSetup() public {
+    function test_SafeSuiteSetup() public view {
         // there's code in Singleton contract
         assertTrue(hasSingletonContract());
         // there's code in ERC1820 contract
@@ -700,6 +700,7 @@ contract HoprNodeStakeFactoryTest is
 
     function _helperMultiSendDeploy(address callerSafe)
         private
+        view
         returns (
             address expectedSafeAddress1,
             address expectedModuleAddress1,

@@ -362,7 +362,8 @@ contract ServiceRegistryHandler is Test {
         }
 
         vm.prank(donor);
-        token.transfer(address(registry), amount);
+        bool success = token.transfer(address(registry), amount);
+        require(success, "Token transfer failed");
         ghostDonated += amount;
     }
 

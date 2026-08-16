@@ -117,23 +117,24 @@ contract HoprServiceRegistryTypeLifecycleTest is ServiceRegistryFixtureTest {
     }
 
     /**
-     * @dev Precedence, section 5.1 step 1 before step 3.
-     *
-     * Note: the pair of `ZeroServiceType` and `ServiceTypeExists` cannot be constructed. A zero id
-     * is rejected at step 1, so a zero id can never reach the type set and can never exist.
+     * @dev Precedence: `requireRequirementIsContract` is a modifier, so it runs before the
+     * function body ever reaches the zero-id test.
      */
-    function test_zeroServiceTypeBeatsRequirementNotContract() public {
+    function test_requirementNotContractBeatsZeroServiceType() public {
         vm.prank(typeOwner);
-        vm.expectRevert(HoprServiceRegistry.ZeroServiceType.selector);
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.RequirementNotContract.selector, stranger));
         registry.registerServiceType(bytes32(0), IServiceRequirement(stranger), 0, 0);
     }
 
-    /// @dev Precedence, section 5.1 step 2 before step 3.
-    function test_serviceTypeExistsBeatsRequirementNotContract() public {
+    /**
+     * @dev Precedence: `requireRequirementIsContract` is a modifier, so it runs before the
+     * function body ever reaches the existence test.
+     */
+    function test_requirementNotContractBeatsServiceTypeExists() public {
         _registerType(typeOwner, SERVICE_TYPE_GVPN, IServiceRequirement(address(0)), 0, 0);
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.ServiceTypeExists.selector, SERVICE_TYPE_GVPN));
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.RequirementNotContract.selector, stranger));
         registry.registerServiceType(SERVICE_TYPE_GVPN, IServiceRequirement(stranger), 0, 0);
     }
 

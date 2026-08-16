@@ -2,12 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { HoprTokenFixtureTest } from "./Tokens.sol";
-import {
-    HoprServiceRegistry,
-    HoprServiceRegistryEvents,
-    INodeSafeRegistry,
-    IWxHoprToken
-} from "../../src/ServiceRegistry.sol";
+import { HoprServiceRegistry, HoprServiceRegistryEvents, INodeSafeRegistry } from "../../src/ServiceRegistry.sol";
 import { IServiceRequirement } from "../../src/interfaces/IServiceRequirement.sol";
 import { MockNodeSafeRegistry } from "../mocks/ServiceRegistryMocks.sol";
 
@@ -83,12 +78,7 @@ abstract contract ServiceRegistryFixtureTest is HoprTokenFixtureTest, HoprServic
 
         nodeSafeRegistry = new MockNodeSafeRegistry();
         registry = new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            ADMIN_DELAY,
-            admin,
-            manager,
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
         vm.label(address(registry), "registry");
         vm.label(address(nodeSafeRegistry), "nodeSafeRegistry");

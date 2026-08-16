@@ -56,7 +56,7 @@ contract DeployAllTest is Test, ERC1820RegistryFixtureTest, SafeSingletonFixture
         HoprServiceRegistry registry = HoprServiceRegistry(networkAddress.serviceRegistryAddress);
         bytes32 gvpnExit = bytes32("gvpn:exit");
 
-        assertEq(address(registry.wxHopr()), networkAddress.tokenContractAddress, "registry token");
+        assertEq(address(registry.WXHOPR_TOKEN()), networkAddress.tokenContractAddress, "registry token");
         assertEq(
             address(registry.nodeSafeRegistry()), networkAddress.nodeSafeRegistryAddress, "registry node safe registry"
         );

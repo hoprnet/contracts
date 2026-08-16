@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { Vm } from "forge-std/Vm.sol";
 import { ServiceRegistryFixtureTest } from "../utils/ServiceRegistry.sol";
-import { HoprServiceRegistry, INodeSafeRegistry, IWxHoprToken } from "../../src/ServiceRegistry.sol";
+import { HoprServiceRegistry, INodeSafeRegistry } from "../../src/ServiceRegistry.sol";
 import { IServiceRequirement } from "../../src/interfaces/IServiceRequirement.sol";
 import { MockNodeSafeRegistry } from "../mocks/ServiceRegistryMocks.sol";
 import { IAccessControl } from "openzeppelin-contracts-5.4.0/access/IAccessControl.sol";
@@ -45,7 +45,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
     // ---------------------------------------------------------------------------------------
 
     function test_constructorStoresTheConfiguration() public view {
-        assertEq(address(registry.wxHopr()), address(hoprToken), "wxHopr");
+        assertEq(address(registry.WXHOPR_TOKEN()), address(hoprToken), "wxHopr");
         assertEq(address(registry.nodeSafeRegistry()), address(nodeSafeRegistry), "nodeSafeRegistry");
         assertEq(registry.typeRegistrationFee(), TYPE_FEE, "typeRegistrationFee");
         assertEq(registry.VERSION(), 1, "VERSION");
@@ -66,12 +66,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
 
         vm.recordLogs();
         HoprServiceRegistry fresh = new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(freshRegistry)),
-            ADMIN_DELAY,
-            admin,
-            manager,
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(freshRegistry)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
         Vm.Log[] memory logs = vm.getRecordedLogs();
 
@@ -99,12 +94,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
 
     function test_constructorAcceptsTheMaximumAdminDelay() public {
         HoprServiceRegistry fresh = new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            MAX_ADMIN_DELAY,
-            admin,
-            manager,
-            0
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), MAX_ADMIN_DELAY, admin, manager, 0
         );
         assertEq(fresh.defaultAdminDelay(), MAX_ADMIN_DELAY, "30 days must be accepted");
     }
@@ -116,52 +106,40 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
     function testRevert_constructorDueToWxHoprTokenNotContractOnZero() public {
         vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.WxHoprTokenNotContract.selector, address(0)));
         new HoprServiceRegistry(
-            IWxHoprToken(address(0)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            ADMIN_DELAY,
-            admin,
-            manager,
-            TYPE_FEE
+            address(0), INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
     }
 
     function testRevert_constructorDueToWxHoprTokenNotContractOnAnEoa() public {
         vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.WxHoprTokenNotContract.selector, stranger));
         new HoprServiceRegistry(
-            IWxHoprToken(stranger), INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, admin, manager, TYPE_FEE
+            stranger, INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
     }
 
     function testRevert_constructorDueToNodeSafeRegistryNotContractOnZero() public {
         vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.NodeSafeRegistryNotContract.selector, address(0)));
         new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)), INodeSafeRegistry(address(0)), ADMIN_DELAY, admin, manager, TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(0)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
     }
 
     function testRevert_constructorDueToNodeSafeRegistryNotContractOnAnEoa() public {
         vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.NodeSafeRegistryNotContract.selector, stranger));
-        new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)), INodeSafeRegistry(stranger), ADMIN_DELAY, admin, manager, TYPE_FEE
-        );
+        new HoprServiceRegistry(address(hoprToken), INodeSafeRegistry(stranger), ADMIN_DELAY, admin, manager, TYPE_FEE);
     }
 
     function testRevert_constructorDueToZeroManager() public {
         vm.expectRevert(HoprServiceRegistry.ZeroManager.selector);
         new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            ADMIN_DELAY,
-            admin,
-            address(0),
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, admin, address(0), TYPE_FEE
         );
     }
 
     function testRevert_constructorDueToInvalidAdminDelayOnZero() public {
         vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.InvalidAdminDelay.selector, 0, MAX_ADMIN_DELAY));
         new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)), INodeSafeRegistry(address(nodeSafeRegistry)), 0, admin, manager, TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), 0, admin, manager, TYPE_FEE
         );
     }
 
@@ -172,12 +150,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
             abi.encodeWithSelector(HoprServiceRegistry.InvalidAdminDelay.selector, tooLong, MAX_ADMIN_DELAY)
         );
         new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            tooLong,
-            admin,
-            manager,
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), tooLong, admin, manager, TYPE_FEE
         );
     }
 
@@ -189,12 +162,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
             )
         );
         new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(nodeSafeRegistry)),
-            ADMIN_DELAY,
-            address(0),
-            manager,
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(nodeSafeRegistry)), ADMIN_DELAY, address(0), manager, TYPE_FEE
         );
     }
 
@@ -205,7 +173,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
                 IAccessControlDefaultAdminRules.AccessControlInvalidDefaultAdmin.selector, address(0)
             )
         );
-        new HoprServiceRegistry(IWxHoprToken(address(0)), INodeSafeRegistry(address(0)), 0, address(0), address(0), 0);
+        new HoprServiceRegistry(address(0), INodeSafeRegistry(address(0)), 0, address(0), address(0), 0);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -420,7 +388,8 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
 
     function test_recoverTokensMovesTheFullBalanceAndEmits() public {
         vm.prank(safeA);
-        hoprToken.transfer(address(registry), 5 ether);
+        bool success = hoprToken.transfer(address(registry), 5 ether);
+        require(success, "Token transfer failed");
         assertEq(hoprToken.balanceOf(address(registry)), 5 ether, "the stray transfer must land");
 
         vm.expectEmit(true, true, true, true, address(registry));
@@ -499,9 +468,7 @@ contract HoprServiceRegistryAccessTest is ServiceRegistryFixtureTest {
         registry.selfDeregister(SERVICE_TYPE_GVPN, nodeA);
 
         vm.prank(attacker);
-        vm.expectRevert(
-            abi.encodeWithSelector(HoprServiceRegistry.AlreadyRegistered.selector, SERVICE_TYPE_GVPN, nodeA)
-        );
+        vm.expectRevert(abi.encodeWithSelector(HoprServiceRegistry.CallerNotNodeSafe.selector, nodeA, attacker, safeA));
         registry.selfRegister(SERVICE_TYPE_GVPN, nodeA, hex"ff");
 
         // the type is not theirs either

@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { Vm } from "forge-std/Vm.sol";
 import { ServiceRegistryFixtureTest } from "../utils/ServiceRegistry.sol";
-import { HoprServiceRegistry, INodeSafeRegistry, IWxHoprToken } from "../../src/ServiceRegistry.sol";
+import { HoprServiceRegistry, INodeSafeRegistry } from "../../src/ServiceRegistry.sol";
 import { IServiceRequirement } from "../../src/interfaces/IServiceRequirement.sol";
 import { MockNodeSafeRegistry, PermissiveRequirement } from "../mocks/ServiceRegistryMocks.sol";
 import { IERC20 } from "openzeppelin-contracts-5.4.0/token/ERC20/IERC20.sol";
@@ -105,12 +105,7 @@ contract HoprServiceRegistryEventReplayTest is ServiceRegistryFixtureTest {
         replayRequirement = new PermissiveRequirement();
 
         replayRegistry = new HoprServiceRegistry(
-            IWxHoprToken(address(hoprToken)),
-            INodeSafeRegistry(address(replayBindings)),
-            ADMIN_DELAY,
-            admin,
-            manager,
-            TYPE_FEE
+            address(hoprToken), INodeSafeRegistry(address(replayBindings)), ADMIN_DELAY, admin, manager, TYPE_FEE
         );
 
         for (uint256 i = 0; i < 3; i++) {
@@ -169,7 +164,8 @@ contract HoprServiceRegistryEventReplayTest is ServiceRegistryFixtureTest {
 
         // a stray transfer and its recovery
         vm.prank(replaySafes[1]);
-        hoprToken.transfer(address(replayRegistry), 3 ether);
+        bool success = hoprToken.transfer(address(replayRegistry), 3 ether);
+        require(success, "Token transfer failed");
         vm.prank(admin);
         replayRegistry.recoverTokens(IERC20(address(hoprToken)), stranger);
     }
@@ -251,7 +247,7 @@ contract HoprServiceRegistryEventReplayTest is ServiceRegistryFixtureTest {
 
     function _assertConfigurationMatches() internal view {
         assertEq(rebuiltVersion, replayRegistry.VERSION(), "version");
-        assertEq(rebuiltToken, address(replayRegistry.wxHopr()), "token");
+        assertEq(rebuiltToken, address(replayRegistry.WXHOPR_TOKEN()), "token");
         assertEq(rebuiltAdminDelay, replayRegistry.defaultAdminDelay(), "admin delay");
         assertTrue(replayRegistry.hasRole(replayRegistry.DEFAULT_ADMIN_ROLE(), rebuiltAdmin), "admin from logs");
         assertTrue(replayRegistry.hasRole(replayRegistry.MANAGER_ROLE(), rebuiltManager), "manager from logs");
