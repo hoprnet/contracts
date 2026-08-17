@@ -496,11 +496,48 @@ where
         )
         .await?;
 
+        // HoprServiceRegistry contract
+        let service_registry = HoprServiceRegistry::deploy(
+            provider.clone(),
+            *token.address(),
+            *safe_registry.address(),
+            INIT_ADMIN_DELAY,
+            hopr_deployer_address,
+            hopr_deployer_address,
+            INIT_TYPE_REGISTRATION_FEE,
+        )
+        .await?;
+        // Claim the "gvpn:exit" service type in the service registry, so that the default hopr network is fully functional
+        // This action requires the deployer to own (and approve) enough HOPR tokens to pay for the type registration fee.
+        // - 1. token approval, as in `_claimGvpnExitServiceType` in `DeployAll.s.sol`
+        token
+            .approve(
+                Address::from(service_registry.address().as_ref()),
+                INIT_TYPE_REGISTRATION_FEE,
+            )
+            .send()
+            .await?
+            .watch()
+            .await?;
+        // - 2. register the service type, as in `_claimGvpnExitServiceType` in `DeployAll.s.sol`
+        service_registry
+            .registerServiceType(
+                GVPN_EXIT_SERVICE_TYPE,
+                Address::ZERO,
+                GVPN_EXIT_REGISTRATION_BURN,
+                GVPN_EXIT_UPDATE_BURN,
+            )
+            .send()
+            .await?
+            .watch()
+            .await?;
+
         // HoprNodeStakeFactory contract
         let stake_factory = HoprNodeStakeFactory::deploy(
             provider.clone(),
             Address::from(module_implementation.address().as_ref()),
             Address::from(announcements_proxy.address().as_ref()),
+            Address::from(service_registry.address().as_ref()),
             hopr_deployer_address,
         )
         .await?;
@@ -518,41 +555,6 @@ where
         // - mint some tokens to the deployer for testing
         mock_xhopr_token
             .batchMintInternal(vec![hopr_deployer_address], MINTED_TOKEN_AMOUNT) // mint 1000 tokens to the deployer
-            .send()
-            .await?
-            .watch()
-            .await?;
-
-        // HoprServiceRegistry contract
-        //
-        // CAUTION: This deployment must stay here, directly after the xHOPR mint. Addresses come
-        // from the nonce of the deployer, so a deployment in another position moves this address or
-        // every later one. `DeployAll.s.sol` deploys the registry in the same position, and
-        // contracts-addresses.json records the result. The `updateHoprNetwork` call below deploys
-        // nothing, so it shifts no address, but a deployment placed after it would land one nonce
-        // too late.
-        let service_registry = HoprServiceRegistry::deploy(
-            provider.clone(),
-            *token.address(),
-            *safe_registry.address(),
-            INIT_ADMIN_DELAY,
-            hopr_deployer_address,
-            hopr_deployer_address,
-            INIT_TYPE_REGISTRATION_FEE,
-        )
-        .await?;
-
-        // get the defaultHoprNetwork from the stake factory
-        let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
-        let new_default_hopr_network = HoprNodeStakeFactory::HoprNetwork {
-            tokenAddress: *token.address(),
-            defaultTokenAllowance: default_hopr_network.defaultTokenAllowance,
-            defaultAnnouncementTarget: default_hopr_network.defaultAnnouncementTarget,
-            serviceRegistryAddress: *service_registry.address(),
-        };
-        // Update the `defaultHoprNetwork` in the factory contract, to update the token address
-        stake_factory
-            .updateHoprNetwork(new_default_hopr_network)
             .send()
             .await?
             .watch()
@@ -755,7 +757,7 @@ mod tests {
         let wxhopr_token_balance = instances.token.balanceOf(hopr_deployer_address).call().await?;
         assert_eq!(
             wxhopr_token_balance,
-            crate::constants::MINTED_TOKEN_AMOUNT,
+            crate::constants::MINTED_TOKEN_AMOUNT - crate::constants::INIT_TYPE_REGISTRATION_FEE,
             "hopr_deployer_address should have the expected wxHOPRtoken balance"
         );
         let xhopr_token_balance = instances.xhopr_token.balanceOf(hopr_deployer_address).call().await?;
@@ -768,7 +770,7 @@ mod tests {
         // Check that the service registry is live and configured the way `DeployAll.s.sol`
         // configures it in the local environment.
         assert_eq!(
-            instances.service_registry.wxHopr().call().await?,
+            instances.service_registry.WXHOPR_TOKEN().call().await?,
             addresses.token,
             "the service registry should burn the wxHOPR token"
         );

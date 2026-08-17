@@ -83,6 +83,7 @@ tab_width = 4
 wrap_comments = false
 
 [lint]
+lint_on_build = false
 ignore = [
   # Ignore all the static contracts, as they are archived and won't be changed anymore
   "src/static/stake/HoprBoost.sol",

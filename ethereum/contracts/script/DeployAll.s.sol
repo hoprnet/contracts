@@ -26,7 +26,7 @@ contract DeployAllContractsScript is
     PermittableTokenFixtureTest
 {
     using BoostUtilsLib for address;
-    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
+    uint256 public constant MINTED_TOKEN_AMOUNT = 10000 ether; // 10000 HOPR
     // starting key binding fee at deployment time
     uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
     uint256 public constant LOCAL_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit

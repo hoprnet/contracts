@@ -15,7 +15,7 @@ use hex_literal::hex;
 pub const INIT_KEY_BINDING_FEE: U256 = uint!(10_000_000_000_000_000_U256); // 0.01 ether
 
 /// Minted token amount for the mock xHOPR token contract and wxHOPR token contract in the local development environment
-pub const MINTED_TOKEN_AMOUNT: U256 = uint!(1_000_000_000_000_000_000_000_U256); // 1000 ether
+pub const MINTED_TOKEN_AMOUNT: U256 = uint!(10_000_000_000_000_000_000_000_U256); // 10000 ether
 
 /// Initial admin delay of the service registry contract
 ///
@@ -27,6 +27,15 @@ pub const INIT_ADMIN_DELAY: U48 = uint!(172_800_U48); // 2 days
 ///
 /// Mirrors `LOCAL_TYPE_REGISTRATION_FEE` of `script/DeployAll.s.sol`.
 pub const INIT_TYPE_REGISTRATION_FEE: U256 = uint!(1_000_000_000_000_000_000_U256); // 1 ether
+
+/// The service type for the GVPN exit service, used in the service registry contract
+pub const GVPN_EXIT_SERVICE_TYPE: FixedBytes<32> = b256!("6776706e3a657869740000000000000000000000000000000000000000000000"); // "gvpn:exit"
+
+/// The burn amount for claiming the GVPN exit service type in the service registry contract
+pub const GVPN_EXIT_REGISTRATION_BURN: U256 = uint!(1_000_000_000_000_000_000_000_U256); // 1000 ether
+
+/// The burn amount for updating the GVPN exit service type in the service registry contract
+pub const GVPN_EXIT_UPDATE_BURN: U256 = uint!(100_000_000_000_000_000_000_U256); // 100 ether
 
 /// ERC1820 deployer wallet
 pub const ERC_1820_DEPLOYER: Address = address!("a990077c3205cbDf861e17Fa532eeB069cE9fF96");
