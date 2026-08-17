@@ -507,8 +507,9 @@ where
             INIT_TYPE_REGISTRATION_FEE,
         )
         .await?;
-        // Claim the "gvpn:exit" service type in the service registry, so that the default hopr network is fully functional
-        // This action requires the deployer to own (and approve) enough HOPR tokens to pay for the type registration fee.
+        // Claim the "gvpn:exit" service type in the service registry, so that the default hopr network is fully
+        // functional This action requires the deployer to own (and approve) enough HOPR tokens to pay for the
+        // type registration fee.
         // - 1. token approval, as in `_claimGvpnExitServiceType` in `DeployAll.s.sol`
         token
             .approve(
@@ -541,6 +542,20 @@ where
             hopr_deployer_address,
         )
         .await?;
+        // update the defaultHoprNetwork in the stake factory to allow using local HOPR tokens
+        let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
+        let new_default_hopr_network = HoprNodeStakeFactory::HoprNetwork {
+            tokenAddress: *token.address(),
+            defaultTokenAllowance: default_hopr_network.defaultTokenAllowance,
+            defaultAnnouncementTarget: default_hopr_network.defaultAnnouncementTarget,
+            serviceRegistryAddress: *service_registry.address(),
+        };
+        stake_factory
+            .updateHoprNetwork(new_default_hopr_network)
+            .send()
+            .await?
+            .watch()
+            .await?;
 
         // HoprNodeSafeMigration contract
         let node_safe_migration = HoprNodeSafeMigration::deploy(

@@ -29,7 +29,8 @@ pub const INIT_ADMIN_DELAY: U48 = uint!(172_800_U48); // 2 days
 pub const INIT_TYPE_REGISTRATION_FEE: U256 = uint!(1_000_000_000_000_000_000_U256); // 1 ether
 
 /// The service type for the GVPN exit service, used in the service registry contract
-pub const GVPN_EXIT_SERVICE_TYPE: FixedBytes<32> = b256!("6776706e3a657869740000000000000000000000000000000000000000000000"); // "gvpn:exit"
+pub const GVPN_EXIT_SERVICE_TYPE: FixedBytes<32> =
+    b256!("6776706e3a657869740000000000000000000000000000000000000000000000"); // "gvpn:exit"
 
 /// The burn amount for claiming the GVPN exit service type in the service registry contract
 pub const GVPN_EXIT_REGISTRATION_BURN: U256 = uint!(1_000_000_000_000_000_000_000_U256); // 1000 ether

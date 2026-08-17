@@ -26,7 +26,7 @@ contract DeployAllContractsScript is
     PermittableTokenFixtureTest
 {
     using BoostUtilsLib for address;
-    uint256 public constant MINTED_TOKEN_AMOUNT = 10000 ether; // 10000 HOPR
+    uint256 public constant MINTED_TOKEN_AMOUNT = 10_000 ether; // 10000 HOPR
     // starting key binding fee at deployment time
     uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
     uint256 public constant LOCAL_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
@@ -188,6 +188,17 @@ contract DeployAllContractsScript is
                     deployerAddress
                 )
             );
+            // update the default network with a local tokenAddress
+            (, uint256 allowance, bytes32 announcement, address serviceRegistry) = HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress).defaultHoprNetwork();
+            HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
+                .updateHoprNetwork(
+                    HoprNodeStakeFactory.HoprNetwork({
+                        tokenAddress: currentNetworkDetail.addresses.tokenContractAddress,
+                        defaultAnnouncementTarget: announcement,
+                        defaultTokenAllowance: allowance,
+                        serviceRegistryAddress: currentNetworkDetail.addresses.serviceRegistryAddress
+                    })
+                );
         }
     }
 
@@ -463,7 +474,13 @@ contract DeployAllContractsScript is
      *
      * @param typeRegistrationFee the fee that the registry burns for this claim
      */
-    function _claimGvpnExitServiceType(uint256 typeRegistrationFee, uint256 gvpnExitRegistrationBurn, uint256 gvpnExitUpdateBurn) internal {
+    function _claimGvpnExitServiceType(
+        uint256 typeRegistrationFee,
+        uint256 gvpnExitRegistrationBurn,
+        uint256 gvpnExitUpdateBurn
+    )
+        internal
+    {
         (bool successApprove,) = currentNetworkDetail.addresses.tokenContractAddress
             .call(
                 abi.encodeWithSignature(
