@@ -24,6 +24,7 @@ import { SimplifiedModuleEvents } from "../../../src/node-stake/permissioned-mod
 import { Initializable } from "openzeppelin-contracts-upgradeable-5.4.0/proxy/utils/Initializable.sol";
 import { Create2 } from "openzeppelin-contracts-5.4.0/utils/Create2.sol";
 import { ERC1967Proxy } from "openzeppelin-contracts-5.4.0/proxy/ERC1967/ERC1967Proxy.sol";
+import { HoprNodeManagementModuleV1 } from "../../mocks/NodeManagementModuleV1Mock.sol";
 
 /**
  * @dev This files tests both HoprNodeManagementModule and the CapabilityPermissions.sol
@@ -188,6 +189,78 @@ contract HoprNodeManagementModuleTest is
         // get implementation address from slot
         currentImplementation = vm.load(address(moduleProxy), IMPLEMENTATION_SLOT);
         assertEq(address(uint160(uint256(currentImplementation))), address(newImplementation));
+        vm.clearMockedCalls();
+    }
+
+    /**
+     * @dev Already-deployed Safes run the pre-service-registry module, `HoprNodeManagementModuleV1`.
+     * This PR ships a new `HoprNodeManagementModule` implementation, so those Safes must upgrade their
+     * module proxy in place. The upgrade must keep every existing node and scoped target untouched, and
+     * it must unlock `scopeTargetServiceRegistry`, which the old implementation never had.
+     */
+    function test_UpgradeFromV1PreservesStateAndUnlocksServiceRegistry() public {
+        vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
+
+        // 1. An already-deployed Safe runs the old module implementation.
+        HoprNodeManagementModuleV1 oldSingleton = new HoprNodeManagementModuleV1();
+        address oldProxyAddress = Create2.deploy(
+            0,
+            bytes32(hex"beef"),
+            abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(address(oldSingleton), hex""))
+        );
+        HoprNodeManagementModuleV1 oldProxy = HoprNodeManagementModuleV1(oldProxyAddress);
+        oldProxy.initialize(abi.encode(safe, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET));
+
+        address node = makeAddr("existingNode");
+        vm.prank(safe);
+        oldProxy.addNode(node);
+
+        (bool hadChannelsTarget,) = oldProxy.tryGetTarget(channels);
+        assertTrue(hadChannelsTarget, "the old module must already scope the channels target");
+        assertTrue(oldProxy.isNode(node), "the node must already be a member of the old module");
+
+        bytes32 currentImplementation = vm.load(oldProxyAddress, IMPLEMENTATION_SLOT);
+        assertEq(address(uint160(uint256(currentImplementation))), address(oldSingleton));
+
+        // 2. The Safe upgrades the module proxy to the new implementation, in place.
+        HoprNodeManagementModule newSingleton = new HoprNodeManagementModule();
+        vm.prank(safe);
+        vm.expectEmit(true, false, false, false, oldProxyAddress);
+        emit Upgraded(address(newSingleton));
+        oldProxy.upgradeToAndCall(address(newSingleton), hex"");
+
+        currentImplementation = vm.load(oldProxyAddress, IMPLEMENTATION_SLOT);
+        assertEq(
+            address(uint160(uint256(currentImplementation))),
+            address(newSingleton),
+            "implementation must point at the new module"
+        );
+
+        // 3. Every pre-upgrade node and target survives the upgrade untouched.
+        HoprNodeManagementModule upgradedProxy = HoprNodeManagementModule(oldProxyAddress);
+        assertTrue(upgradedProxy.isNode(node), "existing node membership must survive the upgrade");
+        (bool stillHasChannelsTarget,) = upgradedProxy.tryGetTarget(channels);
+        assertTrue(stillHasChannelsTarget, "the channels target must survive the upgrade");
+        assertEq(upgradedProxy.owner(), safe, "the owning Safe must survive the upgrade");
+
+        // 4. The upgrade unlocks scoping the service registry, which the old implementation lacked.
+        address registry = makeAddr("HoprServiceRegistry");
+        vm.prank(safe);
+        upgradedProxy.scopeTargetServiceRegistry(registry);
+
+        vm.mockCall(safe, abi.encodeWithSelector(IAvatar.execTransactionFromModule.selector), abi.encode(true));
+        bytes32 serviceType = bytes32("gvpn:exit");
+        vm.prank(node);
+        assertTrue(
+            upgradedProxy.execTransactionFromModule(
+                registry,
+                0,
+                abi.encodeCall(HoprServiceRegistry.selfRegister, (serviceType, node, bytes("register"))),
+                Enum.Operation.Call
+            ),
+            "the node must be able to use the newly-scoped service registry after the upgrade"
+        );
+
         vm.clearMockedCalls();
     }
 

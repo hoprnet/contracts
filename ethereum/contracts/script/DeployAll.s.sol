@@ -49,6 +49,7 @@ contract DeployAllContractsScript is
     uint256 public constant LOCAL_TYPE_REGISTRATION_FEE = 1 ether;
     uint256 public constant DEV_TYPE_REGISTRATION_FEE = 1 ether;
     uint256 public constant STAGING_TYPE_REGISTRATION_FEE = 100 ether;
+    uint256 public constant PRODUCTION_TYPE_REGISTRATION_FEE = 100 ether;
     // the canonical GnosisVPN exit type, claimed at launch (section 9.4)
     bytes32 public constant GVPN_EXIT_SERVICE_TYPE = bytes32("gvpn:exit");
     uint256 public constant GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
@@ -120,21 +121,17 @@ contract DeployAllContractsScript is
         // 3.7. Announcements
         _deployHoprAnnouncements(deployerAddress);
 
-        // 3.8 HoprNodeStakeFactory
+        // 3.8. HoprServiceRegistry
+        _deployHoprServiceRegistry(deployerAddress);
+
+        // 3.9. HoprNodeStakeFactory
         _deployHoprNodeStakeFactory(deployerAddress);
 
-        // 3.9. NodeSafeMigration contract
+        // 3.10. NodeSafeMigration contract
         _deployNodeSafeMigration();
 
-        // 3.10. Deploy a mock xHOPR token contract and mint some tokens to the deployer. This is only for local development environment.
+        // 3.11. Deploy a mock xHOPR token contract and mint some tokens to the deployer. This is only for local development environment.
         _deployXHoprTokenAndMintToAddress(deployerAddress);
-
-        // 3.11. HoprServiceRegistry
-        // CAUTION: This deployment must stay last. Addresses come from the nonce of the deployer,
-        // so a new deployment in an earlier position moves every later anvil-localhost address.
-        // Those addresses are mirrored in contracts-addresses.json, in bindings/src/config.rs and
-        // in the anvil configuration of blokli-client.
-        _deployHoprServiceRegistry(deployerAddress);
 
         // 4. update indexerStartBlockNumber
         // if the indexerStartBlockNumber is not set (i.e. 0)
@@ -159,7 +156,7 @@ contract DeployAllContractsScript is
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.moduleImplementationAddress)
         ) {
-            // deploy HoprNodeManagementModule contractsd
+            // deploy HoprNodeManagementModule contract
             currentNetworkDetail.addresses.moduleImplementationAddress =
                 deployCode("NodeManagementModule.sol:HoprNodeManagementModule");
         }
@@ -179,6 +176,7 @@ contract DeployAllContractsScript is
                 abi.encode(
                     currentNetworkDetail.addresses.moduleImplementationAddress,
                     currentNetworkDetail.addresses.announcements,
+                    currentNetworkDetail.addresses.serviceRegistryAddress,
                     deployerAddress
                 )
             );
@@ -410,6 +408,8 @@ contract DeployAllContractsScript is
             typeRegistrationFee = LOCAL_TYPE_REGISTRATION_FEE;
         } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             typeRegistrationFee = STAGING_TYPE_REGISTRATION_FEE;
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            typeRegistrationFee = PRODUCTION_TYPE_REGISTRATION_FEE;
         } else {
             typeRegistrationFee = DEV_TYPE_REGISTRATION_FEE;
         }
@@ -428,25 +428,11 @@ contract DeployAllContractsScript is
             )
         );
 
-        // Safes deployed after the registry must scope it into their node-management module.
-        HoprNodeStakeFactory stakeFactory = HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress);
-        (address token, uint256 allowance, bytes32 announcement,) = stakeFactory.defaultHoprNetwork();
-        stakeFactory.updateHoprNetwork(
-            HoprNodeStakeFactory.HoprNetwork({
-                tokenAddress: token,
-                defaultTokenAllowance: allowance,
-                defaultAnnouncementTarget: announcement,
-                serviceRegistryAddress: currentNetworkDetail.addresses.serviceRegistryAddress
-            })
-        );
-
-        if (currentEnvironmentType == EnvironmentType.LOCAL) {
-            _claimGvpnExitServiceType(typeRegistrationFee);
-        }
+        _claimGvpnExitServiceType(typeRegistrationFee);
     }
 
     /**
-     * @dev Claim the `gvpn:exit` type with the deployer account. LOCAL only.
+     * @dev Claim the `gvpn:exit` type with the deployer account.
      *
      * The approval is exactly the fee. Section 3.6 makes that exact allowance the price protection
      * of the caller: a fee that rises at the same time reverts on the allowance instead of an

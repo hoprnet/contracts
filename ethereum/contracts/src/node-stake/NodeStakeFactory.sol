@@ -151,6 +151,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     constructor(
         address _moduleSingletonAddress,
         address _announcementAddress,
+        address _serviceRegistryAddress,
         address initialOwner
     )
         Ownable(initialOwner)
@@ -166,6 +167,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         // Set the initial announcement target
         defaultHoprNetwork.defaultAnnouncementTarget =
             bytes32(uint256(uint160(_announcementAddress))) << 96 | bytes32(uint256(0x010003000000000000000000));
+        // Set the initial service registry address
+        defaultHoprNetwork.serviceRegistryAddress = _serviceRegistryAddress;
 
         // Set the initial Safe library addresses
         emit HoprNodeStakeSafeLibUpdated(safeLibAddresses);

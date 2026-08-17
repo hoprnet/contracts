@@ -55,8 +55,8 @@ contract NodeSafeMigrationTest is
         hoprToken = new HoprToken();
         oldModuleSingleton = new HoprNodeManagementModule();
         newModuleSingleton = new HoprNodeManagementModule();
-        oldFactory = new HoprNodeStakeFactory(address(oldModuleSingleton), OLD_ANNOUNCEMENT_ADDRESS, ADMIN);
-        newFactory = new HoprNodeStakeFactory(address(newModuleSingleton), NEW_ANNOUNCEMENT_ADDRESS, ADMIN);
+        oldFactory = new HoprNodeStakeFactory(address(oldModuleSingleton), OLD_ANNOUNCEMENT_ADDRESS, address(0), ADMIN);
+        newFactory = new HoprNodeStakeFactory(address(newModuleSingleton), NEW_ANNOUNCEMENT_ADDRESS, address(0), ADMIN);
         migrationContract = new HoprNodeSafeMigration(address(newModuleSingleton), address(newFactory));
     }
 

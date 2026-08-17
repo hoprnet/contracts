@@ -73,7 +73,7 @@ contract HoprNodeStakeFactoryTest is
 
         hoprToken = new HoprToken();
         moduleSingleton = new HoprNodeManagementModule();
-        factory = new HoprNodeStakeFactory(address(moduleSingleton), ANNOUNCEMENT, admin);
+        factory = new HoprNodeStakeFactory(address(moduleSingleton), ANNOUNCEMENT, address(0), admin);
 
         // grant minter role to the test contract itself
         vm.prank(address(this));
