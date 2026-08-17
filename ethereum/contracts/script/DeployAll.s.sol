@@ -189,7 +189,8 @@ contract DeployAllContractsScript is
                 )
             );
             // update the default network with a local tokenAddress
-            (, uint256 allowance, bytes32 announcement, address serviceRegistry) = HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress).defaultHoprNetwork();
+            (, uint256 allowance, bytes32 announcement, address serviceRegistry) =
+                HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress).defaultHoprNetwork();
             HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
                 .updateHoprNetwork(
                     HoprNodeStakeFactory.HoprNetwork({
