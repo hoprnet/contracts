@@ -52,8 +52,16 @@ contract DeployAllContractsScript is
     uint256 public constant PRODUCTION_TYPE_REGISTRATION_FEE = 100 ether;
     // the canonical GnosisVPN exit type, claimed at launch (section 9.4)
     bytes32 public constant GVPN_EXIT_SERVICE_TYPE = bytes32("gvpn:exit");
-    uint256 public constant GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
-    uint256 public constant GVPN_EXIT_UPDATE_BURN = 100 ether;
+    // the burn amount for claiming the GVPN exit service type in the service registry contract
+    uint256 public constant LOCAL_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    uint256 public constant DEV_GVPN_EXIT_REGISTRATION_BURN = 10 ether;
+    uint256 public constant STAGING_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    uint256 public constant PRODUCTION_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    // the burn amount for updating the GVPN exit service type in the service registry contract
+    uint256 public constant LOCAL_GVPN_EXIT_UPDATE_BURN = 100 ether;
+    uint256 public constant DEV_GVPN_EXIT_UPDATE_BURN = 1 ether;
+    uint256 public constant STAGING_GVPN_EXIT_UPDATE_BURN = 100 ether;
+    uint256 public constant PRODUCTION_GVPN_EXIT_UPDATE_BURN = 100 ether;
 
     address private owner;
 
@@ -404,14 +412,24 @@ contract DeployAllContractsScript is
         }
 
         uint256 typeRegistrationFee;
+        uint256 gvpnExitRegistrationBurn;
+        uint256 gvpnExitUpdateBurn;
         if (currentEnvironmentType == EnvironmentType.LOCAL) {
             typeRegistrationFee = LOCAL_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = LOCAL_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = LOCAL_GVPN_EXIT_UPDATE_BURN;
         } else if (currentEnvironmentType == EnvironmentType.STAGING) {
             typeRegistrationFee = STAGING_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = STAGING_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = STAGING_GVPN_EXIT_UPDATE_BURN;
         } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
             typeRegistrationFee = PRODUCTION_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = PRODUCTION_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = PRODUCTION_GVPN_EXIT_UPDATE_BURN;
         } else {
             typeRegistrationFee = DEV_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = DEV_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = DEV_GVPN_EXIT_UPDATE_BURN;
         }
 
         address initialAdmin = currentEnvironmentType == EnvironmentType.LOCAL ? deployerAddress : owner;
@@ -428,7 +446,7 @@ contract DeployAllContractsScript is
             )
         );
 
-        _claimGvpnExitServiceType(typeRegistrationFee);
+        _claimGvpnExitServiceType(typeRegistrationFee, gvpnExitRegistrationBurn, gvpnExitUpdateBurn);
     }
 
     /**
@@ -445,7 +463,7 @@ contract DeployAllContractsScript is
      *
      * @param typeRegistrationFee the fee that the registry burns for this claim
      */
-    function _claimGvpnExitServiceType(uint256 typeRegistrationFee) internal {
+    function _claimGvpnExitServiceType(uint256 typeRegistrationFee, uint256 gvpnExitRegistrationBurn, uint256 gvpnExitUpdateBurn) internal {
         (bool successApprove,) = currentNetworkDetail.addresses.tokenContractAddress
             .call(
                 abi.encodeWithSignature(
@@ -462,8 +480,8 @@ contract DeployAllContractsScript is
                     "registerServiceType(bytes32,address,uint256,uint256)",
                     GVPN_EXIT_SERVICE_TYPE,
                     address(0),
-                    GVPN_EXIT_REGISTRATION_BURN,
-                    GVPN_EXIT_UPDATE_BURN
+                    gvpnExitRegistrationBurn,
+                    gvpnExitUpdateBurn
                 )
             );
         require(successRegister, "Cannot claim the gvpn:exit service type");

@@ -81,7 +81,7 @@ contract GvpnExitClaimHarness is DeployAllContractsScript {
     function claimGvpnExitServiceType(address token, address registry, uint256 typeRegistrationFee) external {
         currentNetworkDetail.addresses.tokenContractAddress = token;
         currentNetworkDetail.addresses.serviceRegistryAddress = registry;
-        _claimGvpnExitServiceType(typeRegistrationFee);
+        _claimGvpnExitServiceType(typeRegistrationFee, 1000 ether, 100 ether);
     }
 }
 
