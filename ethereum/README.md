@@ -159,7 +159,7 @@ source .env
 FOUNDRY_PROFILE=staging NETWORK=debug-staging forge script --broadcast --verify --verifier sourcify script/DeployAll.s.sol:DeployAllContractsScript
 
 # Deploy to development and verify on Gnosisscan
-FOUNDRY_PROFILE=staging NETWORK=juradev forge script --broadcast --slow \
+FOUNDRY_PROFILE=development NETWORK=jura-dev forge script --broadcast --slow \
    --verify --verifier etherscan --verifier-url "https://api.etherscan.io/v2/api?chainid=100" \
    --delay 30 --chain 100 --etherscan-api-key "${ETHERSCAN_API_KEY}" \
    --priority-gas-price 0.001gwei --with-gas-price 0.002gwei \
