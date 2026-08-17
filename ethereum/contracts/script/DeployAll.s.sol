@@ -10,6 +10,7 @@ import { PermittableTokenFixtureTest } from "../test/utils/PermittableToken.sol"
 import { NetworkConfig } from "./utils/NetworkConfig.s.sol";
 import { BoostUtilsLib } from "./utils/BoostUtilsLib.sol";
 import { WinProb } from "../src/WinningProbabilityOracle.sol";
+import { HoprNodeStakeFactory } from "../src/node-stake/NodeStakeFactory.sol";
 
 /**
  * @title Deploy all the required contracts in development, staging and production environment
@@ -25,7 +26,7 @@ contract DeployAllContractsScript is
     PermittableTokenFixtureTest
 {
     using BoostUtilsLib for address;
-    uint256 public constant MINTED_TOKEN_AMOUNT = 1000 ether; // 1000 HOPR
+    uint256 public constant MINTED_TOKEN_AMOUNT = 10_000 ether; // 10000 HOPR
     // starting key binding fee at deployment time
     uint256 public constant DEV_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
     uint256 public constant LOCAL_INIT_KEY_BINDING_FEE = 10_000_000 gwei; // 0.01 HOPR in gwei unit
@@ -41,6 +42,26 @@ contract DeployAllContractsScript is
     uint56 public constant DEV_WINNING_PROBABILITY = 9_007_199_254_735; // 0.00012500 in WinProb unit
     uint56 public constant STAGING_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
     uint56 public constant PRODUCTION_WINNING_PROBABILITY = 288_230_376_143; // 0.000004 in WinProb unit
+    // service registry
+    // The delay of DefaultAdminRules guards the admin role transfer only. A units mistake here is
+    // near-permanent, because a lower delay must itself wait out the old delay.
+    uint48 public constant INIT_ADMIN_DELAY = 2 days;
+    uint256 public constant LOCAL_TYPE_REGISTRATION_FEE = 1 ether;
+    uint256 public constant DEV_TYPE_REGISTRATION_FEE = 1 ether;
+    uint256 public constant STAGING_TYPE_REGISTRATION_FEE = 100 ether;
+    uint256 public constant PRODUCTION_TYPE_REGISTRATION_FEE = 100 ether;
+    // the canonical GnosisVPN exit type, claimed at launch (section 9.4)
+    bytes32 public constant GVPN_EXIT_SERVICE_TYPE = bytes32("gvpn:exit");
+    // the burn amount for claiming the GVPN exit service type in the service registry contract
+    uint256 public constant LOCAL_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    uint256 public constant DEV_GVPN_EXIT_REGISTRATION_BURN = 10 ether;
+    uint256 public constant STAGING_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    uint256 public constant PRODUCTION_GVPN_EXIT_REGISTRATION_BURN = 1000 ether;
+    // the burn amount for updating the GVPN exit service type in the service registry contract
+    uint256 public constant LOCAL_GVPN_EXIT_UPDATE_BURN = 100 ether;
+    uint256 public constant DEV_GVPN_EXIT_UPDATE_BURN = 1 ether;
+    uint256 public constant STAGING_GVPN_EXIT_UPDATE_BURN = 100 ether;
+    uint256 public constant PRODUCTION_GVPN_EXIT_UPDATE_BURN = 100 ether;
 
     address private owner;
 
@@ -108,13 +129,16 @@ contract DeployAllContractsScript is
         // 3.7. Announcements
         _deployHoprAnnouncements(deployerAddress);
 
-        // 3.8 HoprNodeStakeFactory
+        // 3.8. HoprServiceRegistry
+        _deployHoprServiceRegistry(deployerAddress);
+
+        // 3.9. HoprNodeStakeFactory
         _deployHoprNodeStakeFactory(deployerAddress);
 
-        // 3.9. NodeSafeMigration contract
+        // 3.10. NodeSafeMigration contract
         _deployNodeSafeMigration();
 
-        // 3.10. Deploy a mock xHOPR token contract and mint some tokens to the deployer. This is only for local development environment.
+        // 3.11. Deploy a mock xHOPR token contract and mint some tokens to the deployer. This is only for local development environment.
         _deployXHoprTokenAndMintToAddress(deployerAddress);
 
         // 4. update indexerStartBlockNumber
@@ -140,7 +164,7 @@ contract DeployAllContractsScript is
             currentEnvironmentType == EnvironmentType.LOCAL
                 || !isValidAddress(currentNetworkDetail.addresses.moduleImplementationAddress)
         ) {
-            // deploy HoprNodeManagementModule contractsd
+            // deploy HoprNodeManagementModule contract
             currentNetworkDetail.addresses.moduleImplementationAddress =
                 deployCode("NodeManagementModule.sol:HoprNodeManagementModule");
         }
@@ -160,9 +184,22 @@ contract DeployAllContractsScript is
                 abi.encode(
                     currentNetworkDetail.addresses.moduleImplementationAddress,
                     currentNetworkDetail.addresses.announcements,
+                    currentNetworkDetail.addresses.serviceRegistryAddress,
                     deployerAddress
                 )
             );
+            // update the default network with a local tokenAddress
+            (, uint256 allowance, bytes32 announcement, address serviceRegistry) =
+                HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress).defaultHoprNetwork();
+            HoprNodeStakeFactory(currentNetworkDetail.addresses.nodeStakeFactoryAddress)
+                .updateHoprNetwork(
+                    HoprNodeStakeFactory.HoprNetwork({
+                        tokenAddress: currentNetworkDetail.addresses.tokenContractAddress,
+                        defaultAnnouncementTarget: announcement,
+                        defaultTokenAllowance: allowance,
+                        serviceRegistryAddress: currentNetworkDetail.addresses.serviceRegistryAddress
+                    })
+                );
         }
     }
 
@@ -362,6 +399,110 @@ contract DeployAllContractsScript is
                 emit log_string("Cannot mint xHOPR tokens to the recipient");
             }
         }
+    }
+
+    /**
+     * @dev Deploy the service registry, and claim the canonical `gvpn:exit` type in LOCAL.
+     *
+     * The admin and the manager are the deployer in LOCAL, and the multisig owner otherwise. The
+     * type-registration fee is the only economic barrier against type-table growth, so it is
+     * non-zero in every environment. Section 9.3 makes the sizing of that fee a manager duty.
+     *
+     * Type ids go to the first payer, so a canonical id must be claimed before the address of the
+     * registry is announced. This function claims `gvpn:exit` in LOCAL only, where the deployer
+     * already holds minted wxHOPR. Every other environment claims it through `SingleAction.s.sol`,
+     * as a transaction of the owning Safe.
+     *
+     * @param deployerAddress the account that broadcasts this batch
+     */
+    function _deployHoprServiceRegistry(address deployerAddress) internal {
+        if (
+            currentEnvironmentType != EnvironmentType.LOCAL
+                && isValidAddress(currentNetworkDetail.addresses.serviceRegistryAddress)
+        ) {
+            return;
+        }
+
+        uint256 typeRegistrationFee;
+        uint256 gvpnExitRegistrationBurn;
+        uint256 gvpnExitUpdateBurn;
+        if (currentEnvironmentType == EnvironmentType.LOCAL) {
+            typeRegistrationFee = LOCAL_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = LOCAL_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = LOCAL_GVPN_EXIT_UPDATE_BURN;
+        } else if (currentEnvironmentType == EnvironmentType.STAGING) {
+            typeRegistrationFee = STAGING_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = STAGING_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = STAGING_GVPN_EXIT_UPDATE_BURN;
+        } else if (currentEnvironmentType == EnvironmentType.PRODUCTION) {
+            typeRegistrationFee = PRODUCTION_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = PRODUCTION_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = PRODUCTION_GVPN_EXIT_UPDATE_BURN;
+        } else {
+            typeRegistrationFee = DEV_TYPE_REGISTRATION_FEE;
+            gvpnExitRegistrationBurn = DEV_GVPN_EXIT_REGISTRATION_BURN;
+            gvpnExitUpdateBurn = DEV_GVPN_EXIT_UPDATE_BURN;
+        }
+
+        address initialAdmin = currentEnvironmentType == EnvironmentType.LOCAL ? deployerAddress : owner;
+
+        currentNetworkDetail.addresses.serviceRegistryAddress = deployCode(
+            "ServiceRegistry.sol:HoprServiceRegistry",
+            abi.encode(
+                currentNetworkDetail.addresses.tokenContractAddress,
+                currentNetworkDetail.addresses.nodeSafeRegistryAddress,
+                INIT_ADMIN_DELAY,
+                initialAdmin,
+                initialAdmin,
+                typeRegistrationFee
+            )
+        );
+
+        _claimGvpnExitServiceType(typeRegistrationFee, gvpnExitRegistrationBurn, gvpnExitUpdateBurn);
+    }
+
+    /**
+     * @dev Claim the `gvpn:exit` type with the deployer account.
+     *
+     * The approval is exactly the fee. Section 3.6 makes that exact allowance the price protection
+     * of the caller: a fee that rises at the same time reverts on the allowance instead of an
+     * overpayment.
+     *
+     * A claim that cannot be made reverts the whole batch. `forge script` simulates before it
+     * broadcasts, so a revert here broadcasts nothing and leaves `contracts-addresses.json`
+     * untouched. Logging the failure and continuing would instead publish the address of a registry
+     * whose canonical id is still free, which is the squatting exposure of section 11.
+     *
+     * @param typeRegistrationFee the fee that the registry burns for this claim
+     */
+    function _claimGvpnExitServiceType(
+        uint256 typeRegistrationFee,
+        uint256 gvpnExitRegistrationBurn,
+        uint256 gvpnExitUpdateBurn
+    )
+        internal
+    {
+        (bool successApprove,) = currentNetworkDetail.addresses.tokenContractAddress
+            .call(
+                abi.encodeWithSignature(
+                    "approve(address,uint256)",
+                    currentNetworkDetail.addresses.serviceRegistryAddress,
+                    typeRegistrationFee
+                )
+            );
+        require(successApprove, "Cannot approve the type registration fee");
+
+        (bool successRegister,) = currentNetworkDetail.addresses.serviceRegistryAddress
+            .call(
+                abi.encodeWithSignature(
+                    "registerServiceType(bytes32,address,uint256,uint256)",
+                    GVPN_EXIT_SERVICE_TYPE,
+                    address(0),
+                    gvpnExitRegistrationBurn,
+                    gvpnExitUpdateBurn
+                )
+            );
+        require(successRegister, "Cannot claim the gvpn:exit service type");
     }
 
     /**

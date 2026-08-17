@@ -22,6 +22,8 @@ pub mod hopr_node_safe_registry;
 pub mod hopr_node_safe_registry_events;
 pub mod hopr_node_stake_factory;
 pub mod hopr_node_stake_factory_events;
+pub mod hopr_service_registry;
+pub mod hopr_service_registry_events;
 pub mod hopr_ticket_price_oracle;
 pub mod hopr_ticket_price_oracle_events;
 pub mod hopr_winning_probability_oracle;

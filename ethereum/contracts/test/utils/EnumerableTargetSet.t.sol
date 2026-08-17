@@ -124,7 +124,7 @@ contract EnumerableTargetSetTest is Test {
     /**
      * @dev test values
      */
-    function test_Values() public {
+    function test_Values() public view {
         // check default values
         Target[] memory values = enumerableTargetSetMock.values();
         assertEq(values.length, 0);

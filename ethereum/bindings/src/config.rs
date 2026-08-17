@@ -32,6 +32,7 @@ use crate::{
     hopr_node_safe_migration::HoprNodeSafeMigration::{self, HoprNodeSafeMigrationInstance},
     hopr_node_safe_registry::HoprNodeSafeRegistry::{self, HoprNodeSafeRegistryInstance},
     hopr_node_stake_factory::HoprNodeStakeFactory::{self, HoprNodeStakeFactoryInstance},
+    hopr_service_registry::HoprServiceRegistry::{self, HoprServiceRegistryInstance},
     hopr_ticket_price_oracle::HoprTicketPriceOracle::{self, HoprTicketPriceOracleInstance},
     hopr_token::HoprToken::{self, HoprTokenInstance},
     hopr_winning_probability_oracle::HoprWinningProbabilityOracle::{self, HoprWinningProbabilityOracleInstance},
@@ -66,6 +67,11 @@ pub struct ContractAddresses {
     /// Stake factory contract
     #[serde_as(as = "DisplayFromStr")]
     pub node_stake_factory: Address,
+    /// Service registry contract.
+    ///
+    /// A network that has no deployment yet carries the zero address here.
+    #[serde_as(as = "DisplayFromStr")]
+    pub service_registry: Address,
     /// Price oracle contract
     #[serde_as(as = "DisplayFromStr")]
     pub ticket_price_oracle: Address,
@@ -96,6 +102,7 @@ impl IntoIterator for &ContractAddresses {
             self.node_stake_factory,
             self.module_implementation,
             self.xhopr_token,
+            self.service_registry,
         ]
         .into_iter()
     }
@@ -175,6 +182,8 @@ pub struct ContractInstances<P> {
     pub node_safe_migration: HoprNodeSafeMigrationInstance<P>,
     /// Mock xHOPR token (ERC677) contract instance.
     pub xhopr_token: ERC677MockInstance<P>,
+    /// Service registry contract instance.
+    pub service_registry: HoprServiceRegistryInstance<P>,
 }
 
 impl<P> ContractInstances<P>
@@ -204,6 +213,7 @@ where
                 provider.clone(),
             ),
             xhopr_token: ERC677MockInstance::new(contract_addresses.xhopr_token, provider.clone()).into(),
+            service_registry: HoprServiceRegistryInstance::new(contract_addresses.service_registry, provider.clone()),
         }
     }
 
@@ -486,14 +496,66 @@ where
         )
         .await?;
 
+        // HoprServiceRegistry contract
+        let service_registry = HoprServiceRegistry::deploy(
+            provider.clone(),
+            *token.address(),
+            *safe_registry.address(),
+            INIT_ADMIN_DELAY,
+            hopr_deployer_address,
+            hopr_deployer_address,
+            INIT_TYPE_REGISTRATION_FEE,
+        )
+        .await?;
+        // Claim the "gvpn:exit" service type in the service registry, so that the default hopr network is fully
+        // functional This action requires the deployer to own (and approve) enough HOPR tokens to pay for the
+        // type registration fee.
+        // - 1. token approval, as in `_claimGvpnExitServiceType` in `DeployAll.s.sol`
+        token
+            .approve(
+                Address::from(service_registry.address().as_ref()),
+                INIT_TYPE_REGISTRATION_FEE,
+            )
+            .send()
+            .await?
+            .watch()
+            .await?;
+        // - 2. register the service type, as in `_claimGvpnExitServiceType` in `DeployAll.s.sol`
+        service_registry
+            .registerServiceType(
+                GVPN_EXIT_SERVICE_TYPE,
+                Address::ZERO,
+                GVPN_EXIT_REGISTRATION_BURN,
+                GVPN_EXIT_UPDATE_BURN,
+            )
+            .send()
+            .await?
+            .watch()
+            .await?;
+
         // HoprNodeStakeFactory contract
         let stake_factory = HoprNodeStakeFactory::deploy(
             provider.clone(),
             Address::from(module_implementation.address().as_ref()),
             Address::from(announcements_proxy.address().as_ref()),
+            Address::from(service_registry.address().as_ref()),
             hopr_deployer_address,
         )
         .await?;
+        // update the defaultHoprNetwork in the stake factory to allow using local HOPR tokens
+        let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
+        let new_default_hopr_network = HoprNodeStakeFactory::HoprNetwork {
+            tokenAddress: *token.address(),
+            defaultTokenAllowance: default_hopr_network.defaultTokenAllowance,
+            defaultAnnouncementTarget: default_hopr_network.defaultAnnouncementTarget,
+            serviceRegistryAddress: *service_registry.address(),
+        };
+        stake_factory
+            .updateHoprNetwork(new_default_hopr_network)
+            .send()
+            .await?
+            .watch()
+            .await?;
 
         // HoprNodeSafeMigration contract
         let node_safe_migration = HoprNodeSafeMigration::deploy(
@@ -513,21 +575,6 @@ where
             .watch()
             .await?;
 
-        // get the defaultHoprNetwork from the stake factory
-        let default_hopr_network = stake_factory.defaultHoprNetwork().call().await?;
-        let new_default_hopr_network = HoprNodeStakeFactory::HoprNetwork {
-            tokenAddress: *token.address(),
-            defaultTokenAllowance: default_hopr_network.defaultTokenAllowance,
-            defaultAnnouncementTarget: default_hopr_network.defaultAnnouncementTarget,
-        };
-        // Update the `defaultHoprNetwork` in the factory contract, to update the token address
-        stake_factory
-            .updateHoprNetwork(new_default_hopr_network)
-            .send()
-            .await?
-            .watch()
-            .await?;
-
         Ok(Self {
             token,
             channels,
@@ -539,6 +586,7 @@ where
             module_implementation,
             node_safe_migration,
             xhopr_token: mock_xhopr_token.into(),
+            service_registry,
         })
     }
 
@@ -570,6 +618,7 @@ where
             module_implementation: *self.module_implementation.address(),
             node_safe_migration: *self.node_safe_migration.address(),
             xhopr_token: *self.xhopr_token.address(),
+            service_registry: *self.service_registry.address(),
         }
     }
 }
@@ -590,6 +639,7 @@ where
             node_stake_factory: *instances.stake_factory.address(),
             module_implementation: *instances.module_implementation.address(),
             xhopr_token: *instances.xhopr_token.address(),
+            service_registry: *instances.service_registry.address(),
         }
     }
 }
@@ -709,8 +759,9 @@ mod tests {
         info!("  module_implementation:      {}", addresses.module_implementation);
         info!("  node_safe_migration:        {}", addresses.node_safe_migration);
         info!("  xhopr_token:                {}", addresses.xhopr_token);
+        info!("  service_registry:           {}", addresses.service_registry);
 
-        // Check that the addresses are the same as the ones in the contracts-addresses.json file
+        // Check that the addresses are the same as the ones in the contracts-addresses.json file.
         let expected_addresses = NetworksWithContractAddresses::default().networks["anvil-localhost"].addresses;
         assert_eq!(
             addresses, expected_addresses,
@@ -721,7 +772,7 @@ mod tests {
         let wxhopr_token_balance = instances.token.balanceOf(hopr_deployer_address).call().await?;
         assert_eq!(
             wxhopr_token_balance,
-            crate::constants::MINTED_TOKEN_AMOUNT,
+            crate::constants::MINTED_TOKEN_AMOUNT - crate::constants::INIT_TYPE_REGISTRATION_FEE,
             "hopr_deployer_address should have the expected wxHOPRtoken balance"
         );
         let xhopr_token_balance = instances.xhopr_token.balanceOf(hopr_deployer_address).call().await?;
@@ -729,6 +780,29 @@ mod tests {
             xhopr_token_balance,
             crate::constants::MINTED_TOKEN_AMOUNT,
             "hopr_deployer_address should have the expected xHOPR token balance"
+        );
+
+        // Check that the service registry is live and configured the way `DeployAll.s.sol`
+        // configures it in the local environment.
+        assert_eq!(
+            instances.service_registry.WXHOPR_TOKEN().call().await?,
+            addresses.token,
+            "the service registry should burn the wxHOPR token"
+        );
+        assert_eq!(
+            instances.service_registry.nodeSafeRegistry().call().await?,
+            addresses.node_safe_registry,
+            "the service registry should read node bindings from the node safe registry"
+        );
+        assert_eq!(
+            instances.service_registry.typeRegistrationFee().call().await?,
+            crate::constants::INIT_TYPE_REGISTRATION_FEE,
+            "the service registry should charge the expected type registration fee"
+        );
+        assert_eq!(
+            instances.service_registry.defaultAdminDelay().call().await?,
+            crate::constants::INIT_ADMIN_DELAY,
+            "the service registry should use the expected admin delay"
         );
 
         Ok(())

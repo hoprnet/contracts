@@ -19,10 +19,12 @@ import { CapabilityPermissionsLibFixtureTest } from "../../utils/CapabilityLibra
 import { SafeSingletonFixtureTest } from "../../utils/SafeSingleton.sol";
 import { IAvatar } from "../../../src/interfaces/IAvatar.sol";
 import { HoprCrypto } from "../../../src/Crypto.sol";
+import { HoprServiceRegistry } from "../../../src/ServiceRegistry.sol";
 import { SimplifiedModuleEvents } from "../../../src/node-stake/permissioned-module/SimplifiedModule.sol";
 import { Initializable } from "openzeppelin-contracts-upgradeable-5.4.0/proxy/utils/Initializable.sol";
 import { Create2 } from "openzeppelin-contracts-5.4.0/utils/Create2.sol";
 import { ERC1967Proxy } from "openzeppelin-contracts-5.4.0/proxy/ERC1967/ERC1967Proxy.sol";
+import { HoprNodeManagementModuleV1 } from "../../mocks/NodeManagementModuleV1Mock.sol";
 
 /**
  * @dev This files tests both HoprNodeManagementModule and the CapabilityPermissions.sol
@@ -89,7 +91,7 @@ contract HoprNodeManagementModuleTest is
     modifier initializeModuleProxy(address owner) {
         vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
         emit SetMultisendAddress(multiaddr);
-        moduleProxy.initialize(abi.encode(owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET));
+        moduleProxy.initialize(abi.encode(owner, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET, address(0)));
         _;
     }
 
@@ -110,6 +112,60 @@ contract HoprNodeManagementModuleTest is
     function test_CanInitializeProxy() public initializeModuleProxy(address(1)) {
         assertEq(moduleProxy.owner(), address(1));
         vm.clearMockedCalls();
+    }
+
+    function test_NodeCanExecuteOwnServiceRegistryWrites() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+        vm.mockCall(safe, abi.encodeWithSelector(IAvatar.execTransactionFromModule.selector), abi.encode(true));
+
+        bytes32 serviceType = bytes32("gvpn:exit");
+        bytes[] memory calls = new bytes[](3);
+        calls[0] = abi.encodeCall(HoprServiceRegistry.selfRegister, (serviceType, node, bytes("register")));
+        calls[1] = abi.encodeCall(HoprServiceRegistry.selfUpdate, (serviceType, node, bytes("update")));
+        calls[2] = abi.encodeCall(HoprServiceRegistry.selfDeregister, (serviceType, node));
+        vm.startPrank(node);
+        for (uint256 i = 0; i < calls.length; i++) {
+            assertTrue(moduleProxy.execTransactionFromModule(registry, 0, calls[i], Enum.Operation.Call));
+        }
+        vm.stopPrank();
+    }
+
+    function testRevert_NodeCannotWriteAnotherServiceEntry() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+
+        vm.prank(node);
+        vm.expectRevert(HoprCapabilityPermissions.NodePermissionRejected.selector);
+        moduleProxy.execTransactionFromModule(
+            registry,
+            0,
+            abi.encodeCall(HoprServiceRegistry.selfDeregister, (bytes32("gvpn:exit"), makeAddr("other node"))),
+            Enum.Operation.Call
+        );
+    }
+
+    function testRevert_NodeCannotCallArbitraryServiceRegistryFunction() public initializeModuleProxy(safe) {
+        address registry = makeAddr("HoprServiceRegistry");
+        address node = makeAddr("node");
+        vm.startPrank(safe);
+        moduleProxy.addNode(node);
+        moduleProxy.scopeTargetServiceRegistry(registry);
+        vm.stopPrank();
+
+        vm.prank(node);
+        vm.expectRevert(HoprCapabilityPermissions.ParameterNotAllowed.selector);
+        moduleProxy.execTransactionFromModule(
+            registry, 0, abi.encodeWithSignature("transferOwnership(address)", node), Enum.Operation.Call
+        );
     }
 
     /**
@@ -136,6 +192,78 @@ contract HoprNodeManagementModuleTest is
         vm.clearMockedCalls();
     }
 
+    /**
+     * @dev Already-deployed Safes run the pre-service-registry module, `HoprNodeManagementModuleV1`.
+     * This PR ships a new `HoprNodeManagementModule` implementation, so those Safes must upgrade their
+     * module proxy in place. The upgrade must keep every existing node and scoped target untouched, and
+     * it must unlock `scopeTargetServiceRegistry`, which the old implementation never had.
+     */
+    function test_UpgradeFromV1PreservesStateAndUnlocksServiceRegistry() public {
+        vm.mockCall(channels, abi.encodeWithSignature("TOKEN()"), abi.encode(token));
+
+        // 1. An already-deployed Safe runs the old module implementation.
+        HoprNodeManagementModuleV1 oldSingleton = new HoprNodeManagementModuleV1();
+        address oldProxyAddress = Create2.deploy(
+            0,
+            bytes32(hex"beef"),
+            abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(address(oldSingleton), hex""))
+        );
+        HoprNodeManagementModuleV1 oldProxy = HoprNodeManagementModuleV1(oldProxyAddress);
+        oldProxy.initialize(abi.encode(safe, multiaddr, ANNOUNCEMENT_TARGET, DEFAULT_TARGET));
+
+        address node = makeAddr("existingNode");
+        vm.prank(safe);
+        oldProxy.addNode(node);
+
+        (bool hadChannelsTarget,) = oldProxy.tryGetTarget(channels);
+        assertTrue(hadChannelsTarget, "the old module must already scope the channels target");
+        assertTrue(oldProxy.isNode(node), "the node must already be a member of the old module");
+
+        bytes32 currentImplementation = vm.load(oldProxyAddress, IMPLEMENTATION_SLOT);
+        assertEq(address(uint160(uint256(currentImplementation))), address(oldSingleton));
+
+        // 2. The Safe upgrades the module proxy to the new implementation, in place.
+        HoprNodeManagementModule newSingleton = new HoprNodeManagementModule();
+        vm.prank(safe);
+        vm.expectEmit(true, false, false, false, oldProxyAddress);
+        emit Upgraded(address(newSingleton));
+        oldProxy.upgradeToAndCall(address(newSingleton), hex"");
+
+        currentImplementation = vm.load(oldProxyAddress, IMPLEMENTATION_SLOT);
+        assertEq(
+            address(uint160(uint256(currentImplementation))),
+            address(newSingleton),
+            "implementation must point at the new module"
+        );
+
+        // 3. Every pre-upgrade node and target survives the upgrade untouched.
+        HoprNodeManagementModule upgradedProxy = HoprNodeManagementModule(oldProxyAddress);
+        assertTrue(upgradedProxy.isNode(node), "existing node membership must survive the upgrade");
+        (bool stillHasChannelsTarget,) = upgradedProxy.tryGetTarget(channels);
+        assertTrue(stillHasChannelsTarget, "the channels target must survive the upgrade");
+        assertEq(upgradedProxy.owner(), safe, "the owning Safe must survive the upgrade");
+
+        // 4. The upgrade unlocks scoping the service registry, which the old implementation lacked.
+        address registry = makeAddr("HoprServiceRegistry");
+        vm.prank(safe);
+        upgradedProxy.scopeTargetServiceRegistry(registry);
+
+        vm.mockCall(safe, abi.encodeWithSelector(IAvatar.execTransactionFromModule.selector), abi.encode(true));
+        bytes32 serviceType = bytes32("gvpn:exit");
+        vm.prank(node);
+        assertTrue(
+            upgradedProxy.execTransactionFromModule(
+                registry,
+                0,
+                abi.encodeCall(HoprServiceRegistry.selfRegister, (serviceType, node, bytes("register"))),
+                Enum.Operation.Call
+            ),
+            "the node must be able to use the newly-scoped service registry after the upgrade"
+        );
+
+        vm.clearMockedCalls();
+    }
+
     function testFuzz_AddNode(address account) public initializeModuleProxy(address(1)) {
         address owner = moduleProxy.owner();
         vm.startPrank(owner);
@@ -150,6 +278,7 @@ contract HoprNodeManagementModuleTest is
 
     function testFuzz_AddNodeAndFundNode(address account) public initializeModuleProxy(address(1)) {
         assumeNotPrecompile(account);
+        vm.assume(account != address(0x100)); // RIP-7212 P-256 precompile, not covered by forge-std 1.15.0
         vm.assume(account != address(0) && account.code.length == 0); // EOA only
         vm.assume(account != 0x000000000000000000636F6e736F6c652e6c6f67); // avoid conflict with console.log precompile
 
@@ -731,7 +860,7 @@ contract HoprNodeManagementModuleTest is
      * @dev encode function permissions but revert due to ArraysDifferentLength
      */
 
-    function test_EncodeFunctionSigsAndPermissionsMismatchedLengths() public {
+    function test_EncodeFunctionSigsAndPermissionsMismatchedLengths() public view {
         uint256 size = 6;
         bytes4[] memory functionSigs = new bytes4[](size);
         GranularPermission[] memory permissions = new GranularPermission[](size);

@@ -12,11 +12,12 @@ This directory contains the Ethereum smart contracts and Rust bindings for the [
 ├── Ledger.sol                   # Snapshot-based index for HOPR Channels
 ├── TicketPriceOracle.sol        # Oracle for updating the HOPR ticket price network-wide
 ├── WinningProbabilityOracle.sol # Oracle for updating the minimum winning probability network-wide
-
+├── ServiceRegistry.sol          # Permissionless registry of services that HOPR nodes offer
 ├── interfaces/                  # Solidity interfaces for contract interoperability
 │   ├── IAvatar.sol
 │   ├── INetworkRegistryRequirement.sol
-│   └── INodeManagementModule.sol
+│   ├── INodeManagementModule.sol
+│   └── IServiceRequirement.sol
 
 ├── node-stake/                          # Node staking system built on Safe's account-abstraction design
 │   ├── NodeSafeRegistry.sol             # Registry mapping nodes to their Safe wallets
@@ -158,7 +159,7 @@ source .env
 FOUNDRY_PROFILE=staging NETWORK=debug-staging forge script --broadcast --verify --verifier sourcify script/DeployAll.s.sol:DeployAllContractsScript
 
 # Deploy to development and verify on Gnosisscan
-FOUNDRY_PROFILE=staging NETWORK=juradev forge script --broadcast --slow \
+FOUNDRY_PROFILE=development NETWORK=jura-dev forge script --broadcast --slow \
    --verify --verifier etherscan --verifier-url "https://api.etherscan.io/v2/api?chainid=100" \
    --delay 30 --chain 100 --etherscan-api-key "${ETHERSCAN_API_KEY}" \
    --priority-gas-price 0.001gwei --with-gas-price 0.002gwei \

@@ -1466,7 +1466,7 @@ function updateLedgerDomainSeparator() external;
     ///Container for all the [`HoprLedger`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprLedgerCalls {
         #[allow(missing_docs)]
         LEDGER_VERSION(LEDGER_VERSIONCall),
@@ -1964,6 +1964,18 @@ function updateLedgerDomainSeparator() external;
             }
         }
     }
+    #[automatically_derived]
+    impl HoprLedgerErrors {
+        /**Creates a [`ZeroInterval`] error.
+
+```solidity
+error ZeroInterval()
+```*/
+        #[inline]
+        pub fn zero_interval() -> Self {
+            Self::ZeroInterval(ZeroInterval)
+        }
+    }
     ///Container for all the [`HoprLedger`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -2062,6 +2074,22 @@ function updateLedgerDomainSeparator() external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprLedgerEvents {
+        /**Creates a [`LedgerDomainSeparatorUpdated`] event.
+
+```solidity
+event LedgerDomainSeparatorUpdated(bytes32)
+```*/
+        #[inline]
+        pub fn ledger_domain_separator_updated(
+            ledger_domain_separator: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::LedgerDomainSeparatorUpdated(LedgerDomainSeparatorUpdated {
+                ledgerDomainSeparator: ledger_domain_separator,
+            })
         }
     }
     use alloy::contract as alloy_contract;

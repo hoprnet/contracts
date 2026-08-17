@@ -12,7 +12,8 @@ enum Clearance {
 enum TargetType {
     TOKEN,
     CHANNELS,
-    SEND
+    SEND,
+    SERVICE_REGISTRY
 }
 
 enum TargetPermission {
@@ -36,20 +37,16 @@ enum CapabilityPermission {
  * (Clearance) as uint8: clearance
  * (TargetType) as uint8: targetType
  * (TargetPermission) as uint8: defaultTargetPermission (for the target)
- * (CapabilityPermission) as uint8: defaultRedeemTicketSafeFunctionPermisson (for Channels
- * contract)
+ * (CapabilityPermission) as uint8: defaultRedeemTicketSafeFunctionPermisson (for Channels contract)
  * (CapabilityPermission) as uint8: RESERVED FOR defaultBatchRedeemTicketsSafeFunctionPermisson (for Channels
  * contract)
- * (CapabilityPermission) as uint8: defaultCloseIncomingChannelSafeFunctionPermisson (for Channels
- * contract)
+ * (CapabilityPermission) as uint8: defaultCloseIncomingChannelSafeFunctionPermisson (for Channels contract)
  * (CapabilityPermission) as uint8: defaultInitiateOutgoingChannelClosureSafeFunctionPermisson (for Channels
  * contract)
  * (CapabilityPermission) as uint8: defaultFinalizeOutgoingChannelClosureSafeFunctionPermisson (for Channels
  * contract)
- * (CapabilityPermission) as uint8: defaultFundChannelMultiFunctionPermisson (for Channels
- * contract)
- * (CapabilityPermission) as uint8: defaultSetCommitmentSafeFunctionPermisson (for Channels
- * contract)
+ * (CapabilityPermission) as uint8: defaultFundChannelMultiFunctionPermisson (for Channels contract)
+ * (CapabilityPermission) as uint8: defaultSetCommitmentSafeFunctionPermisson (for Channels contract)
  * (CapabilityPermission) as uint8: defaultApproveFunctionPermisson (for Token contract)
  * (CapabilityPermission) as uint8: defaultSendFunctionPermisson (for Token contract)
  */

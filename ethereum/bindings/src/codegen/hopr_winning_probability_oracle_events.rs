@@ -108,7 +108,7 @@ pub mod HoprWinningProbabilityOracleEvents {
         }
         impl WinProb {
             /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
+            pub const NAME: &'static str = stringify!(WinProb);
             /// Convert from the underlying value type.
             #[inline]
             pub const fn from_underlying(
@@ -412,6 +412,24 @@ event WinProbUpdated(WinProb oldWinProb, WinProb newWinProb);
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprWinningProbabilityOracleEventsEvents {
+        /**Creates a [`WinProbUpdated`] event.
+
+```solidity
+event WinProbUpdated(uint56,uint56)
+```*/
+        #[inline]
+        pub fn win_prob_updated(
+            old_win_prob: <WinProb as alloy::sol_types::SolType>::RustType,
+            new_win_prob: <WinProb as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::WinProbUpdated(WinProbUpdated {
+                oldWinProb: old_win_prob,
+                newWinProb: new_win_prob,
+            })
         }
     }
     use alloy::contract as alloy_contract;

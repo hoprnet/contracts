@@ -88,6 +88,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         address tokenAddress;
         uint256 defaultTokenAllowance;
         bytes32 defaultAnnouncementTarget;
+        address serviceRegistryAddress;
     }
 
     // A sentinel address that serves as the start pointer of the owner linked list used in the OwnerManager of
@@ -127,7 +128,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     HoprNetwork public defaultHoprNetwork = HoprNetwork({
         tokenAddress: 0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1, // wxHOPR token address on Gnosis chain
         defaultTokenAllowance: 1000 ether,
-        defaultAnnouncementTarget: bytes32(0)
+        defaultAnnouncementTarget: bytes32(0),
+        serviceRegistryAddress: address(0)
     });
 
     modifier validateAdmins(address[] memory admins) {
@@ -149,6 +151,7 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
     constructor(
         address _moduleSingletonAddress,
         address _announcementAddress,
+        address _serviceRegistryAddress,
         address initialOwner
     )
         Ownable(initialOwner)
@@ -164,6 +167,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
         // Set the initial announcement target
         defaultHoprNetwork.defaultAnnouncementTarget =
             bytes32(uint256(uint160(_announcementAddress))) << 96 | bytes32(uint256(0x010003000000000000000000));
+        // Set the initial service registry address
+        defaultHoprNetwork.serviceRegistryAddress = _serviceRegistryAddress;
 
         // Set the initial Safe library addresses
         emit HoprNodeStakeSafeLibUpdated(safeLibAddresses);
@@ -637,7 +642,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
                 safeProxyAddr,
                 safeLibAddresses.multiSendAddress,
                 defaultHoprNetwork.defaultAnnouncementTarget,
-                defaultTarget
+                defaultTarget,
+                defaultHoprNetwork.serviceRegistryAddress
             )
         );
 
@@ -682,7 +688,8 @@ contract HoprNodeStakeFactory is HoprNodeStakeFactoryEvents, Ownable2Step, IERC7
                             safe,
                             safeLibAddresses.multiSendAddress,
                             defaultHoprNetwork.defaultAnnouncementTarget,
-                            defaultTarget
+                            defaultTarget,
+                            defaultHoprNetwork.serviceRegistryAddress
                         )
                     )
                 )

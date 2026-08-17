@@ -174,6 +174,8 @@ contract HoprNodeSafeRegistryTest is Test, HoprNodeSafeRegistryEvents {
         public
         assumeDifferentAddress(nodeAddress)
     {
+        vm.assume(nodeAddress != address(0x100)); // RIP-7212 P-256 precompile, not covered by forge-std 1.15.0
+
         // mock code at nodeAddress
         vm.etch(nodeAddress, hex"00010203040506070809");
 

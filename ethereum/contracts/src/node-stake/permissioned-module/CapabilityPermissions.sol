@@ -3,6 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { Enum } from "safe-contracts-1.4.1/common/Enum.sol";
 import { HoprChannels } from "../../Channels.sol";
+import { HoprServiceRegistry } from "../../ServiceRegistry.sol";
 import { EnumerableTargetSet, TargetSet } from "../../utils/EnumerableTargetSet.sol";
 import {
     TargetUtils,
@@ -94,11 +95,15 @@ library HoprCapabilityPermissions {
     // HoprToken method ids (TargetType.TOKEN). As HoprToken contract is in production, its ABI is static
     bytes4 public constant APPROVE_SELECTOR = IERC20.approve.selector;
     bytes4 public constant SEND_SELECTOR = IERC777.send.selector;
+    bytes4 public constant SELF_REGISTER_SELECTOR = HoprServiceRegistry.selfRegister.selector;
+    bytes4 public constant SELF_UPDATE_SELECTOR = HoprServiceRegistry.selfUpdate.selector;
+    bytes4 public constant SELF_DEREGISTER_SELECTOR = HoprServiceRegistry.selfDeregister.selector;
 
     event RevokedTarget(address indexed targetAddress);
     event ScopedTargetChannels(address indexed targetAddress, Target target);
     event ScopedTargetToken(address indexed targetAddress, Target target);
     event ScopedTargetSend(address indexed targetAddress, Target target);
+    event ScopedTargetServiceRegistry(address indexed targetAddress, Target target);
     event ScopedGranularChannelCapability(
         address indexed targetAddress, bytes32 indexed channelId, bytes4 selector, GranularPermission permission
     );
@@ -271,6 +276,11 @@ library HoprCapabilityPermissions {
 
         bytes4 functionSig = bytes4(data);
 
+        if (target.getTargetType() == TargetType.SERVICE_REGISTRY) {
+            checkServiceRegistryParameters(functionSig, data);
+            return;
+        }
+
         // check default permissions and get the fallback permission
         TargetPermission defaultPermission = getDefaultPermission(data.length, target, functionSig);
         // allow early revert or early return
@@ -382,6 +392,22 @@ library HoprCapabilityPermissions {
         }
 
         return role.capabilities[capabilityKey][channelId];
+    }
+
+    /// Restricts registry writes to the entry belonging to the calling node.
+    function checkServiceRegistryParameters(bytes4 functionSig, bytes memory data) internal view {
+        if (
+            functionSig != SELF_REGISTER_SELECTOR && functionSig != SELF_UPDATE_SELECTOR
+                && functionSig != SELF_DEREGISTER_SELECTOR
+        ) {
+            revert ParameterNotAllowed();
+        }
+
+        // Every self-service function has `(bytes32 serviceType, address node, ...)`, so the
+        // authority-bearing node is the second ABI argument.
+        if (pluckOneStaticAddress(1, data) != msg.sender) {
+            revert NodePermissionRejected();
+        }
     }
 
     /*
@@ -565,6 +591,23 @@ library HoprCapabilityPermissions {
         role.targets.add(updatedTarget);
 
         emit ScopedTargetSend(targetAddress, updatedTarget);
+    }
+
+    /// Allows only the three node-bound self-service entry functions on a service registry.
+    function scopeTargetServiceRegistry(Role storage role, address targetAddress) internal {
+        if (targetAddress == address(0)) {
+            revert AddressIsZero();
+        }
+        if (role.targets.contains(targetAddress)) {
+            revert TargetIsScoped();
+        }
+
+        Target target = Target.wrap(
+            uint256(uint160(targetAddress)) << 96 | uint256(Clearance.FUNCTION) << 88
+                | uint256(TargetType.SERVICE_REGISTRY) << 80
+        );
+        role.targets.add(target);
+        emit ScopedTargetServiceRegistry(targetAddress, target);
     }
 
     /**

@@ -14,6 +14,7 @@ import {
 } from "../src/utils/TargetUtils.sol";
 import { HoprNodeSafeRegistry } from "../src/node-stake/NodeSafeRegistry.sol";
 import { Enum, IAvatar } from "../src/interfaces/IAvatar.sol";
+import { SafeSuiteLibV141 } from "../src/utils/SafeSuiteLibV141.sol";
 
 abstract contract IFactory {
     function clone(
@@ -386,6 +387,119 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
         );
     }
 
+    /**
+     * @dev Claim one service type in the registry, as an owner of the Safe that becomes the type
+     * owner.
+     *
+     * Type ids go to the first payer, so the launch procedure of section 9.4 claims every
+     * canonical id before the address of the registry is announced. `DeployAll.s.sol` claims
+     * `gvpn:exit` in LOCAL only, and every other environment uses this action.
+     *
+     * The approval and the claim travel in one MultiSend bundle, so the Safe executes one
+     * transaction. The approval is exactly the fee that this script reads at build time. A fee
+     * that rises at the same time therefore reverts on the allowance instead of an overpayment.
+     *
+     * @param safe the Safe that pays the fee and becomes the type owner
+     * @param serviceType the `bytes32` id to claim, by convention right-padded ASCII
+     * @param requirement the policy contract of the type, or `address(0)` for an open type
+     * @param registrationBurn the `selfRegister` burn of the type
+     * @param updateBurn the `selfUpdate` burn of the type
+     */
+    function registerServiceType(
+        address safe,
+        bytes32 serviceType,
+        address requirement,
+        uint256 registrationBurn,
+        uint256 updateBurn
+    )
+        public
+    {
+        // 1. get the msgSender if not set. This msgSender should be the owner of safe to execute the tx
+        if (msgSender == address(0)) {
+            getNetworkAndMsgSender();
+        }
+
+        address registry = currentNetworkDetail.addresses.serviceRegistryAddress;
+        require(isValidAddress(registry), "HoprServiceRegistry is not deployed on this network");
+
+        // 2. read the fee that the registry burns right now, and approve exactly that amount
+        uint256 typeRegistrationFee = _helperReadTypeRegistrationFee(registry);
+
+        bytes memory multiSendData = buildRegisterServiceTypePayload(
+            currentNetworkDetail.addresses.tokenContractAddress,
+            registry,
+            typeRegistrationFee,
+            serviceType,
+            requirement,
+            registrationBurn,
+            updateBurn
+        );
+
+        // 3. a MultiSend bundle must run in the context of the Safe, so it needs a delegate call
+        _helperSignSafeTxAsOwner(
+            IAvatar(payable(safe)),
+            SafeSuiteLibV141.SAFE_MultiSendCallOnly_ADDRESS,
+            IAvatar(payable(safe)).nonce(),
+            multiSendData,
+            Enum.Operation.DelegateCall
+        );
+    }
+
+    /**
+     * @dev Build the MultiSend payload that approves the fee and then claims the type.
+     *
+     * This function is pure and public so that a test can assert the encoding without a live Safe.
+     *
+     * @return the calldata of `multiSend(bytes)`, for a delegate call from the Safe
+     */
+    function buildRegisterServiceTypePayload(
+        address token,
+        address registry,
+        uint256 typeRegistrationFee,
+        bytes32 serviceType,
+        address requirement,
+        uint256 registrationBurn,
+        uint256 updateBurn
+    )
+        public
+        pure
+        returns (bytes memory)
+    {
+        uint8[] memory txOperations = new uint8[](2);
+        address[] memory txTos = new address[](2);
+        uint256[] memory txValues = new uint256[](2);
+        uint256[] memory dataLengths = new uint256[](2);
+        bytes[] memory data = new bytes[](2);
+
+        data[0] = abi.encodeWithSignature("approve(address,uint256)", registry, typeRegistrationFee);
+        data[1] = abi.encodeWithSignature(
+            "registerServiceType(bytes32,address,uint256,uint256)",
+            serviceType,
+            requirement,
+            registrationBurn,
+            updateBurn
+        );
+
+        txTos[0] = token;
+        txTos[1] = registry;
+
+        for (uint256 i = 0; i < data.length; i++) {
+            // 0 is Call. MultiSendCallOnly rejects a delegate call inside the bundle.
+            txOperations[i] = 0;
+            txValues[i] = 0;
+            dataLengths[i] = data[i].length;
+        }
+
+        return _helperBuildMultiSendTx(txOperations, txTos, txValues, dataLengths, data);
+    }
+
+    /// @dev Read the current type-registration fee of the registry.
+    function _helperReadTypeRegistrationFee(address registry) private view returns (uint256) {
+        (bool success, bytes memory returnData) = registry.staticcall(abi.encodeWithSignature("typeRegistrationFee()"));
+        require(success && returnData.length == 32, "cannot read typeRegistrationFee from the registry");
+        return abi.decode(returnData, (uint256));
+    }
+
     function deregisterNodesFromNodeSafeRegistry(address[] memory nodeAddresses) public {
         // 1. get the msgSender if not set. This msgSender should be the owner of safe to execute the tx
         if (msgSender == address(0)) {
@@ -521,6 +635,29 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
     }
 
     /**
+     * Scope the current network's service registry on an already-deployed node module.
+     * The module itself restricts this target to selfRegister, selfUpdate and selfDeregister,
+     * with the node argument required to match the calling module member.
+     */
+    function addNetworkServiceRegistryTargetToModuleBySafe(address safe, address module) public {
+        if (msgSender == address(0)) {
+            getNetworkAndMsgSender();
+        }
+
+        address targetAddress = currentNetworkDetail.addresses.serviceRegistryAddress;
+        try IModule(module).tryGetTarget(targetAddress) returns (bool successReadTryGetTarget, Target) {
+            if (successReadTryGetTarget) {
+                return;
+            }
+
+            bytes memory scopeTargetData = abi.encodeWithSignature("scopeTargetServiceRegistry(address)", targetAddress);
+            _helperSignSafeTxAsOwner(IAvatar(payable(safe)), module, IAvatar(payable(safe)).nonce(), scopeTargetData);
+        } catch {
+            emit log_string("Cannot read tryGetTarget from module contract. Upgrade the module before scoping the service registry");
+        }
+    }
+
+    /**
      * @dev get the deployer key
      * Set to default when it's in development environment
      * (uint for 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80)
@@ -538,22 +675,30 @@ contract SingleActionFromPrivateKeyScript is Test, NetworkConfig {
      * @dev when caller is owner of safe instance, prepare a signature and execute the transaction
      */
     function _helperSignSafeTxAsOwner(IAvatar safe, address target, uint256 nonce, bytes memory data) private {
-        bytes32 dataHash =
-            safe.getTransactionHash(target, 0, data, Enum.Operation.Call, 0, 0, 0, address(0), msgSender, nonce);
+        _helperSignSafeTxAsOwner(safe, target, nonce, data, Enum.Operation.Call);
+    }
+
+    /**
+     * @dev The same as above, with an explicit operation.
+     *
+     * A MultiSend bundle needs `DelegateCall`, because the bundle must run in the context of the
+     * Safe. Every other action here uses `Call`.
+     */
+    function _helperSignSafeTxAsOwner(
+        IAvatar safe,
+        address target,
+        uint256 nonce,
+        bytes memory data,
+        Enum.Operation operation
+    )
+        private
+    {
+        bytes32 dataHash = safe.getTransactionHash(target, 0, data, operation, 0, 0, 0, address(0), msgSender, nonce);
 
         // sign dataHash
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(vm.envUint("PRIVATE_KEY"), dataHash);
         safe.execTransaction(
-            target,
-            0,
-            data,
-            Enum.Operation.Call,
-            0,
-            0,
-            0,
-            address(0),
-            payable(address(msgSender)),
-            abi.encodePacked(r, s, v)
+            target, 0, data, operation, 0, 0, 0, address(0), payable(address(msgSender)), abi.encodePacked(r, s, v)
         );
     }
 

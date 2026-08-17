@@ -23,4 +23,10 @@ interface IHoprNodeManagementModule {
      * @param nodeAddresses The addresses of the nodes to include.
      */
     function includeNodes(address[] calldata nodeAddresses) external payable;
+
+    /**
+     * @notice Allows member nodes to call only their own self-service operations on the registry.
+     * @dev Must be executed by the owning Safe when upgrading an existing module deployment.
+     */
+    function scopeTargetServiceRegistry(address serviceRegistry) external;
 }

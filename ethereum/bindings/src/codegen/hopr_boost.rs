@@ -7508,7 +7508,7 @@ function updateBaseURI(string memory baseTokenURI) external;
     ///Container for all the [`HoprBoost`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprBoostCalls {
         #[allow(missing_docs)]
         DEFAULT_ADMIN_ROLE(DEFAULT_ADMIN_ROLECall),
@@ -9113,6 +9113,141 @@ function updateBaseURI(string memory baseTokenURI) external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprBoostEvents {
+        /**Creates a [`Approval`] event.
+
+```solidity
+event Approval(address,address,uint256)
+```*/
+        #[inline]
+        pub fn approval(
+            owner: alloy::sol_types::private::Address,
+            approved: alloy::sol_types::private::Address,
+            token_id: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Approval(Approval {
+                owner: owner,
+                approved: approved,
+                tokenId: token_id,
+            })
+        }
+        /**Creates a [`ApprovalForAll`] event.
+
+```solidity
+event ApprovalForAll(address,address,bool)
+```*/
+        #[inline]
+        pub fn approval_for_all(
+            owner: alloy::sol_types::private::Address,
+            operator: alloy::sol_types::private::Address,
+            approved: bool,
+        ) -> Self {
+            Self::ApprovalForAll(ApprovalForAll {
+                owner: owner,
+                operator: operator,
+                approved: approved,
+            })
+        }
+        /**Creates a [`BoostMinted`] event.
+
+```solidity
+event BoostMinted(uint256,uint256,uint256)
+```*/
+        #[inline]
+        pub fn boost_minted(
+            boost_type_index: alloy::sol_types::private::primitives::aliases::U256,
+            boost_numerator: alloy::sol_types::private::primitives::aliases::U256,
+            redeem_deadline: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::BoostMinted(BoostMinted {
+                boostTypeIndex: boost_type_index,
+                boostNumerator: boost_numerator,
+                redeemDeadline: redeem_deadline,
+            })
+        }
+        /**Creates a [`RoleAdminChanged`] event.
+
+```solidity
+event RoleAdminChanged(bytes32,bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn role_admin_changed(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            previous_admin_role: alloy::sol_types::private::FixedBytes<32>,
+            new_admin_role: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::RoleAdminChanged(RoleAdminChanged {
+                role: role,
+                previousAdminRole: previous_admin_role,
+                newAdminRole: new_admin_role,
+            })
+        }
+        /**Creates a [`RoleGranted`] event.
+
+```solidity
+event RoleGranted(bytes32,address,address)
+```*/
+        #[inline]
+        pub fn role_granted(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            account: alloy::sol_types::private::Address,
+            sender: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RoleGranted(RoleGranted {
+                role: role,
+                account: account,
+                sender: sender,
+            })
+        }
+        /**Creates a [`RoleRevoked`] event.
+
+```solidity
+event RoleRevoked(bytes32,address,address)
+```*/
+        #[inline]
+        pub fn role_revoked(
+            role: alloy::sol_types::private::FixedBytes<32>,
+            account: alloy::sol_types::private::Address,
+            sender: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::RoleRevoked(RoleRevoked {
+                role: role,
+                account: account,
+                sender: sender,
+            })
+        }
+        /**Creates a [`SetCreated`] event.
+
+```solidity
+event SetCreated(uint256)
+```*/
+        #[inline]
+        pub fn set_created(
+            type_index: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::SetCreated(SetCreated {
+                typeIndex: type_index,
+            })
+        }
+        /**Creates a [`Transfer`] event.
+
+```solidity
+event Transfer(address,address,uint256)
+```*/
+        #[inline]
+        pub fn transfer(
+            from: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            token_id: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Transfer(Transfer {
+                from: from,
+                to: to,
+                tokenId: token_id,
+            })
         }
     }
     use alloy::contract as alloy_contract;

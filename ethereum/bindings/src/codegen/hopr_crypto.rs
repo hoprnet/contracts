@@ -515,6 +515,36 @@ error InvalidPointWitness();
             }
         }
     }
+    #[automatically_derived]
+    impl HoprCryptoErrors {
+        /**Creates a [`InvalidCurvePoint`] error.
+
+```solidity
+error InvalidCurvePoint()
+```*/
+        #[inline]
+        pub fn invalid_curve_point() -> Self {
+            Self::InvalidCurvePoint(InvalidCurvePoint)
+        }
+        /**Creates a [`InvalidFieldElement`] error.
+
+```solidity
+error InvalidFieldElement()
+```*/
+        #[inline]
+        pub fn invalid_field_element() -> Self {
+            Self::InvalidFieldElement(InvalidFieldElement)
+        }
+        /**Creates a [`InvalidPointWitness`] error.
+
+```solidity
+error InvalidPointWitness()
+```*/
+        #[inline]
+        pub fn invalid_point_witness() -> Self {
+            Self::InvalidPointWitness(InvalidPointWitness)
+        }
+    }
     use alloy::contract as alloy_contract;
     /**Creates a new wrapper around an on-chain [`HoprCrypto`](self) contract instance.
 

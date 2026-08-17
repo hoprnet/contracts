@@ -40,6 +40,17 @@ hopr-bindings = "4"
 - [`error`] — the [`Error`](crate::error::Error) type returned by this crate's helpers.
 - the `hopr-contract-addresses` binary — dumps the bundled `contracts-addresses.json` (see below) to stdout.
 
+## The service registry
+
+[`crate::hopr_service_registry`] and [`crate::hopr_service_registry_events`] hold the bindings of
+`HoprServiceRegistry`, the permissionless registry of services that HOPR nodes offer.
+
+[`ContractInstances`](crate::config::ContractInstances) holds an instance of it, and
+`deploy_for_testing` deploys one in the same position as `DeployAll.s.sol` does, so a local
+deployment reproduces
+[`ContractAddresses::service_registry`](crate::config::ContractAddresses::service_registry).
+Unlike the Solidity script, `deploy_for_testing` claims no canonical service type.
+
 ## Getting started
 
 Look up the addresses of an already-deployed network:

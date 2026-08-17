@@ -284,7 +284,7 @@ pub mod HoprWinningProbabilityOracle {
         }
         impl WinProb {
             /// The Solidity type name.
-            pub const NAME: &'static str = stringify!(@ name);
+            pub const NAME: &'static str = stringify!(WinProb);
             /// Convert from the underlying value type.
             #[inline]
             pub const fn from_underlying(
@@ -2055,7 +2055,7 @@ function transferOwnership(address newOwner) external;
     ///Container for all the [`HoprWinningProbabilityOracle`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum HoprWinningProbabilityOracleCalls {
         #[allow(missing_docs)]
         acceptOwnership(acceptOwnershipCall),
@@ -2681,6 +2681,42 @@ function transferOwnership(address newOwner) external;
             }
         }
     }
+    #[automatically_derived]
+    impl HoprWinningProbabilityOracleErrors {
+        /**Creates a [`OwnableInvalidOwner`] error.
+
+```solidity
+error OwnableInvalidOwner(address)
+```*/
+        #[inline]
+        pub fn ownable_invalid_owner(owner: alloy::sol_types::private::Address) -> Self {
+            Self::OwnableInvalidOwner(OwnableInvalidOwner {
+                owner: owner,
+            })
+        }
+        /**Creates a [`OwnableUnauthorizedAccount`] error.
+
+```solidity
+error OwnableUnauthorizedAccount(address)
+```*/
+        #[inline]
+        pub fn ownable_unauthorized_account(
+            account: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnableUnauthorizedAccount(OwnableUnauthorizedAccount {
+                account: account,
+            })
+        }
+        /**Creates a [`WinProbMustNotBeSame`] error.
+
+```solidity
+error WinProbMustNotBeSame()
+```*/
+        #[inline]
+        pub fn win_prob_must_not_be_same() -> Self {
+            Self::WinProbMustNotBeSame(WinProbMustNotBeSame)
+        }
+    }
     ///Container for all the [`HoprWinningProbabilityOracle`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -2825,6 +2861,54 @@ function transferOwnership(address newOwner) external;
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl HoprWinningProbabilityOracleEvents {
+        /**Creates a [`OwnershipTransferStarted`] event.
+
+```solidity
+event OwnershipTransferStarted(address,address)
+```*/
+        #[inline]
+        pub fn ownership_transfer_started(
+            previous_owner: alloy::sol_types::private::Address,
+            new_owner: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnershipTransferStarted(OwnershipTransferStarted {
+                previousOwner: previous_owner,
+                newOwner: new_owner,
+            })
+        }
+        /**Creates a [`OwnershipTransferred`] event.
+
+```solidity
+event OwnershipTransferred(address,address)
+```*/
+        #[inline]
+        pub fn ownership_transferred(
+            previous_owner: alloy::sol_types::private::Address,
+            new_owner: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::OwnershipTransferred(OwnershipTransferred {
+                previousOwner: previous_owner,
+                newOwner: new_owner,
+            })
+        }
+        /**Creates a [`WinProbUpdated`] event.
+
+```solidity
+event WinProbUpdated(uint56,uint56)
+```*/
+        #[inline]
+        pub fn win_prob_updated(
+            old_win_prob: <WinProb as alloy::sol_types::SolType>::RustType,
+            new_win_prob: <WinProb as alloy::sol_types::SolType>::RustType,
+        ) -> Self {
+            Self::WinProbUpdated(WinProbUpdated {
+                oldWinProb: old_win_prob,
+                newWinProb: new_win_prob,
+            })
         }
     }
     use alloy::contract as alloy_contract;
