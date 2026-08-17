@@ -6,7 +6,7 @@ interface HoprServiceRegistryEvents {
     event Deregistered(bytes32 indexed serviceType, address indexed node, address indexed safe);
     event NodeSafeRegistryUpdated(address oldNodeSafeRegistry, address newNodeSafeRegistry);
     event Registered(bytes32 indexed serviceType, address indexed node, address indexed safe, bytes metadata, uint48 registeredAt, uint256 burned);
-    event RegistryInitialized(uint256 version, address admin, address manager, address wxHopr, uint48 initialAdminDelay);
+    event RegistryInitialized(uint256 version, address admin, address manager, address token, uint48 initialAdminDelay);
     event RequirementUpdated(bytes32 indexed serviceType, address requirement);
     event SelfRegistrationBurnUpdated(bytes32 indexed serviceType, uint256 amount);
     event SelfUpdateBurnUpdated(bytes32 indexed serviceType, uint256 amount);
@@ -131,7 +131,7 @@ interface HoprServiceRegistryEvents {
         "internalType": "address"
       },
       {
-        "name": "wxHopr",
+        "name": "token",
         "type": "address",
         "indexed": false,
         "internalType": "address"
@@ -766,7 +766,7 @@ event Registered(bytes32 indexed serviceType, address indexed node, address inde
     #[derive(Default, Debug, PartialEq, Eq, Hash)]
     /**Event with signature `RegistryInitialized(uint256,address,address,address,uint48)` and selector `0x7a7362822a8ef0d85c06fd091e7fb9c9a58ebe426b54e8c4407c4e3b42fd75f9`.
 ```solidity
-event RegistryInitialized(uint256 version, address admin, address manager, address wxHopr, uint48 initialAdminDelay);
+event RegistryInitialized(uint256 version, address admin, address manager, address token, uint48 initialAdminDelay);
 ```*/
     #[allow(
         non_camel_case_types,
@@ -783,7 +783,7 @@ event RegistryInitialized(uint256 version, address admin, address manager, addre
         #[allow(missing_docs)]
         pub manager: alloy::sol_types::private::Address,
         #[allow(missing_docs)]
-        pub wxHopr: alloy::sol_types::private::Address,
+        pub token: alloy::sol_types::private::Address,
         #[allow(missing_docs)]
         pub initialAdminDelay: alloy::sol_types::private::primitives::aliases::U48,
     }
@@ -825,7 +825,7 @@ event RegistryInitialized(uint256 version, address admin, address manager, addre
                     version: data.0,
                     admin: data.1,
                     manager: data.2,
-                    wxHopr: data.3,
+                    token: data.3,
                     initialAdminDelay: data.4,
                 }
             }
@@ -857,7 +857,7 @@ event RegistryInitialized(uint256 version, address admin, address manager, addre
                         &self.manager,
                     ),
                     <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.wxHopr,
+                        &self.token,
                     ),
                     <alloy::sol_types::sol_data::Uint<
                         48,
@@ -2304,14 +2304,14 @@ event RegistryInitialized(uint256,address,address,address,uint48)
             version: alloy::sol_types::private::primitives::aliases::U256,
             admin: alloy::sol_types::private::Address,
             manager: alloy::sol_types::private::Address,
-            wx_hopr: alloy::sol_types::private::Address,
+            token: alloy::sol_types::private::Address,
             initial_admin_delay: alloy::sol_types::private::primitives::aliases::U48,
         ) -> Self {
             Self::RegistryInitialized(RegistryInitialized {
                 version: version,
                 admin: admin,
                 manager: manager,
-                wxHopr: wx_hopr,
+                token: token,
                 initialAdminDelay: initial_admin_delay,
             })
         }
