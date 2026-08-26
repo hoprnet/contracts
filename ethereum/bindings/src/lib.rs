@@ -9,6 +9,7 @@ mod codegen;
 pub mod config;
 pub mod constants;
 pub mod error;
+pub mod payload;
 
 // Generated bindings for every HOPR Solidity contract, re-exported at the crate root, one module
 // per contract (e.g. `hopr_channels::HoprChannels`, `hopr_token::HoprToken`). See the
