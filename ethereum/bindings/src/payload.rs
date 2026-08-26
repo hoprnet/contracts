@@ -16,6 +16,9 @@ use crate::{
         initiateOutgoingChannelClosureCall, initiateOutgoingChannelClosureSafeCall,
     },
     hopr_node_management_module::HoprNodeManagementModule::execTransactionFromModuleCall,
+    hopr_node_safe_migration::HoprNodeSafeMigration::{
+        deployNewV4ModuleCall, migrateModuleSingletonCall, migrateSafeV141ToL2AndMigrateToUpgradeableModuleCall,
+    },
     hopr_node_safe_registry::HoprNodeSafeRegistry::{deregisterNodeBySafeCall, registerSafeByNodeCall},
     hopr_service_registry::HoprServiceRegistry::{selfDeregisterCall, selfRegisterCall, selfUpdateCall},
     hopr_token::HoprToken::{approveCall, sendCall, transferCall},
@@ -53,7 +56,6 @@ pub enum SafeOperation {
 /// One packed transaction in a Safe MultiSend batch.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SafeMultisendTransaction {
-    pub operation: SafeOperation,
     pub to: Address,
     pub value: U256,
     pub action: PayloadAction,
@@ -125,6 +127,21 @@ pub enum PayloadAction {
         service_type: [u8; 32],
         node: Address,
     },
+    MigrateModuleSingleton {
+        module_proxy: Address,
+        data: Bytes,
+    },
+    MigrateSafeV141ToL2AndMigrateToUpgradeableModule {
+        old_module_proxy: Address,
+        default_target: [u8; 32],
+        nonce: U256,
+        nodes: Vec<Address>,
+    },
+    DeployNewV4Module {
+        default_target: [u8; 32],
+        nonce: U256,
+        nodes: Vec<Address>,
+    },
 }
 
 impl PayloadAction {
@@ -171,6 +188,37 @@ impl PayloadAction {
                 metadata,
             } => self_update(*service_type, *node, metadata.clone()),
             Self::SelfDeregister { service_type, node } => self_deregister(*service_type, *node),
+            Self::MigrateModuleSingleton { module_proxy, data } => {
+                migrate_module_singleton(*module_proxy, data.clone())
+            }
+            Self::MigrateSafeV141ToL2AndMigrateToUpgradeableModule {
+                old_module_proxy,
+                default_target,
+                nonce,
+                nodes,
+            } => migrate_safe_v141_to_l2_and_migrate_to_upgradeable_module(
+                *old_module_proxy,
+                *default_target,
+                *nonce,
+                nodes.clone(),
+            ),
+            Self::DeployNewV4Module {
+                default_target,
+                nonce,
+                nodes,
+            } => deploy_new_v4_module(*default_target, *nonce, nodes.clone()),
+        }
+    }
+
+    /// Safe operation required to execute this action.
+    ///
+    /// Migration actions must run in the Safe's context and therefore require a delegate call.
+    pub const fn safe_operation(&self) -> SafeOperation {
+        match self {
+            Self::MigrateModuleSingleton { .. }
+            | Self::MigrateSafeV141ToL2AndMigrateToUpgradeableModule { .. }
+            | Self::DeployNewV4Module { .. } => SafeOperation::DelegateCall,
+            _ => SafeOperation::Call,
         }
     }
 }
@@ -291,6 +339,38 @@ fn self_deregister(service_type: [u8; 32], node: Address) -> Vec<u8> {
     .abi_encode()
 }
 
+fn migrate_module_singleton(module_proxy: Address, data: Bytes) -> Vec<u8> {
+    migrateModuleSingletonCall {
+        moduleProxy: module_proxy,
+        data,
+    }
+    .abi_encode()
+}
+
+fn migrate_safe_v141_to_l2_and_migrate_to_upgradeable_module(
+    old_module_proxy: Address,
+    default_target: [u8; 32],
+    nonce: U256,
+    nodes: Vec<Address>,
+) -> Vec<u8> {
+    migrateSafeV141ToL2AndMigrateToUpgradeableModuleCall {
+        oldModuleProxy: old_module_proxy,
+        defaultTarget: default_target.into(),
+        nonce,
+        nodes,
+    }
+    .abi_encode()
+}
+
+fn deploy_new_v4_module(default_target: [u8; 32], nonce: U256, nodes: Vec<Address>) -> Vec<u8> {
+    deployNewV4ModuleCall {
+        defaultTarget: default_target.into(),
+        nonce,
+        nodes,
+    }
+    .abi_encode()
+}
+
 /// Encode `Multicall3.aggregate3((address,bool,bytes)[])`.
 ///
 /// `allow_failure` controls whether a failed individual call reverts the entire batch.
@@ -321,7 +401,7 @@ pub fn multisend(transactions: &[SafeMultisendTransaction]) -> Vec<u8> {
     let mut packed = Vec::with_capacity(packed_len);
 
     for (transaction, data) in encoded {
-        packed.push(transaction.operation as u8);
+        packed.push(transaction.action.safe_operation() as u8);
         packed.extend_from_slice(transaction.to.as_slice());
         packed.extend_from_slice(&transaction.value.to_be_bytes::<32>());
         packed.extend_from_slice(&U256::from(data.len()).to_be_bytes::<32>());
@@ -336,13 +416,14 @@ pub fn multisend(transactions: &[SafeMultisendTransaction]) -> Vec<u8> {
 
 /// Wrap already encoded contract calldata in a Safe module execution payload.
 ///
-/// The operation is `Call` (`0`) and no native token value is attached.
+/// Migration actions use `DelegateCall` (`1`); all other actions use `Call` (`0`). No native
+/// token value is attached.
 pub fn exec_transaction_from_module(to: Address, action: &PayloadAction) -> Vec<u8> {
     execTransactionFromModuleCall {
         to,
         value: U256::ZERO,
         data: action.encode().into(),
-        operation: 0,
+        operation: action.safe_operation() as u8,
     }
     .abi_encode()
 }
@@ -508,19 +589,20 @@ mod tests {
             recipient: delegate_target,
             amount: U256::from(9),
         };
-        let delegate_action = PayloadAction::CloseIncomingChannel { source: call_target };
+        let delegate_action = PayloadAction::MigrateModuleSingleton {
+            module_proxy: call_target,
+            data: bytes!("010203"),
+        };
         let call_data = call_action.encode();
         let delegate_data = delegate_action.encode();
 
         let payload = multisend(&[
             SafeMultisendTransaction {
-                operation: SafeOperation::Call,
                 to: call_target,
                 value: U256::from(42),
                 action: call_action,
             },
             SafeMultisendTransaction {
-                operation: SafeOperation::DelegateCall,
                 to: delegate_target,
                 value: U256::ZERO,
                 action: delegate_action,
@@ -545,6 +627,82 @@ mod tests {
         );
         assert_eq!(&packed[first_len + 85..], &delegate_data[..]);
         assert_eq!(&payload[..4], &hex!("8d80ff0a"));
+    }
+
+    #[test]
+    fn migration_actions_round_trip_all_arguments() {
+        let old_module = address!("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        let nodes = vec![
+            address!("cccccccccccccccccccccccccccccccccccccccc"),
+            address!("dddddddddddddddddddddddddddddddddddddddd"),
+        ];
+        let default_target = [0x42; 32];
+        let nonce = U256::from(9876);
+        let init_data = bytes!("deadbeef0102");
+
+        let singleton = PayloadAction::MigrateModuleSingleton {
+            module_proxy: old_module,
+            data: init_data.clone(),
+        };
+        let decoded_singleton = migrateModuleSingletonCall::abi_decode_validate(&singleton.encode()).unwrap();
+        assert_eq!(decoded_singleton.moduleProxy, old_module);
+        assert_eq!(decoded_singleton.data, init_data);
+
+        let safe_and_module = PayloadAction::MigrateSafeV141ToL2AndMigrateToUpgradeableModule {
+            old_module_proxy: old_module,
+            default_target,
+            nonce,
+            nodes: nodes.clone(),
+        };
+        let decoded_safe_and_module =
+            migrateSafeV141ToL2AndMigrateToUpgradeableModuleCall::abi_decode_validate(&safe_and_module.encode())
+                .unwrap();
+        assert_eq!(decoded_safe_and_module.oldModuleProxy, old_module);
+        assert_eq!(decoded_safe_and_module.defaultTarget, B256::from(default_target));
+        assert_eq!(decoded_safe_and_module.nonce, nonce);
+        assert_eq!(decoded_safe_and_module.nodes, nodes);
+
+        let deploy = PayloadAction::DeployNewV4Module {
+            default_target,
+            nonce,
+            nodes: nodes.clone(),
+        };
+        let decoded_deploy = deployNewV4ModuleCall::abi_decode_validate(&deploy.encode()).unwrap();
+        assert_eq!(decoded_deploy.defaultTarget, B256::from(default_target));
+        assert_eq!(decoded_deploy.nonce, nonce);
+        assert_eq!(decoded_deploy.nodes, nodes);
+    }
+
+    #[test]
+    fn all_migration_actions_are_safe_delegatecalls() {
+        let migration_contract = address!("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+        let module = address!("ffffffffffffffffffffffffffffffffffffffff");
+        let actions = [
+            PayloadAction::MigrateModuleSingleton {
+                module_proxy: module,
+                data: Bytes::new(),
+            },
+            PayloadAction::MigrateSafeV141ToL2AndMigrateToUpgradeableModule {
+                old_module_proxy: module,
+                default_target: [0; 32],
+                nonce: U256::ZERO,
+                nodes: vec![],
+            },
+            PayloadAction::DeployNewV4Module {
+                default_target: [0; 32],
+                nonce: U256::ZERO,
+                nodes: vec![],
+            },
+        ];
+
+        for action in actions {
+            assert_eq!(action.safe_operation(), SafeOperation::DelegateCall);
+            let safe_call = exec_transaction_from_module(migration_contract, &action);
+            let decoded = execTransactionFromModuleCall::abi_decode_validate(&safe_call).unwrap();
+            assert_eq!(decoded.to, migration_contract);
+            assert_eq!(decoded.operation, SafeOperation::DelegateCall as u8);
+            assert_eq!(decoded.data.as_ref(), action.encode());
+        }
     }
 
     #[test]
