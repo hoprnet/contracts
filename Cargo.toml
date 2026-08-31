@@ -5,7 +5,7 @@ resolver = "2"
 members = ["ethereum/bindings"]
 
 [workspace.dependencies]
-alloy = { version = "2.1.0", default-features = false, features = [
+alloy = { version = "2.4.1", default-features = false, features = [
   "essentials",
   "json-rpc",
   "node-bindings",
@@ -13,14 +13,14 @@ alloy = { version = "2.1.0", default-features = false, features = [
   "k256",
   "std",
 ] }
-anyhow = "1.0.103"
+anyhow = "1.0.104"
 const_format = "0.2.36"
 hex-literal = "1.1.0"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_with = { version = "3.21.0" }
-serde_json = { version = "1.0.150" }
-thiserror = "2.0.18"
-tokio = { version = "1.52.3", features = [
+serde = { version = "1.0.229", features = ["derive"] }
+serde_with = { version = "3.22.0" }
+serde_json = { version = "1.0.151" }
+thiserror = "2.0.20"
+tokio = { version = "1.53.1", features = [
   "rt-multi-thread",
   "macros",
   "tracing",
