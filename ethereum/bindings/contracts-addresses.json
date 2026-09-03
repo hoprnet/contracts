@@ -36,6 +36,24 @@
       "environment_type": "development",
       "indexer_start_block_number": 47415331
     },
+    "jura-staging": {
+      "addresses": {
+        "announcements": "0x6902aC6EF51aC2b25b72B3A49103E92c73f86d66",
+        "channels": "0x9ff5Bc389A7f8096C9e3A27897c470970f4b595c",
+        "module_implementation": "0x81D4B0464E643B82608938EAb980358C0d3DA711",
+        "node_safe_migration": "0xf8aa6461D7E98a1Ce11D3422c68Aa3eEBE7d1C43",
+        "node_safe_registry": "0x9d6EdeF48506BeAAf17307855a4B5F304e1Fe636",
+        "node_stake_factory": "0x75030b26BcBb938E210D93200cDd203b369d1631",
+        "service_registry": "0x10E17050dcF068c1748725193FFE028848E6d6Fd",
+        "ticket_price_oracle": "0x09856a235d216FD20c21B58D83cde7774c36eC58",
+        "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
+        "winning_probability_oracle": "0x01d14a50e913FdFdC12a2B4973F5072eE52B7EDF",
+        "xhopr_token": "0xe314a1Ac772C1c0447Baf5B1c223684d2c09A477"
+      },
+      "chain_id": 100,
+      "environment_type": "staging",
+      "indexer_start_block_number": 48060435
+    },
     "jura-prod": {
       "addresses": {
         "announcements": "0xa91976fe366a0BAAA6265cd14613fc7E9a5317C8",
