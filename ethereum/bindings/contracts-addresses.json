@@ -48,7 +48,7 @@
         "ticket_price_oracle": "0x09856a235d216FD20c21B58D83cde7774c36eC58",
         "token": "0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1",
         "winning_probability_oracle": "0x01d14a50e913FdFdC12a2B4973F5072eE52B7EDF",
-        "xhopr_token": "0xe314a1Ac772C1c0447Baf5B1c223684d2c09A477"
+        "xhopr_token": "0xD057604A14982FE8D88c5fC25Aac3267eA142a08"
       },
       "chain_id": 100,
       "environment_type": "staging",
