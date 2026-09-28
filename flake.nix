@@ -65,6 +65,15 @@
           overlays = [
             (import rust-overlay)
             foundry.overlay
+            (
+              final: prev: {
+                foundry-bin = prev.foundry-bin.overrideAttrs (old: {
+                  buildInputs = (old.buildInputs or [ ]) ++ final.lib.optionals final.stdenv.isLinux [
+                    final.systemd
+                  ];
+                });
+              }
+            )
             solc.overlay
           ];
           pkgs = import nixpkgs { inherit localSystem overlays; };
