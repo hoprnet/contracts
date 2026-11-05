@@ -6,11 +6,9 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-permissions:
-  contents: read
-  id-token: write # zizmor: ignore[excessive-permissions]
+permissions: {}
 concurrency:
-  group: ${{ github.event.pull_request.head.ref || github.ref_name }}-pr
+  group: ${{ github.event.pull_request.number || github.ref }}-pr
   cancel-in-progress: true
 jobs:
   validate-pr-title:
@@ -34,6 +32,8 @@ jobs:
             refactor
             perf
             test
+            ci
+            revert
           requireScope: false
           ignoreLabels: |
             bot
@@ -71,6 +71,8 @@ jobs:
           fi
   checks:
     name: Check
+    permissions:
+      contents: read
     uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@061b4579c870b0fdc008f5ff07a3a500e4fede50 # workflow-checks-v2.3.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
@@ -81,6 +83,9 @@ jobs:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
   tests:
     name: Test
+    permissions:
+      contents: read
+      id-token: write # Codecov OIDC upload in the coverage job
     uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@f5b2ab89bc1e5a46840275389bb9acf97847576a # workflow-tests-v6.2.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
@@ -99,6 +104,8 @@ jobs:
     runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 60
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
     env:
       FOUNDRY_PROFILE: ci
     steps:
@@ -140,7 +147,7 @@ jobs:
     uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@bfdfd56e110ee356595faac1424b74906ed50ac9 # build-library-v3.3.2
     permissions:
       contents: read
-      id-token: write
+      id-token: write # OIDC publish in build-library
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
       version_type: commit
@@ -151,3 +158,31 @@ jobs:
       enabled: ${{ matrix.required_label == '' || contains(github.event.pull_request.labels.*.name, matrix.required_label) }}
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  # Single aggregate merge gate: green only if every other job in this run
+  # succeeded. Mark THIS one as the required check in the branch ruleset, so
+  # adding, renaming, or removing a job never needs a ruleset change.
+  # `if: always()` runs it even when a dependency fails; alls-green then reds
+  # the gate on any non-success (a failed job, or a skip that is not allowed).
+  merge-gate:
+    name: Merge gate
+    if: always()
+    needs:
+      - validate-pr-title
+      - label
+      - checks
+      - tests
+      - tests-smart-contracts
+      - build-library
+    runs-on: depot-ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Require all jobs to pass
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
+          # validate-pr-title and label run on pull_request only.
+          # tests-smart-contracts skips only while the PR is a draft; marking
+          # it ready triggers a new run that must run it. tests and
+          # build-library are never allowed to skip. A failed job reds the
+          # gate either way.
+          allowed-skips: ${{ github.event.pull_request.draft && 'validate-pr-title, label, tests-smart-contracts' || 'validate-pr-title, label' }}
