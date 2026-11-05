@@ -180,7 +180,8 @@ jobs:
         uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
         with:
           jobs: ${{ toJSON(needs) }}
-          # validate-pr-title and label run on pull_request only.
+          # validate-pr-title and label run on pull_request events only. They
+          # skip on any other trigger (for example, a future merge_group run).
           # tests-smart-contracts skips only while the PR is a draft; marking
           # it ready triggers a new run that must run it. tests and
           # build-library are never allowed to skip. A failed job reds the
