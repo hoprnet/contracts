@@ -13,6 +13,8 @@ on:
       source_branch:
         required: true
         type: string
+permissions:
+  contents: read
 concurrency:
   group: ${{ inputs.source_branch || github.ref_name }}-cache-deps
   cancel-in-progress: true

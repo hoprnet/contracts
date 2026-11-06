@@ -5,9 +5,7 @@ on:
       - closed
     branches:
       - main
-permissions:
-  contents: read
-  id-token: write # zizmor: ignore[excessive-permissions]
+permissions: {}
 concurrency:
   group: merge-${{ github.event.pull_request.base.ref }}
   cancel-in-progress: false
@@ -39,6 +37,9 @@ jobs:
   coverage:
     name: Coverage
     if: github.event.pull_request.merged == true
+    permissions:
+      contents: read
+      id-token: write # Codecov OIDC upload
     uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@f5b2ab89bc1e5a46840275389bb9acf97847576a # workflow-tests-v6.2.1
     with:
       source_branch: ${{ github.event.pull_request.base.ref }}
@@ -56,6 +57,7 @@ jobs:
       - coverage
     if: ${{ always() && github.event.pull_request.merged == true && !success() }}
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Notify failed merge pipeline
         uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2

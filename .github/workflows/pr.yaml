@@ -6,11 +6,9 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-permissions:
-  contents: read
-  id-token: write # zizmor: ignore[excessive-permissions]
+permissions: {}
 concurrency:
-  group: ${{ github.event.pull_request.head.ref || github.ref_name }}-pr
+  group: ${{ github.event.pull_request.number || github.ref }}-pr
   cancel-in-progress: true
 jobs:
   validate-pr-title:
@@ -34,6 +32,8 @@ jobs:
             refactor
             perf
             test
+            ci
+            revert
           requireScope: false
           ignoreLabels: |
             bot
@@ -41,6 +41,7 @@ jobs:
   label:
     name: Add labels
     if: github.event_name == 'pull_request'
+    continue-on-error: true
     runs-on: depot-ubuntu-24.04
     permissions:
       contents: read
@@ -69,26 +70,77 @@ jobs:
           if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
             gh pr edit "$PR_NUMBER" --add-label "external"
           fi
+  # Gate jobs through inputs on the reusable workflows where possible: an
+  # input-skipped inner job still reports its check name. Stages: 1 = checks,
+  # 2 = tests, 3 = builds. A later stage runs only if the earlier one did not
+  # fail (`!failure()` still lets a legitimately skipped stage through).
+  changes:
+    name: Detect changes
+    runs-on: depot-ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      rust: ${{ github.event_name != 'pull_request' || steps.filter.outputs.rust == 'true' }}
+      lockfile: ${{ github.event_name != 'pull_request' || steps.filter.outputs.lockfile == 'true' }}
+    steps:
+      - name: Filter changed paths
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            rust:
+              - "ethereum/**"
+              - "vendor/**"
+              - "Cargo.toml"
+              - "Cargo.lock"
+              - "rust-toolchain.toml"
+              - "rustfmt.toml"
+              - ".cargo/**"
+              - "flake.nix"
+              - "flake.lock"
+              - "nix/**"
+              - "Makefile"
+              - "justfile"
+              - ".github/workflows/**"
+              - ".github/scripts/**"
+            lockfile:
+              - "Cargo.toml"
+              - "**/Cargo.toml"
+              - "Cargo.lock"
+              - ".cargo/audit.toml"
   checks:
     name: Check
+    needs: changes
+    permissions:
+      contents: read
     uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@061b4579c870b0fdc008f5ff07a3a500e4fede50 # workflow-checks-v2.3.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
       runner_small: depot-ubuntu-24.04
       runner_large: depot-ubuntu-24.04-4
       deps: false
+      # Format and pre-commit cover every file type and always run.
+      lint: ${{ needs.changes.outputs.rust == 'true' }}
+      audit: ${{ needs.changes.outputs.lockfile == 'true' }}
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
   tests:
     name: Test
+    needs: [changes, checks]
+    if: ${{ !cancelled() && !failure() }}
+    permissions:
+      contents: read
+      id-token: write # Codecov OIDC upload in the coverage job
     uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@f5b2ab89bc1e5a46840275389bb9acf97847576a # workflow-tests-v6.2.1
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-      enable_unit_tests: true
+      enable_unit_tests: ${{ needs.changes.outputs.rust == 'true' }}
       unit_test_command: "nix build -L .#test"
-      enable_nightly_tests: true
+      enable_nightly_tests: ${{ needs.changes.outputs.rust == 'true' }}
       nightly_test_command: "nix build -L .#test-nightly"
-      enable_unit_coverage: true
+      enable_unit_coverage: ${{ needs.changes.outputs.rust == 'true' }}
       unit_coverage_command: "nix run .#coverage-unit"
       runner_unit: depot-ubuntu-24.04-4
       test_timeout: 60
@@ -98,7 +150,10 @@ jobs:
     name: Smart Contracts
     runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 60
-    if: github.event.pull_request.draft == false
+    needs: [changes, checks]
+    if: ${{ !cancelled() && !failure() && github.event.pull_request.draft == false && needs.changes.outputs.rust == 'true' }}
+    permissions:
+      contents: read
     env:
       FOUNDRY_PROFILE: ci
     steps:
@@ -124,6 +179,8 @@ jobs:
         run: nix develop -L -c make -j smart-contract-test
   build-library:
     name: Library ${{ matrix.architecture }}
+    needs: [changes, checks, tests, tests-smart-contracts]
+    if: ${{ !cancelled() && !failure() }}
     strategy:
       fail-fast: false
       matrix:
@@ -140,7 +197,7 @@ jobs:
     uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@bfdfd56e110ee356595faac1424b74906ed50ac9 # build-library-v3.3.2
     permissions:
       contents: read
-      id-token: write
+      id-token: write # OIDC publish in build-library
     with:
       source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
       version_type: commit
@@ -148,6 +205,38 @@ jobs:
       cachix_cache_name: contracts
       package_name: hopr-bindings
       runner: ${{ matrix.runner }}
-      enabled: ${{ matrix.required_label == '' || contains(github.event.pull_request.labels.*.name, matrix.required_label) }}
+      enabled: ${{ needs.changes.outputs.rust == 'true' && (matrix.required_label == '' || contains(github.event.pull_request.labels.*.name, matrix.required_label)) }}
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  # Single aggregate merge gate: green only if every other job in this run
+  # succeeded. Mark THIS one as the required check in the branch ruleset, so
+  # adding, renaming, or removing a job never needs a ruleset change.
+  # `if: always()` runs it even when a dependency fails; alls-green then reds
+  # the gate on any non-success (a failed job, or a skip that is not allowed).
+  merge-gate:
+    name: Merge gate
+    if: always()
+    needs:
+      - validate-pr-title
+      - label
+      - changes
+      - checks
+      - tests
+      - tests-smart-contracts
+      - build-library
+    runs-on: depot-ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Require all jobs to pass
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
+          # validate-pr-title and label run on pull_request events only. They
+          # skip on any other trigger (for example, a future merge_group run).
+          # tests-smart-contracts skips only while the PR is a draft; marking
+          # it ready triggers a new run that must run it. tests,
+          # tests-smart-contracts and build-library may also skip when the
+          # path filter finds no code change. Otherwise they must not skip.
+          # A failed job reds the gate either way, and a stage skipped
+          # because an earlier stage failed is covered by that failure.
+          allowed-skips: ${{ needs.changes.outputs.rust != 'true' && 'validate-pr-title, label, tests, tests-smart-contracts, build-library' || github.event.pull_request.draft && 'validate-pr-title, label, tests-smart-contracts' || 'validate-pr-title, label' }}

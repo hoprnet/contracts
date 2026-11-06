@@ -4,7 +4,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths: [".github/**"]
 concurrency:
-  group: ${{ github.event.pull_request.head.ref || github.ref_name }}-zizmor
+  group: ${{ github.event.pull_request.number || github.ref }}-zizmor
   cancel-in-progress: true
 permissions:
   contents: read

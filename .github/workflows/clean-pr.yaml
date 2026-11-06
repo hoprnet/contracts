@@ -9,6 +9,7 @@ on:
         type: number
         required: true
         description: "Pull request number"
+permissions: {}
 jobs:
   cleanup-pr:
     permissions:
