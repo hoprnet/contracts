@@ -40,7 +40,8 @@ jobs:
             ignore-semantic-pull-request
   label:
     name: Add labels
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    # Fork PRs get a read-only token and cannot write labels; stay green so the gate passes.
     continue-on-error: true
     runs-on: depot-ubuntu-24.04
     permissions:
@@ -115,9 +116,9 @@ jobs:
     needs: changes
     permissions:
       contents: read
-    uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@061b4579c870b0fdc008f5ff07a3a500e4fede50 # workflow-checks-v2.3.1
+    uses: hoprnet/hopr-workflows/.github/workflows/checks.yaml@43c833e72dffe4f2f3be60193733e5657f8aa0d7 # workflow-checks-v3.0.0
     with:
-      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+      repo_sha: ${{ github.event.pull_request.head.sha || github.sha }}
       runner_small: depot-ubuntu-24.04
       runner_large: depot-ubuntu-24.04-4
       deps: false
@@ -133,9 +134,9 @@ jobs:
     permissions:
       contents: read
       id-token: write # Codecov OIDC upload in the coverage job
-    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@f5b2ab89bc1e5a46840275389bb9acf97847576a # workflow-tests-v6.2.1
+    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@43c833e72dffe4f2f3be60193733e5657f8aa0d7 # workflow-tests-v7.0.0
     with:
-      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+      repo_sha: ${{ github.event.pull_request.head.sha || github.sha }}
       enable_unit_tests: ${{ needs.changes.outputs.rust == 'true' }}
       unit_test_command: "nix build -L .#test"
       enable_nightly_tests: ${{ needs.changes.outputs.rust == 'true' }}
@@ -194,12 +195,12 @@ jobs:
           - architecture: aarch64-darwin
             runner: depot-macos-15
             required_label: "binary:aarch64-darwin"
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@bfdfd56e110ee356595faac1424b74906ed50ac9 # build-library-v3.3.2
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@43c833e72dffe4f2f3be60193733e5657f8aa0d7 # build-library-v4.0.0
     permissions:
       contents: read
       id-token: write # OIDC publish in build-library
     with:
-      source_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+      repo_sha: ${{ github.event.pull_request.head.sha || github.sha }}
       version_type: commit
       architecture: ${{ matrix.architecture }}
       cachix_cache_name: contracts

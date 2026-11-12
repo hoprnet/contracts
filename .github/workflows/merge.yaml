@@ -21,12 +21,12 @@ jobs:
             runner: depot-ubuntu-24.04-4
           - architecture: aarch64-darwin
             runner: depot-macos-15
-    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@bfdfd56e110ee356595faac1424b74906ed50ac9 # build-library-v3.3.2
+    uses: hoprnet/hopr-workflows/.github/workflows/build-library.yaml@43c833e72dffe4f2f3be60193733e5657f8aa0d7 # build-library-v4.0.0
     permissions:
       contents: read
       id-token: write
     with:
-      source_branch: ${{ github.event.pull_request.base.ref }}
+      repo_sha: ${{ github.event.pull_request.merge_commit_sha }}
       version_type: pr
       architecture: ${{ matrix.architecture }}
       cachix_cache_name: contracts
@@ -40,9 +40,9 @@ jobs:
     permissions:
       contents: read
       id-token: write # Codecov OIDC upload
-    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@f5b2ab89bc1e5a46840275389bb9acf97847576a # workflow-tests-v6.2.1
+    uses: hoprnet/hopr-workflows/.github/workflows/tests.yaml@43c833e72dffe4f2f3be60193733e5657f8aa0d7 # workflow-tests-v7.0.0
     with:
-      source_branch: ${{ github.event.pull_request.base.ref }}
+      repo_sha: ${{ github.event.pull_request.merge_commit_sha }}
       enable_unit_tests: false
       enable_integration_tests: false
       enable_unit_coverage: true
