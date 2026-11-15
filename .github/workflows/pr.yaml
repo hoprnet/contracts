@@ -41,7 +41,9 @@ jobs:
   label:
     name: Add labels
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    # Fork PRs get a read-only token and cannot write labels; stay green so the gate passes.
+    # Same-repo PRs only: fork PRs get a read-only token and cannot write labels,
+    # so this job is skipped for them (the merge gate allows that skip). Fork PRs
+    # therefore get no labels, including no "external" label.
     continue-on-error: true
     runs-on: depot-ubuntu-24.04
     permissions:
@@ -61,16 +63,6 @@ jobs:
       - uses: actions/labeler@77a4082b841706ac431479b7e2bb11216ffef250 # main on 20.02.2025
         with:
           sync-labels: true
-      - name: Add "external" label for forked PRs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_REPO: ${{ github.repository }}
-          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
-            gh pr edit "$PR_NUMBER" --add-label "external"
-          fi
   # Gate jobs through inputs on the reusable workflows where possible: an
   # input-skipped inner job still reports its check name. Stages: 1 = checks,
   # 2 = tests, 3 = builds. A later stage runs only if the earlier one did not
